@@ -7,7 +7,7 @@ using System.Text;
 using UnityEngine;
 using Verse;
 
-namespace GiddyUp.HarmonyPlaceholder
+namespace GiddyUp.Harmony
 {
     /*
     [HarmonyPatch(typeof(Projectile), "Launch")]

@@ -11,13 +11,6 @@ namespace GiddyUp.Utilities
 {
     public static class DistanceUtility
     {
-        //TODO fix this
-        public static float QuickDistance(IntVec3 a, IntVec3 b)
-        {
-            float xDist = Mathf.Abs(a.x - b.x);
-            float zDist = Mathf.Abs(a.z - b.z);
-            return (float) Math.Sqrt(xDist * xDist + zDist * zDist);
-        }
         public static LocalTargetInfo GetFirstTarget(Job job, TargetIndex index)
         {
             if (!job.GetTargetQueue(index).NullOrEmpty<LocalTargetInfo>())
@@ -34,13 +27,13 @@ namespace GiddyUp.Utilities
             }
             return job.GetTarget(index);
         }
-        public static IntVec3 getClosestAreaLoc(IntVec3 sourceLocation, Area_GU areaFound)
+        public static IntVec3 getClosestAreaLoc(IntVec3 sourceLocation, Area areaFound)
         {
             IntVec3 targetLoc = new IntVec3();
             double minDistance = double.MaxValue;
             foreach (IntVec3 loc in areaFound.ActiveCells)
             {
-                double distance = DistanceUtility.QuickDistance(loc, sourceLocation);
+                double distance = loc.DistanceTo(sourceLocation);
                 if (distance < minDistance)
                 {
                     minDistance = distance;

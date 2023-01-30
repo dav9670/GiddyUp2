@@ -1,18 +1,14 @@
 ﻿using HarmonyLib;
 using RimWorld;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
 using Verse;
 
-namespace GiddyUp.HarmonyPlaceholder
+namespace GiddyUp.Harmony
 {
     [HarmonyPatch(typeof(VerbProperties), nameof(VerbProperties.AdjustedAccuracy))]
     static class VerbProperties_AdjustedAccuracy
     {
-        static float Postfix(float __result, VerbProperties __instance, ref Thing equipment)
+        static float Postfix(float __result, VerbProperties __instance, Thing equipment)
         {
             var holdingOwner = equipment.holdingOwner;
             if (equipment == null || holdingOwner == null || holdingOwner.Owner == null || !(holdingOwner.Owner is Pawn_EquipmentTracker eqt))

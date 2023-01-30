@@ -1,6 +1,6 @@
 ﻿using GiddyUp.Jobs;
-using GiddyUp.Storage;
 using RimWorld;
+using System.Linq;
 using Verse;
 
 namespace GiddyUp.Utilities
@@ -43,15 +43,15 @@ namespace GiddyUp.Utilities
             }
             if (animal.ageTracker.CurLifeStageIndex != animal.RaceProps.lifeStageAges.Count - 1)
             {
-                if (!animal.def.HasModExtension<AllowedLifeStagesPatch>())
+                var customLifeStages = animal.def.GetModExtension<AllowedLifeStagesPatch>();
+                if (customLifeStages == null)
                 {
                     reason = Reason.NotFullyGrown;
                     return false;
                 }
                 else //Use custom life stages instead of last life stage if a patch exists for that
                 {
-                    AllowedLifeStagesPatch customLifeStages = animal.def.GetModExtension<AllowedLifeStagesPatch>();
-                    if (!customLifeStages.getAllowedLifeStagesAsList().Contains(animal.ageTracker.CurLifeStageIndex))
+                    if (!customLifeStages.GetAllowedLifeStagesAsList().Contains(animal.ageTracker.CurLifeStageIndex))
                     {
                         reason = Reason.NotFullyGrown;
                         return false;

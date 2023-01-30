@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using RimWorld.Planet;
 using Verse;
 
@@ -10,22 +8,26 @@ namespace GiddyUp.Storage
     public class ExtendedDataStorage : WorldComponent, IExposable
     {
         Dictionary<int, ExtendedPawnData> _store = new Dictionary<int, ExtendedPawnData>();
-
         private List<int> _idWorkingList;
-
         private List<ExtendedPawnData> _extendedPawnDataWorkingList;
-
         public ExtendedDataStorage(World world) : base(world)
         {
         }
-
         public override void ExposeData()
         {
             base.ExposeData();
-            Scribe_Collections.Look(
-                ref _store, "store",
-                LookMode.Value, LookMode.Deep,
-                ref _idWorkingList, ref _extendedPawnDataWorkingList);
+            Scribe_Collections.Look(ref _store, "store", LookMode.Value, LookMode.Deep, ref _idWorkingList, ref _extendedPawnDataWorkingList);
+            
+            //Validate data
+            if (Scribe.mode == LoadSaveMode.PostLoadInit)
+            {
+                var workingList = new List<int>();
+                foreach (var item in _store)
+                {
+                    if (item.Value == null || item.Value.ID == -1) workingList.Add(item.Key);
+                }
+                _store.RemoveAll(x => workingList.Contains(x.Key));
+            }
         }
 
         // Return the associate extended data for a given Pawn, creating a new association
@@ -47,23 +49,5 @@ namespace GiddyUp.Storage
         {
             _store.Remove(pawn.thingIDNumber);
         }
-
-        public void Cleanup()
-        {
-            List<int> shouldRemove = new List<int>();
-            foreach (KeyValuePair<int, ExtendedPawnData> kv in _store)
-            {
-                if (kv.Value == null || kv.Value.ShouldClean())
-                {
-                    shouldRemove.Add(kv.Key);
-                }
-            }
-            foreach (int key in shouldRemove)
-            {
-                _store.Remove(key);
-            }
-            //Log.Message("Cleaned up " + shouldRemove.Count + " deprecated records from Giddy-up!");
-        }
-
     }
 }

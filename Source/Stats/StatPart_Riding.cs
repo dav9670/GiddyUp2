@@ -1,9 +1,6 @@
 ﻿using GiddyUp.Jobs;
 using GiddyUp.Storage;
 using RimWorld;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using UnityEngine;
 using Verse;
@@ -18,10 +15,6 @@ namespace GiddyUp.Stats
 
             if (req.Thing is Pawn pawn)
             {
-                if (Setup._extendedDataStorage == null)
-                {
-                    return "";
-                }
                 if (Setup.isMounted.Contains(pawn.thingIDNumber))
                 {
                     ExtendedPawnData pawnData = Setup._extendedDataStorage.GetExtendedDataFor(pawn.thingIDNumber);
@@ -49,9 +42,6 @@ namespace GiddyUp.Stats
                         sb.AppendLine("    " + "GUC_StatPart_MountTypeMultiplier".Translate() + ": " + modExt.speedModifier.ToStringByStyle(ToStringStyle.PercentOne, ToStringNumberSense.Factor));
                     }
                 }
-
-
-               
             }
             return sb.ToString();
         }
@@ -60,10 +50,6 @@ namespace GiddyUp.Stats
         {
             if(req.Thing is Pawn pawn)
             {
-                if (Setup._extendedDataStorage == null)
-                {
-                    return;
-                }
                 if (Setup.isMounted.Contains(pawn.thingIDNumber))
                 {
                     ExtendedPawnData pawnData = Setup._extendedDataStorage.GetExtendedDataFor(pawn.thingIDNumber);

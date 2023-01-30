@@ -115,7 +115,7 @@ namespace GiddyUp.Utilities
         //[SyncMethod]
         private static void ResetPawnData(Storage.ExtendedPawnData pawnData)
         {
-            pawnData.reset();
+            pawnData.Reset();
         }
     }
 }

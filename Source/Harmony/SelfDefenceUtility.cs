@@ -2,7 +2,7 @@
 using RimWorld;
 using Verse;
 
-namespace GiddyUp.HarmonyPlaceholder
+namespace GiddyUp.Harmony
 {
     [HarmonyPatch(typeof(SelfDefenseUtility), nameof(SelfDefenseUtility.ShouldFleeFrom))]
     class SelfDefenceUtility_ShouldFleeFrom

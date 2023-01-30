@@ -19,8 +19,7 @@ namespace GiddyUpRideAndRoll.PawnColumns
 
         protected override bool GetValue(Pawn pawn)
         {
-            ExtendedPawnData pawnData = GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(pawn.thingIDNumber);
-            return pawnData.mountableByMaster;
+            return GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(pawn.thingIDNumber).mountableByMaster;
         }
 
         //[SyncMethod]

@@ -10,18 +10,19 @@ namespace GiddyUpRideAndRoll.Harmony
     /// <summary>
     /// Set speed of mount so it always matches the speed of the pawn the animal is waiting for. 
     /// </summary>
-    [HarmonyPatch(typeof(StatPart_Riding), "TransformValue")]
+    [HarmonyPatch(typeof(StatPart_Riding), nameof(StatPart_Riding.TransformValue))]
     class StatPart_Riding_TransformValue
     {
-        static void PostFix(StatRequest req, ref float __result)
+        static float PostFix(float __result, StatRequest req)
         {
-            if (req.Thing is Pawn pawn)
+            if (req.thingInt is Pawn pawn)
             {
                 if (pawn.CurJob != null && pawn.jobs.curDriver is JobDriver_WaitForRider jobDriver)
                 {
-                    __result = jobDriver.Followee.GetStatValue(StatDefOf.MoveSpeed);
+                    return jobDriver.Followee.GetStatValue(StatDefOf.MoveSpeed);
                 }
             }
+            return __result;
         }
     }
 }

@@ -1,12 +1,8 @@
 ﻿using GiddyUp.Utilities;
 using HarmonyLib;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Verse;
 
-namespace GiddyUp.HarmonyPlaceholder
+namespace GiddyUp.Harmony
 {
     [HarmonyPatch(typeof(ArmorUtility), "ApplyArmor")]
     class ArmorUtility_ApplyArmor

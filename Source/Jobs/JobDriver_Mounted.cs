@@ -183,7 +183,7 @@ namespace GiddyUp.Jobs
         {
             isFinished = true;
             riderData = Setup._extendedDataStorage.GetExtendedDataFor(Rider.thingIDNumber);
-            riderData.reset();
+            riderData.Reset();
             pawn.Drawer.tweener = new PawnTweener(pawn);
             if (!interrupted)
             {

@@ -4,11 +4,8 @@ using GiddyUp.Utilities;
 using GiddyUp.Zones;
 using HarmonyLib;
 using RimWorld;
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using Verse;
 using Verse.AI;
 
@@ -18,7 +15,7 @@ namespace GiddyUpRideAndRoll.Harmony
     [HarmonyPatch(typeof(JobDriver), nameof(JobDriver.SetupToils))]
     class JobDriver_SetupToils
     {
-        static void Postfix(JobDriver __instance, ref List<Toil> ___toils)
+        static void Postfix(JobDriver __instance, List<Toil> ___toils)
         {            
             if (__instance.pawn.Map == null) return;
             if (__instance.pawn.Faction != Faction.OfPlayer || __instance.pawn.Drafted) return;
@@ -27,8 +24,7 @@ namespace GiddyUpRideAndRoll.Harmony
             ExtendedDataStorage store = GiddyUp.Setup._extendedDataStorage;
             ExtendedPawnData pawnData = store.GetExtendedDataFor(__instance.pawn.thingIDNumber);
 
-            Area_GU areaNoMount = (Area_GU)__instance.pawn.Map.areaManager.GetLabeled(GiddyUp.Setup.NOMOUNT_LABEL);
-            Area_GU areaDropAnimal = (Area_GU)__instance.pawn.Map.areaManager.GetLabeled(GiddyUp.Setup.DROPANIMAL_LABEL);
+            GiddyUp.Zones.Area_GU.GetGUAreasFast(__instance.pawn.Map, out Area areaNoMount, out Area areaDropAnimal);
             bool startedPark = false;
             IntVec3 originalLoc = new IntVec3();
             IntVec3 parkLoc = new IntVec3();
@@ -92,7 +88,7 @@ namespace GiddyUpRideAndRoll.Harmony
             return succeeded;
         }
 
-        private static bool TryParkAnimalDropSpot(Area_GU areaDropAnimal, ref IntVec3 parkLoc, Toil toil)
+        static bool TryParkAnimalDropSpot(Area areaDropAnimal, ref IntVec3 parkLoc, Toil toil)
         {
             
             bool succeeded = false;

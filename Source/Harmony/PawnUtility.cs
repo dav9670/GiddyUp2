@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse;
 
-namespace GiddyUp.HarmonyPlaceholder
+namespace GiddyUp.Harmony
 {
     [HarmonyPatch(typeof(PawnUtility), "TrySpawnHatchedOrBornPawn")]
     class PawnUtility_TrySpawnHatchedOrBornPawn

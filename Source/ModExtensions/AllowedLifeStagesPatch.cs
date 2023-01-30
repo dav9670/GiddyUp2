@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
+﻿using System.Linq;
 using Verse;
 
 namespace GiddyUp
@@ -10,17 +6,15 @@ namespace GiddyUp
     class AllowedLifeStagesPatch : DefModExtension
     {
         //Can be used in xml patches to allow other life stages than the final one. 
-     
         string allowedLifeStagesCSV = "";
 
-        public List<int> getAllowedLifeStagesAsList()
+        public int[] GetAllowedLifeStagesAsList()
         {
-            List <int> result = new List<int>();
             if (!allowedLifeStagesCSV.NullOrEmpty())
             {
-                result = allowedLifeStagesCSV.Split(',').ToList().Select(int.Parse).ToList();
+                return allowedLifeStagesCSV.Split(',').Select(int.Parse).ToArray();
             }
-            return result;
+            return new int[0];
         }
     }
 }

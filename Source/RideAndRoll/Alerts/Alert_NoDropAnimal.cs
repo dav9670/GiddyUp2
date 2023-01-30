@@ -1,12 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using RimWorld;
 using Verse;
-using GiddyUp.Zones;
 
 namespace GiddyUpRideAndRoll.Alerts
 {
-    class Alert_NoDropAnimal : RimWorld.Alert
+    class Alert_NoDropAnimal : Alert
     {
         public Alert_NoDropAnimal()
         {
@@ -17,20 +15,28 @@ namespace GiddyUpRideAndRoll.Alerts
         {
             return this.ShouldAlert();
         }
+        bool cacheResult;
+        int ticker = 1;
         private bool ShouldAlert()
         {
-            foreach (Map map in Find.Maps)
+            if (--ticker == 0)
             {
-                Area_GU areaNoMount = (Area_GU)map.areaManager.GetLabeled(GiddyUp.Setup.NOMOUNT_LABEL);
-                Area_GU areaDropAnimal = (Area_GU)map.areaManager.GetLabeled(GiddyUp.Setup.DROPANIMAL_LABEL);
-                var unropablePlayerAnimals = map.mapPawns.SpawnedColonyAnimals.Any(animal => animal.Faction == Faction.OfPlayer && !AnimalPenUtility.NeedsToBeManagedByRope(animal));
-
-                if (unropablePlayerAnimals && areaNoMount != null && areaDropAnimal != null && areaNoMount.ActiveCells.Count() > 0 && areaDropAnimal.ActiveCells.Count() == 0)
+                ticker = 20;
+                foreach (Map map in Find.Maps)
                 {
-                    return true;
+                    GiddyUp.Zones.Area_GU.GetGUAreasFast(map, out Area areaNoMount, out Area areaDropAnimal);
+                    var unropablePlayerAnimals = map.mapPawns.SpawnedColonyAnimals.Any(animal => animal.factionInt.def.isPlayer && !AnimalPenUtility.NeedsToBeManagedByRope(animal));
+
+                    if (unropablePlayerAnimals && areaNoMount != null && areaDropAnimal != null && areaNoMount.ActiveCells.Count() > 0 && areaDropAnimal.ActiveCells.Count() == 0)
+                    {
+                        cacheResult = true;
+                        return true;
+                    }
                 }
+                cacheResult = false;
+                return false;
             }
-            return false;
+            return cacheResult;
         }
     }
 }

@@ -1,15 +1,9 @@
-﻿using GiddyUp.Jobs;
-using GiddyUp.Storage;
+﻿using GiddyUp.Storage;
 using HarmonyLib;
 using RimWorld;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Verse;
-using Verse.AI;
 
-namespace GiddyUp.HarmonyPlaceholder
+namespace GiddyUp.Harmony
 {
     [HarmonyPatch(typeof(Pawn_HealthTracker), "MakeDowned")]
     static class Pawn_HealthTracker_MakeDowned

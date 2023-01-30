@@ -25,13 +25,17 @@ namespace GiddyUp
 
         static Setup()
         {
-            new Harmony("GiddyUp").PatchAll();
+            new HarmonyLib.Harmony("GiddyUp").PatchAll();
 
             GiddyUpMechanoidsLoaded = AssemblyExists("GiddyUpMechanoids");
             facialStuffLoaded = AssemblyExists("FacialStuff");
 
             BuildCache();
-
+            BuildAnimalBiomeCache();
+            
+        }
+        static void BuildAnimalBiomeCache()
+        {
             var biomeDefs = DefDatabase<BiomeDef>.AllDefsListForReading;
             var length = biomeDefs.Count;
             for (int i = 0; i < length; i++)
@@ -51,7 +55,6 @@ namespace GiddyUp
                 if (def.RaceProps.Animal && !animalsWithBiome.Contains(def)) animalsWithoutBiome.Add(def);
             }
         }
-
         public static void BuildCache(bool reset = false)
         {
             //Setup collections
@@ -115,7 +118,6 @@ namespace GiddyUp
             static void Postfix()
             {
                 _extendedDataStorage = Find.World.GetComponent<ExtendedDataStorage>();
-                _extendedDataStorage.Cleanup();
                 LessonAutoActivator.TeachOpportunity(ResourceBank.ConceptDefOf.GUC_Animal_Handling, OpportunityType.GoodToKnow);
             }
         }
@@ -129,59 +131,88 @@ namespace GiddyUp
 
         public override void DoSettingsWindowContents(Rect inRect)
 		{
-            //minAutoMountDistance = Settings.GetHandle<int>("minAutoMountDistance", "GU_RR_MinAutoMountDistance_Title".Translate(), "GU_RR_MinAutoMountDistance_Description".Translate(), 16, Validators.IntRangeValidator(0, 500));
-            //noMountedHunting = Settings.GetHandle<bool>("noMountedHunting", "GU_RR_NoMountedHunting_Title".Translate(), "GU_RR_NoMountedHunting_Description".Translate(), false);
-            //minAutoMountDistanceFromAnimal = Settings.GetHandle<int>("minAutoMountDistanceFromAnimal", "GU_RR_MinAutoMountDistanceFromAnimal_Title".Translate(), "GU_RR_MinAutoMountDistanceFromAnimal_Description".Translate(), 12, Validators.IntRangeValidator(0, 500));
+            //========Setup tabs=========
+            GUI.BeginGroup(inRect);
+            var tabs = new List<TabRecord>();
+            tabs.Add(new TabRecord("GUC_Core_Tab".Translate(), delegate { selectedTab = SelectedTab.core; }, selectedTab == SelectedTab.core || selectedTab == SelectedTab.bodySize || selectedTab == SelectedTab.drawBehavior));
+            tabs.Add(new TabRecord("GUC_RnR_Tab".Translate(), delegate { selectedTab = SelectedTab.rnr; }, selectedTab == SelectedTab.rnr));
 
             Rect rect = new Rect(0f, 32f, inRect.width, inRect.height - 32f);
-			Listing_Standard options = new Listing_Standard();
-			options.Begin(inRect);
+            Widgets.DrawMenuSection(rect);
+            TabDrawer.DrawTabs(new Rect(0f, 32f, inRect.width, Text.LineHeight), tabs);
 
-            options.Label("GUC_HandlingMovementImpact_Title".Translate("0", "10", "2.5", handlingMovementImpact.ToString()), -1f, "GUC_HandlingMovementImpact_Description".Translate());
-			handlingMovementImpact = options.Slider((float)Math.Round(handlingMovementImpact, 1), 0f, 10f);
-
-            options.Label("GUC_AccuracyPenalty_Title".Translate("0", "100", "10", accuracyPenalty.ToString()), -1f, "GUC_AccuracyPenalty_Description".Translate());
-			accuracyPenalty = (int)options.Slider(accuracyPenalty, 0f, 100f);
-
-            options.Label("GUC_HandlingAccuracyImpact_Title".Translate("0", "2", "0.5", handlingAccuracyImpact.ToString()), -1f, "GUC_HandlingAccuracyImpact_Description".Translate());
-			handlingAccuracyImpact = options.Slider((float)Math.Round(handlingAccuracyImpact, 1), 0f, 2f);
+            if (selectedTab == SelectedTab.core || selectedTab == SelectedTab.bodySize || selectedTab == SelectedTab.drawBehavior) DrawCore();
+            else if (selectedTab == SelectedTab.rnr) DrawRnR();
+            GUI.EndGroup();
             
-            //Record positioning before closing out the lister...
-            Rect mountableFilterRect = inRect;
-            mountableFilterRect.y = options.curY + 90f;
-            mountableFilterRect.height = inRect.height - options.curY - 90f; //Use remaining space
+            void DrawRnR()
+            {
+                Listing_Standard options = new Listing_Standard();   
+                options.Begin(rect.ContractedBy(15f));
 
-            options.End();
+                options.Label("GU_RR_MinAutoMountDistance_Title".Translate("0", "500", "16", minAutoMountDistance.ToString()), -1f, "GU_RR_MinAutoMountDistance_Description".Translate());
+                minAutoMountDistance = (int)options.Slider(minAutoMountDistance, 0f, 500f);
 
-            //========Setup tabs=========
-            var tabs = new List<TabRecord>();
-            tabs.Add(new TabRecord("GUC_Mountable_Tab".Translate(), delegate { selectedTab = SelectedTab.bodySize; }, selectedTab == SelectedTab.bodySize));
-            tabs.Add(new TabRecord("GUC_DrawBehavior_Tab".Translate(), delegate { selectedTab = SelectedTab.drawBehavior; }, selectedTab == SelectedTab.drawBehavior));
-            
-            Widgets.DrawMenuSection(mountableFilterRect); //Used to make the background light grey with white border
-            TabDrawer.DrawTabs(new Rect(mountableFilterRect.x, mountableFilterRect.y, mountableFilterRect.width, Text.LineHeight), tabs);
+                options.Label("GU_RR_MinAutoMountDistanceFromAnimal_Title".Translate("0", "500", "12", minAutoMountDistanceFromAnimal.ToString()), -1f, "GU_RR_MinAutoMountDistanceFromAnimal_Description".Translate());
+                minAutoMountDistanceFromAnimal = (int)options.Slider(minAutoMountDistanceFromAnimal, 0f, 500f);
 
-            //========Between tabs and scroll body=========
-            options.Begin(new Rect (mountableFilterRect.x + 10, mountableFilterRect.y + 10, mountableFilterRect.width - 10f, mountableFilterRect.height - 10f));
-                if (selectedTab == SelectedTab.bodySize)
-                {
-                    options.Label("GUC_BodySizeFilter_Title".Translate("0", "5", "1.1", bodySizeFilter.ToString()), -1f, "GUC_BodySizeFilter_Description".Translate());
-                    bodySizeFilter = options.Slider((float)Math.Round(bodySizeFilter, 1), 0f, 5f);
-                }
-                else
-                {
-                    options.Label("GUC_DrawBehavior_Description".Translate());
-                }
-            options.End();
-            //========Scroll area=========
-            mountableFilterRect.y += 60f;
-            mountableFilterRect.yMax -= 60f;
-            Rect mountableFilterInnerRect = new Rect(0f, 0f, mountableFilterRect.width - 30f, (_animalSelecter.Count + 2) * 22f);
-            Widgets.BeginScrollView(mountableFilterRect, ref scrollPos, mountableFilterInnerRect , true);
-                options.Begin(mountableFilterInnerRect);
-                  options.DrawList(inRect);
+                options.CheckboxLabeled("GU_RR_NoMountedHunting_Title".Translate(), ref noMountedHunting, "GU_RR_NoMountedHunting_Description".Translate());
+                
                 options.End();
-            Widgets.EndScrollView();
+            }
+            void DrawCore()
+            {
+                if (selectedTab == SelectedTab.core) selectedTab = SelectedTab.bodySize;
+
+                Listing_Standard options = new Listing_Standard();
+                options.Begin(inRect.ContractedBy(15f));
+
+                options.Label("GUC_HandlingMovementImpact_Title".Translate("0", "10", "2.5", handlingMovementImpact.ToString()), -1f, "GUC_HandlingMovementImpact_Description".Translate());
+                handlingMovementImpact = options.Slider((float)Math.Round(handlingMovementImpact, 1), 0f, 10f);
+
+                options.Label("GUC_AccuracyPenalty_Title".Translate("0", "100", "10", accuracyPenalty.ToString()), -1f, "GUC_AccuracyPenalty_Description".Translate());
+                accuracyPenalty = (int)options.Slider(accuracyPenalty, 0f, 100f);
+
+                options.Label("GUC_HandlingAccuracyImpact_Title".Translate("0", "2", "0.5", handlingAccuracyImpact.ToString()), -1f, "GUC_HandlingAccuracyImpact_Description".Translate());
+                handlingAccuracyImpact = options.Slider((float)Math.Round(handlingAccuracyImpact, 1), 0f, 2f);
+                
+                //Record positioning before closing out the lister...
+                Rect mountableFilterRect = inRect.ContractedBy(15f);
+                mountableFilterRect.y = options.curY + 90f;
+                mountableFilterRect.height = inRect.height - options.curY - 105f; //Use remaining space
+
+                options.End();
+
+                //========Setup tabs=========
+                tabs = new List<TabRecord>();
+                tabs.Add(new TabRecord("GUC_Mountable_Tab".Translate(), delegate { selectedTab = SelectedTab.bodySize; }, selectedTab == SelectedTab.bodySize));
+                tabs.Add(new TabRecord("GUC_DrawBehavior_Tab".Translate(), delegate { selectedTab = SelectedTab.drawBehavior; }, selectedTab == SelectedTab.drawBehavior));
+                
+                Widgets.DrawMenuSection(mountableFilterRect); //Used to make the background light grey with white border
+                TabDrawer.DrawTabs(new Rect(mountableFilterRect.x, mountableFilterRect.y, mountableFilterRect.width, Text.LineHeight), tabs);
+
+                //========Between tabs and scroll body=========
+                options.Begin(new Rect (mountableFilterRect.x + 10, mountableFilterRect.y + 10, mountableFilterRect.width - 10f, mountableFilterRect.height - 10f));
+                    if (selectedTab == SelectedTab.bodySize)
+                    {
+                        options.Label("GUC_BodySizeFilter_Title".Translate("0", "5", "1.1", bodySizeFilter.ToString()), -1f, "GUC_BodySizeFilter_Description".Translate());
+                        bodySizeFilter = options.Slider((float)Math.Round(bodySizeFilter, 1), 0f, 5f);
+                    }
+                    else
+                    {
+                        options.Label("GUC_DrawBehavior_Description".Translate());
+                    }
+                options.End();
+                //========Scroll area=========
+                mountableFilterRect.y += 60f;
+                mountableFilterRect.yMax -= 60f;
+                Rect mountableFilterInnerRect = new Rect(0f, 0f, mountableFilterRect.width - 30f, (_animalSelecter.Count + 2) * 22f);
+                Widgets.BeginScrollView(mountableFilterRect, ref scrollPos, mountableFilterInnerRect , true);
+                    options.Begin(mountableFilterInnerRect);
+                    options.DrawList(inRect);
+                    options.End();
+                Widgets.EndScrollView();   
+            }
         }
 
         public override string SettingsCategory()
@@ -199,7 +230,6 @@ namespace GiddyUp
 		public override void ExposeData()
 		{
 			Scribe_Values.Look(ref handlingMovementImpact, "handlingMovementImpact", 2.5f);
-            Scribe_Values.Look(ref bodySizeFilter, "bodySizeFilter", 1.2f);
             Scribe_Values.Look(ref handlingAccuracyImpact, "handlingAccuracyImpact", 0.5f);
             Scribe_Values.Look(ref accuracyPenalty, "accuracyPenalty", 10);
             Scribe_Values.Look(ref minAutoMountDistance, "minAutoMountDistance", 16);
@@ -221,6 +251,6 @@ namespace GiddyUp
         public static string tabsHandler;
         public static Vector2 scrollPos;
         public static SelectedTab selectedTab = SelectedTab.bodySize;
-        public enum SelectedTab { bodySize, drawBehavior };
+        public enum SelectedTab { bodySize, drawBehavior, core, rnr };
 	}
 }

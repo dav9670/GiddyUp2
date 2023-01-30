@@ -19,15 +19,9 @@
 		<casualInterruptible>false</casualInterruptible>
 	</JobDef>
 	<JobDef>
-		<defName>RideToJob</defName>
-		<driverClass>GiddyUpRideAndRoll.Jobs.JobDriver_RideToJob</driverClass>
-		<reportString>Riding to job</reportString>
-		<casualInterruptible>false</casualInterruptible>
-	  </JobDef>
-	  <JobDef>
 		<defName>WaitForRider</defName>
 		<driverClass>GiddyUpRideAndRoll.Jobs.JobDriver_WaitForRider</driverClass>
 		<reportString>Waiting for rider</reportString>
 		<casualInterruptible>false</casualInterruptible>
-	  </JobDef>
+	</JobDef>
 </Defs>

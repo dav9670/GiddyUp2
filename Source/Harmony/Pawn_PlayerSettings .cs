@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Verse;
 using Verse.AI;
 
-namespace GiddyUp.HarmonyPlaceholder
+namespace GiddyUp.Harmony
 {
 
     [HarmonyPatch(typeof(Pawn_PlayerSettings), nameof(Pawn_PlayerSettings.GetGizmos))]

@@ -1,9 +1,4 @@
 ﻿using RimWorld;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Verse;
 
 namespace GiddyUpRideAndRoll
@@ -13,13 +8,11 @@ namespace GiddyUpRideAndRoll
         public static bool HungryOrTired(this Pawn animal)
         {
             bool value = false;
-            if (animal.needs != null && animal.needs.food != null && (animal.needs.food.CurCategory >= HungerCategory.UrgentlyHungry))
-            { //animal needs break
-                value = true;
-            }
-            if (animal.needs != null && animal.needs.rest != null && (animal.needs.rest.CurCategory >= RestCategory.VeryTired))
+            if (animal.needs != null)
             {
-                value = true;
+                //animal needs break?
+                value = (animal.needs.food != null && animal.needs.food.CurCategory >= HungerCategory.UrgentlyHungry) || 
+                    (animal.needs.rest != null && animal.needs.rest.CurCategory >= RestCategory.VeryTired);
             }
 
             return value;

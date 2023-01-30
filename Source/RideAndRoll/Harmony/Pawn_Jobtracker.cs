@@ -1,86 +1,56 @@
 ﻿using GiddyUp;
-using GiddyUp.Jobs;
 using GiddyUp.Storage;
 using GiddyUp.Utilities;
 using GiddyUp.Zones;
-using GiddyUpRideAndRoll.Jobs;
 using HarmonyLib;
 using RimWorld;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using UnityEngine;
 using Verse;
 using Verse.AI;
 using Verse.AI.Group;
 
 namespace GiddyUpRideAndRoll.Harmony
 {
-    [HarmonyPatch(typeof(Pawn_JobTracker), "DetermineNextJob")]
-    static class Pawn_Jobtracker_DetermineNextJob
+    //[HarmonyPatch(typeof(Pawn_JobTracker), nameof(Pawn_JobTracker.DetermineNextJob))]
+    //Merging postfix to avoid harmony overhead
+    public static class GiddyUpRideAndRoll_DetermineNextJob
     {
-        static void Postfix(Pawn_JobTracker __instance, ref ThinkResult __result, ref Pawn ___pawn)
+        public static void Postfix(Pawn_JobTracker jobTracker, ref ThinkResult thinkResult, Pawn pawn)
         {
-            if (!___pawn.IsColonistPlayerControlled || !___pawn.RaceProps.Humanlike)
-            {
-                return;
-            }
-            if (__result.Job == null)
-            {
-                return;
-            }
-            if (__result.Job.def == ResourceBank.JobDefOf.Mount)
-            {
-                return;
-            }
-            if (___pawn.Drafted)
-            {
-                return;
-            }
-            if (___pawn.InMentalState)
-            {
-                return;
-            }
-            if (___pawn.IsBorrowedByAnyFaction())
-            {
-                return;
-            }
-            ExtendedDataStorage store = GiddyUp.Setup._extendedDataStorage;
-            if(store == null)
+            if (!pawn.IsColonistPlayerControlled ||
+                pawn.def.race.intelligence != Intelligence.Humanlike ||
+                thinkResult.Job == null || 
+                thinkResult.Job.def == ResourceBank.JobDefOf.Mount || 
+                pawn.Drafted || 
+                pawn.InMentalState || 
+                pawn.IsBorrowedByAnyFaction() ||
+                GiddyUp.Setup.isMounted.Contains(pawn.thingIDNumber))
             {
                 return;
             }
             
-            if(GiddyUp.Setup.isMounted.Contains(___pawn.thingIDNumber))
-            {
-                return; 
-            }
-            ExtendedPawnData pawnData = store.GetExtendedDataFor(___pawn.thingIDNumber);
+            ExtendedPawnData pawnData = GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(pawn.thingIDNumber);
+            if (pawnData == null) return;
 
             LocalTargetInfo firstTarget = null;
             LocalTargetInfo secondTarget = null;
 
             //For some jobs the first target is B, and the second A.
-            if (__result.Job.def == JobDefOf.TendPatient || __result.Job.def == JobDefOf.Refuel || __result.Job.def == JobDefOf.FixBrokenDownBuilding)
+            if (thinkResult.Job.def == JobDefOf.TendPatient || thinkResult.Job.def == JobDefOf.Refuel || thinkResult.Job.def == JobDefOf.FixBrokenDownBuilding)
             {
-                firstTarget = DistanceUtility.GetFirstTarget(__result.Job, TargetIndex.B);
-                secondTarget = DistanceUtility.GetFirstTarget(__result.Job, TargetIndex.A);
+                firstTarget = DistanceUtility.GetFirstTarget(thinkResult.Job, TargetIndex.B);
+                secondTarget = DistanceUtility.GetFirstTarget(thinkResult.Job, TargetIndex.A);
             }
-            else if (__result.Job.def == JobDefOf.DoBill && !__result.Job.targetQueueB.NullOrEmpty()) {
-                firstTarget = __result.Job.targetQueueB[0];
-                secondTarget = DistanceUtility.GetFirstTarget(__result.Job, TargetIndex.A);
+            else if (thinkResult.Job.def == JobDefOf.DoBill && !thinkResult.Job.targetQueueB.NullOrEmpty()) {
+                firstTarget = thinkResult.Job.targetQueueB[0];
+                secondTarget = DistanceUtility.GetFirstTarget(thinkResult.Job, TargetIndex.A);
             }
             else
             {
-                firstTarget = DistanceUtility.GetFirstTarget(__result.Job, TargetIndex.A);
-                secondTarget = DistanceUtility.GetFirstTarget(__result.Job, TargetIndex.B);
+                firstTarget = DistanceUtility.GetFirstTarget(thinkResult.Job, TargetIndex.A);
+                secondTarget = DistanceUtility.GetFirstTarget(thinkResult.Job, TargetIndex.B);
             }
             if (!firstTarget.IsValid)
-            {
-                return;
-            }
-            if (store == null || pawnData == null)
             {
                 return;
             }
@@ -90,52 +60,51 @@ namespace GiddyUpRideAndRoll.Harmony
                 return;
             }
 
-            if(___pawn.mindState != null && ___pawn.mindState.duty != null && (___pawn.mindState.duty.def == DutyDefOf.TravelOrWait || ___pawn.mindState.duty.def == DutyDefOf.TravelOrLeave))
+            if(pawn.mindState != null && pawn.mindState.duty != null && (pawn.mindState.duty.def == DutyDefOf.TravelOrWait || pawn.mindState.duty.def == DutyDefOf.TravelOrLeave))
             {
                 return;
             }
 
             Pawn bestChoiceAnimal = null;
 
-            float pawnTargetDistance = DistanceUtility.QuickDistance(___pawn.Position, firstTarget.Cell);
+            float pawnTargetDistance = pawn.Position.DistanceTo(firstTarget.Cell);
             float firstToSecondTargetDistance = 0;
-            if (__result.Job.def == JobDefOf.HaulToCell || __result.Job.def == JobDefOf.HaulToContainer)
+            if (thinkResult.Job.def == JobDefOf.HaulToCell || thinkResult.Job.def == JobDefOf.HaulToContainer)
             {
                 if (secondTarget.IsValid)
                 {
-                    firstToSecondTargetDistance = DistanceUtility.QuickDistance(firstTarget.Cell, secondTarget.Cell);
+                    firstToSecondTargetDistance = firstTarget.Cell.DistanceTo(secondTarget.Cell);
                 }
             }
             float totalDistance = pawnTargetDistance + firstToSecondTargetDistance;
             if (totalDistance > GiddyUp.ModSettings_GiddyUp.minAutoMountDistance)
             {
-                bestChoiceAnimal = GetBestChoiceAnimal(___pawn, firstTarget, secondTarget, pawnTargetDistance, firstToSecondTargetDistance, store);
+                bestChoiceAnimal = GetBestChoiceAnimal(pawn, firstTarget, secondTarget, pawnTargetDistance, firstToSecondTargetDistance);
                 if (bestChoiceAnimal != null)
                 {
-                    __result = InsertMountingJobs(___pawn, bestChoiceAnimal, firstTarget, secondTarget, ref pawnData, store.GetExtendedDataFor(bestChoiceAnimal.thingIDNumber), __instance, __result);
+                    thinkResult = InsertMountingJobs(thinkResult, pawn, bestChoiceAnimal, firstTarget, jobTracker);
                 }
                 //Log.Message("timeNeededOriginal: " + timeNeededOriginal);
                 //Log.Message("adjusted ticks per move: " + TicksPerMoveUtility.adjustedTicksPerMove(pawn, closestAnimal, true));
                 //Log.Message("original ticks per move: " + pawn.TicksPerMoveDiagonal);
             }
         }
-
-
         //Gets animal that'll get the pawn to the target the quickest. Returns null if no animal is found or if walking is faster. 
-        static Pawn GetBestChoiceAnimal(Pawn pawn, LocalTargetInfo target, LocalTargetInfo secondTarget, float pawnTargetDistance, float firstToSecondTargetDistance, ExtendedDataStorage store)
+        static Pawn GetBestChoiceAnimal(Pawn pawn, LocalTargetInfo target, LocalTargetInfo secondTarget, float pawnTargetDistance, float firstToSecondTargetDistance)
         {
-
             //float minDistance = float.MaxValue;
             Pawn closestAnimal = null;
             float timeNeededMin = (pawnTargetDistance + firstToSecondTargetDistance) / pawn.GetStatValue(StatDefOf.MoveSpeed);
-            ExtendedPawnData pawnData = store.GetExtendedDataFor(pawn.thingIDNumber);
+            ExtendedPawnData pawnData = GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(pawn.thingIDNumber);
             bool firstTargetNoMount = false;
             bool secondTargetNoMount = false;
 
-            Area_GU areaNoMount = (Area_GU)pawn.Map.areaManager.GetLabeled(GiddyUp.Setup.NOMOUNT_LABEL);
-            Area_GU areaDropAnimal = (Area_GU)pawn.Map.areaManager.GetLabeled(GiddyUp.Setup.DROPANIMAL_LABEL);
+            Map map = pawn.Map;
 
-            if (areaNoMount != null && areaNoMount.ActiveCells.Contains(target.Cell))
+            GiddyUp.Zones.Area_GU.GetGUAreasFast(map, out Area areaNoMount, out Area areaDropAnimal);
+            var index = map.cellIndices.CellToIndex(target.Cell);
+
+            if (areaNoMount != null && areaNoMount.innerGrid[index])
             {
                 firstTargetNoMount = true;
                 if(pawnTargetDistance < GiddyUp.ModSettings_GiddyUp.minAutoMountDistance)
@@ -144,7 +113,6 @@ namespace GiddyUpRideAndRoll.Harmony
                 }
             }
             
-
             //If owning an animal, prefer this animal
             //This'll make sure pawns prefer the animals they were already riding previously.
             if (pawnData.owning != null && pawnData.owning.Spawned && !AnimalNotAvailable(pawnData.owning, pawn) && pawn.CanReserve(pawnData.owning))
@@ -152,7 +120,7 @@ namespace GiddyUpRideAndRoll.Harmony
                 return pawnData.owning;  
             }
             //Otherwise search the animal on the map that gets you to the goal the quickest
-            foreach (Pawn animal in from p in pawn.Map.mapPawns.AllPawnsSpawned
+            foreach (Pawn animal in from p in map.mapPawns.AllPawnsSpawned
                                     where p.RaceProps.Animal && IsMountableUtility.isMountable(p) && p.CurJob != null && p.CurJob.def != ResourceBank.JobDefOf.Mounted
                                     select p)
             {
@@ -160,7 +128,7 @@ namespace GiddyUpRideAndRoll.Harmony
                 {
                     continue;
                 }
-                float distanceFromAnimal = DistanceUtility.QuickDistance(animal.Position, target.Cell);
+                float distanceFromAnimal = animal.Position.DistanceTo(target.Cell);
                 if (!firstTargetNoMount)
                 {
                     distanceFromAnimal += firstToSecondTargetDistance;
@@ -169,7 +137,7 @@ namespace GiddyUpRideAndRoll.Harmony
                 {
                     continue;
                 }
-                ExtendedPawnData animalData = store.GetExtendedDataFor(animal.thingIDNumber);
+                ExtendedPawnData animalData = GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(animal.thingIDNumber);
                 if(animalData.ownedBy != null)
                 {
                     continue;
@@ -186,7 +154,7 @@ namespace GiddyUpRideAndRoll.Harmony
                     }
                 }
 
-                float timeNeeded = CalculateTimeNeeded(pawn, ref target, secondTarget, firstToSecondTargetDistance, animal, firstTargetNoMount, secondTargetNoMount, areaDropAnimal);
+                float timeNeeded = CalculateTimeNeeded(pawn, target.Cell, index, secondTarget.Cell, firstToSecondTargetDistance, animal, firstTargetNoMount, secondTargetNoMount, areaDropAnimal);
 
                 if (timeNeeded < timeNeededMin)
                 {
@@ -196,17 +164,13 @@ namespace GiddyUpRideAndRoll.Harmony
             }
             return closestAnimal;
         }
-
-        private static ThinkResult InsertMountingJobs(Pawn pawn, Pawn closestAnimal, LocalTargetInfo target, LocalTargetInfo secondTarget, ref ExtendedPawnData pawnData, ExtendedPawnData animalData, Pawn_JobTracker __instance, ThinkResult __result)
+        static ThinkResult InsertMountingJobs(ThinkResult __result, Pawn pawn, Pawn closestAnimal, LocalTargetInfo target, Pawn_JobTracker __instance)
         {
-            ExtendedDataStorage store = GiddyUp.Setup._extendedDataStorage;
-            //__instance.jobQueue.EnqueueFirst(dismountJob);
             if (pawn.CanReserve(target) && pawn.CanReserve(closestAnimal))
             {
-
                 Job oldJob = __result.Job;
 
-                ExtendedPawnData pawnDataTest = store.GetExtendedDataFor(pawn.thingIDNumber);
+                ExtendedPawnData pawnDataTest = GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(pawn.thingIDNumber);
                 pawnDataTest.targetJob = oldJob;
                 Job mountJob = new Job(ResourceBank.JobDefOf.Mount, closestAnimal);
                 __instance.jobQueue.EnqueueFirst(oldJob);
@@ -214,8 +178,7 @@ namespace GiddyUpRideAndRoll.Harmony
             }
             return __result;
         }
-
-        private static bool AnimalNotAvailable(Pawn animal, Pawn rider)
+        static bool AnimalNotAvailable(Pawn animal, Pawn rider)
         {
             if (animal.Dead || animal.Downed || animal.IsBurning() || animal.InMentalState || !animal.Spawned) //animal in bad state, should return before checking other things
             {
@@ -265,43 +228,38 @@ namespace GiddyUpRideAndRoll.Harmony
             return false;
 
         }
-
-
-
         //uses abstract unit of time. Real time values aren't needed, only relative values. 
-        private static float CalculateTimeNeeded(Pawn pawn, ref LocalTargetInfo target, LocalTargetInfo secondTarget, float firstToSecondTargetDistance, Pawn animal, bool firstTargetNoMount, bool secondTargetNoMount, Area_GU areaDropAnimal)
+        static float CalculateTimeNeeded(Pawn pawn, IntVec3 target, float index, IntVec3 secondTarget, float firstToSecondTargetDistance, Pawn animal, bool firstTargetNoMount, bool secondTargetNoMount, Area areaDropAnimal)
         {
-
-
-            float walkDistance = DistanceUtility.QuickDistance(pawn.Position, animal.Position);
-            float rideDistance = DistanceUtility.QuickDistance(animal.Position, target.Cell);
+            var animalPos = animal.Position;
+            float walkDistance = pawn.Position.DistanceTo(animalPos);
+            float rideDistance = animalPos.DistanceTo(target);
             if (firstTargetNoMount && areaDropAnimal != null)
             {
                 rideDistance = 0;
-                IntVec3 parkLoc = DistanceUtility.getClosestAreaLoc(animal.Position, areaDropAnimal);
-                rideDistance += DistanceUtility.QuickDistance(animal.Position, parkLoc);
-                walkDistance += DistanceUtility.QuickDistance(parkLoc, target.Cell);
+                IntVec3 parkLoc = DistanceUtility.getClosestAreaLoc(animalPos, areaDropAnimal);
+                rideDistance += animalPos.DistanceTo(parkLoc);
+                walkDistance += parkLoc.DistanceTo(target);
                 walkDistance += firstToSecondTargetDistance;
             }
             else if (secondTargetNoMount && secondTarget != null && secondTarget.IsValid && areaDropAnimal != null)
             {
-                IntVec3 parkLoc = DistanceUtility.getClosestAreaLoc(target.Cell, areaDropAnimal);
-                rideDistance += DistanceUtility.QuickDistance(target.Cell, parkLoc);
-                walkDistance += DistanceUtility.QuickDistance(parkLoc, secondTarget.Cell);
+                IntVec3 parkLoc = DistanceUtility.getClosestAreaLoc(target, areaDropAnimal);
+                rideDistance += target.DistanceTo(parkLoc);
+                walkDistance += parkLoc.DistanceTo(secondTarget);
             }
             else
             {
                 rideDistance += firstToSecondTargetDistance;
             }
-            Area_GU areaNoMount = (Area_GU)pawn.Map.areaManager.GetLabeled(GiddyUp.Setup.NOMOUNT_LABEL);
+            var areaNoMount = pawn.Map.areaManager.GetLabeled(GiddyUp.Setup.NOMOUNT_LABEL);
             if(areaNoMount != null)
             {
-                if (areaNoMount.ActiveCells.Contains(target.Cell) || (secondTarget != null && secondTarget.IsValid && areaNoMount.ActiveCells.Contains(secondTarget.Cell)))
+                if (areaNoMount.ActiveCells.Contains(target) || (secondTarget != null && secondTarget.IsValid && areaNoMount.ActiveCells.Contains(secondTarget)))
                 {
                     walkDistance += 10; //apply a fixed 10 cell walk penalty when the animal has to be penned
                 }
             }
-
 
             var animalBaseSpeed = animal.GetStatValue(StatDefOf.MoveSpeed);
             var pawnPaseSpeed = pawn.GetStatValue(StatDefOf.MoveSpeed);
@@ -312,7 +270,5 @@ namespace GiddyUpRideAndRoll.Harmony
             float timeNeeded = walkDistance/pawnPaseSpeed + rideDistance/animalMountedSpeed;
             return timeNeeded;
         }
-
     }
-
 }

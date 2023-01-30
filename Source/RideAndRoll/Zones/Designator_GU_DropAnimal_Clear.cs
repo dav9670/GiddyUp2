@@ -1,9 +1,5 @@
 ﻿using GiddyUp.Zones;
 using RimWorld;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 using Verse;
 
@@ -15,7 +11,7 @@ namespace GiddyUpRideAndRoll.Zones
         {
             defaultLabel = "GU_RR_Designator_GU_DropAnimal_Clear_Label".Translate();
             defaultDesc = "GU_RR_Designator_GU_DropAnimal_Clear_Description".Translate();
-            icon = ContentFinder<Texture2D>.Get("UI/GU_RR_Designator_GU_DropAnimal_Clear", true);
+            icon = GiddyUp.ResourceBank.iconDropAnimalClear;
             areaLabel = GiddyUp.Setup.DROPANIMAL_LABEL;
         }
         public override void DesignateSingleCell(IntVec3 c)

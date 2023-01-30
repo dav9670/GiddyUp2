@@ -13,7 +13,7 @@ namespace GiddyUpRideAndRoll.Harmony
     [HarmonyPatch(typeof(FloatMenuMakerMap), "ChoicesAtFor")]
     static class FloatMenuMakerMap_ChoicesAtFor
     {
-        static void Postfix(Vector3 clickPos, Pawn pawn, ref List<FloatMenuOption> __result)
+        static void Postfix(Vector3 clickPos, Pawn pawn, List<FloatMenuOption> __result)
         {
             foreach (LocalTargetInfo current in GenUI.TargetsAt(clickPos, TargetingParameters.ForAttackHostile(), true))
             {

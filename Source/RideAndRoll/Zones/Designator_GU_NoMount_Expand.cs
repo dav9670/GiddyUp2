@@ -16,7 +16,7 @@ namespace GiddyUpRideAndRoll.Zones
         {
             defaultLabel = "GU_RR_Designator_GU_NoMount_Expand_Label".Translate();
             defaultDesc = "GU_RR_Designator_GU_NoMount_Expand_Description".Translate();
-            icon = ContentFinder<Texture2D>.Get("UI/GU_RR_Designator_GU_NoMount_Expand", true);
+            icon = GiddyUp.ResourceBank.iconNoMountExpand;
             areaLabel = GiddyUp.Setup.NOMOUNT_LABEL;
         }
 

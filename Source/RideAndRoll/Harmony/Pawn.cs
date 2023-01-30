@@ -24,7 +24,6 @@ namespace GiddyUpRideAndRoll.Harmony
                     icon = ContentFinder<Texture2D>.Get(("UI/" + "LeaveRider"), true),
                     action = () =>
                     {
-                        //__instance.jobs.EndCurrentJob(JobCondition.InterruptForced); moving to external method to sync across multiplayer clients
                         PawnEndCurrentJob(__instance);
                     }
                 };

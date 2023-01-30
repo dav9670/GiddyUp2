@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <LanguageData>
 	
-	<GUC_GiddyUp>Giddy up!</GUC_GiddyUp>
+	<GUC_GiddyUp>Giddy-up 2</GUC_GiddyUp>
 	<GUC_StatPart_MountMoveSpeed>Mount move speed (overrides pawn move speed)</GUC_StatPart_MountMoveSpeed>
 	<GUC_StatPart_HandlingMultiplier>Multiplier for handling skill of rider</GUC_StatPart_HandlingMultiplier>
 	<GUC_StatPart_HandlingSkill>Animal handling skill of rider</GUC_StatPart_HandlingSkill>
@@ -45,4 +45,7 @@
 	<GUC_Mountable_Tab>Mountable animals</GUC_Mountable_Tab>
 	<GUC_DrawBehavior_Tab>Draw behavior</GUC_DrawBehavior_Tab>
 	<GUC_DrawBehavior_Description>Any checked animals will have their rendering behavior swapped (drawn in front of pawns).</GUC_DrawBehavior_Description>
+	
+	<GUC_Core_Tab>Core</GUC_Core_Tab>
+	<GUC_RnR_Tab>Ride and Roll</GUC_RnR_Tab>
 </LanguageData>

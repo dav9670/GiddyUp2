@@ -15,8 +15,7 @@ namespace GiddyUpRideAndRoll.Zones
         {
             defaultLabel = "GU_RR_Designator_GU_NoMount_Clear_Label".Translate();
             defaultDesc = "GU_RR_Designator_GU_NoMount_Clear_Description".Translate();
-
-            icon = ContentFinder<Texture2D>.Get("UI/GU_RR_Designator_GU_NoMount_Clear", true);
+            icon = GiddyUp.ResourceBank.iconNoMountClear;
             areaLabel = GiddyUp.Setup.NOMOUNT_LABEL;
         }
         public override void DesignateSingleCell(IntVec3 c)

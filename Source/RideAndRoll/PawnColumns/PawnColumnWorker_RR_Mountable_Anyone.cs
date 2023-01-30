@@ -1,10 +1,6 @@
 ﻿using GiddyUp.Storage;
 using GiddyUp.Utilities;
 using RimWorld;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Verse;
 //using Multiplayer.API;
 
@@ -18,8 +14,7 @@ namespace GiddyUpRideAndRoll.PawnColumns
         }
         protected override bool GetValue(Pawn pawn)
         {
-            ExtendedPawnData pawnData = GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(pawn.thingIDNumber);
-            return pawnData.mountableByAnyone;
+            return GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(pawn.thingIDNumber).mountableByAnyone;
         }
 
         //[SyncMethod]
