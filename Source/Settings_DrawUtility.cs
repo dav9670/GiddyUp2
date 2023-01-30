@@ -27,7 +27,8 @@ namespace GiddyUp
 				cellPosition += lineHeight;
 				++lineNumber;
 				
-				if (cellPosition > scrollPos.y - container.height && cellPosition < scrollPos.y + container.height) DrawListItem(options, def);
+				//if (cellPosition > scrollPos.y - container.height && cellPosition < scrollPos.y + container.height) DrawListItem(options, def);
+				DrawListItem(options, def);
 			}
 		}
 
@@ -35,16 +36,9 @@ namespace GiddyUp
 		{
 			//Determine checkbox status...
 			bool checkOn;
-			if (selectedTab == SelectedTab.bodySize)
-			{
-				checkOn = _animalSelecter.Contains(def.shortHash);
-				if (invertMountingRules.Contains(def.defName)) checkOn = !checkOn;
-			}
-			else
-			{
-				checkOn = _drawSelecter.Contains(def.shortHash);
-				if (invertDrawRules.Contains(def.defName)) checkOn = !checkOn;
-			}
+			ushort hash = def.shortHash;
+			if (selectedTab == SelectedTab.bodySize) checkOn = _animalSelecter.Contains(hash);
+			else checkOn = _drawSelecter.Contains(hash);
 			
 			//Fetch bounding rect
 			Rect rect = options.GetRect(lineHeight);
@@ -66,15 +60,13 @@ namespace GiddyUp
 			
 			if (selectedTab == SelectedTab.bodySize)
 			{
-				//Add to working list if missing
-				if (checkOn != _animalSelecter.Contains(def.shortHash) && !invertMountingRules.Contains(def.defName)) invertMountingRules.Add(def.defName);
-				//Remove from working list
-				else if (checkOn == _animalSelecter.Contains(def.shortHash) && invertMountingRules.Contains(def.defName)) invertMountingRules.Remove(def.defName);
+				if (checkOn && !_animalSelecter.Contains(hash)) _animalSelecter.Add(hash);
+				else if (!checkOn && _animalSelecter.Contains(hash)) _animalSelecter.Remove(hash);
 			}
 			else
 			{
-				if (checkOn != _drawSelecter.Contains(def.shortHash) && !invertDrawRules.Contains(def.defName)) invertDrawRules.Add(def.defName);
-				else if (checkOn == _drawSelecter.Contains(def.shortHash) && invertDrawRules.Contains(def.defName)) invertDrawRules.Remove(def.defName);
+				if (checkOn && !_drawSelecter.Contains(hash)) _drawSelecter.Add(hash);
+				else if (!checkOn && _drawSelecter.Contains(hash)) _drawSelecter.Remove(hash);
 			}
 		}
 

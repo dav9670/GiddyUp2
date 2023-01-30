@@ -67,7 +67,7 @@ namespace GiddyUpRideAndRoll.Harmony
             }
         }
 
-        private static bool TryParkAnimalPen(JobDriver __instance, ExtendedPawnData pawnData, ref IntVec3 parkLoc, Toil toil)
+        static bool TryParkAnimalPen(JobDriver __instance, ExtendedPawnData pawnData, ref IntVec3 parkLoc, Toil toil)
         {
             bool succeeded = false;
             var pen = AnimalPenUtility.GetPenAnimalShouldBeTakenTo(__instance.pawn, pawnData.mount, out string failReason, true, true, false, true);
@@ -83,7 +83,7 @@ namespace GiddyUpRideAndRoll.Harmony
             }
             else
             {
-                Log.Message(pawnData.mount.Name + " failed: " + failReason);
+                //Log.Message(pawnData.mount.Name + " failed: " + failReason);
             }
             return succeeded;
         }

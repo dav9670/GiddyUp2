@@ -69,7 +69,7 @@ namespace GiddyUp.Harmony
             GiddyUpRideAndRoll.Harmony.GiddyUpRideAndRoll_DetermineNextJob.Postfix(__instance, ref __result, pawn);
         }
     }
-    [HarmonyPatch(typeof(Pawn_JobTracker), "Notify_MasterDraftedOrUndrafted")]
+    [HarmonyPatch(typeof(Pawn_JobTracker), nameof(Pawn_JobTracker.Notify_MasterDraftedOrUndrafted))]
     static class Pawn_JobTracker_Notify_MasterDraftedOrUndrafted
     {
         static bool Prefix(Pawn_JobTracker __instance)
@@ -80,8 +80,6 @@ namespace GiddyUp.Harmony
                 return false;
             }
             return true;
-
         }
-        
     }
 }

@@ -21,69 +21,53 @@ namespace GiddyUp.Jobs
         protected override IEnumerable<Toil> MakeNewToils()
         {
             this.FailOnDespawnedNullOrForbidden(TargetIndex.A);
-            yield return waitForRider();
-            yield return delegateMovement();
+            yield return WaitForRider();
+            yield return DelegateMovement();
         }
         public override bool TryMakePreToilReservations(bool errorOnFailed)
         {
             return true;
         }
-
-
-        public bool shouldCancelJob(ExtendedPawnData riderData)
+        public bool ShouldCancelJob(ExtendedPawnData riderData)
         {
-            if (interrupted)
-            {
-                //Log.Message("cancel job, shouldEnd called");
-                return true;
-            }
+            if (interrupted) return true;
 
-            if (riderData == null || riderData.mount == null)
-            {
-                //Log.Message("riderData is null or riderData.mount is null");
-                return true;
-            }
+            if (riderData == null || riderData.mount == null) return true;
 
             Thing thing = pawn as Thing;
-            if (Rider.Downed || Rider.Dead || pawn.Downed || pawn.Dead || pawn.IsBurning() || Rider.IsBurning() || Rider.GetPosture() != PawnPosture.Standing)
+            Pawn rider = Rider;
+            if (rider.Downed || rider.Dead || pawn.Downed || pawn.Dead || pawn.IsBurning() || rider.IsBurning() || rider.GetPosture() != PawnPosture.Standing)
             {
                 //Log.Message("cancel job, rider downed or dead");
                 return true;
             }
-            if (pawn.InMentalState || (Rider.InMentalState && Rider.MentalState.def != MentalStateDefOf.PanicFlee))
+            if (pawn.InMentalState || (rider.InMentalState && rider.MentalState.def != MentalStateDefOf.PanicFlee))
             {
                 //Log.Message("cancel job, rider or mount in mental state");
                 return true;
             }
-            if (!Rider.Spawned)
+            if (!rider.Spawned)
             {
-                if (!Rider.IsColonist && !Rider.Dead)
+                if (!rider.IsColonist && !rider.Dead)
                 {
                     //Log.Message("rider not spawned, despawn");
                     pawn.ExitMap(false, CellRect.WholeMap(base.Map).GetClosestEdge(this.pawn.Position));
                     return true;
                 }
-                else if(Rider.IsColonist && Rider.GetCaravan() != null)
+                else if(rider.IsColonist && rider.GetCaravan() != null)
                 {
                     //Log.Message("rider moved to map, despawn");
                     pawn.ExitMap(true, CellRect.WholeMap(base.Map).GetClosestEdge(this.pawn.Position));
                     return true;
                 }
-                else
-                {
-                    //Log.Message("rider died, dismount");
-                    return true;
-                }
+                else return true;
             }
 
-            if (!Rider.Drafted && Rider.IsColonist) //TODO refactor this as a postfix in Giddy-up Caravan. 
+            if (!rider.Drafted && rider.IsColonist) //TODO refactor this as a postfix in Giddy-up Caravan. 
             {
-                if((Rider.mindState != null && Rider.mindState.duty != null && (Rider.mindState.duty.def == DutyDefOf.TravelOrWait || Rider.mindState.duty.def == DutyDefOf.TravelOrLeave || Rider.mindState.duty.def == DutyDefOf.PrepareCaravan_GatherAnimals || Rider.mindState.duty.def == DutyDefOf.PrepareCaravan_GatherDownedPawns)))
+                if((rider.mindState != null && rider.mindState.duty != null && (rider.mindState.duty.def == DutyDefOf.TravelOrWait || rider.mindState.duty.def == DutyDefOf.TravelOrLeave || rider.mindState.duty.def == DutyDefOf.PrepareCaravan_GatherAnimals || rider.mindState.duty.def == DutyDefOf.PrepareCaravan_GatherDownedPawns)))
                 {
-                    if(riderData.caravanMount == pawn)
-                    {
-                        return false;
-                    }
+                    if(riderData.caravanMount == pawn) return false;
                     return true;
                     //if forming caravan, stay mounted. 
                 }
@@ -93,46 +77,41 @@ namespace GiddyUp.Jobs
                     //Log.Message("riderData.owning: " + riderData.owning);
                     return false;
                 }
-                else
-                {
-                    return true;
-                }
+                else return true;
             }
-            
 
-
-            if (riderData.mount == null)
-            {
-                //Log.Message("cancel job, rider has no mount");
-                return true;
-            }
+            if (riderData.mount == null) return true;
             return false;
 
         }
-
-        private Toil waitForRider()
+        Toil WaitForRider()
         {
             Toil toil = new Toil();
 
+            Pawn rider = Rider;
             toil.defaultCompleteMode = ToilCompleteMode.Never;
             toil.tickAction = delegate
             {
-                //Log.Message("waiting for rider");
-
-                if (Rider == null || Rider.Dead || !Rider.Spawned || Rider.Downed || Rider.InMentalState)
+                if (rider == null || rider.Dead || !rider.Spawned || rider.Downed || rider.InMentalState)
                 {
                     interrupted = true;
                     ReadyForNextToil();
                     return;
                 }
 
-                riderData = Setup._extendedDataStorage.GetExtendedDataFor(Rider.thingIDNumber);
+                riderData = Setup._extendedDataStorage.GetExtendedDataFor(rider.thingIDNumber);
                 if (riderData.mount != null && riderData.mount == pawn)
                 {
                     ReadyForNextToil();
                 }
 
-                if (Rider.CurJob.def != ResourceBank.JobDefOf.Mount && Rider.CurJob.def != JobDefOf.Vomit && Rider.CurJob.def != JobDefOf.Wait_MaintainPosture && Rider.CurJob.def != JobDefOf.SocialRelax && Rider.CurJob.def != JobDefOf.Wait && riderData.mount == null)
+                var curJobDef = rider.CurJob.def;
+                if (curJobDef != ResourceBank.JobDefOf.Mount && 
+                    curJobDef != JobDefOf.Vomit && 
+                    curJobDef != JobDefOf.Wait_MaintainPosture && 
+                    curJobDef != JobDefOf.SocialRelax && 
+                    curJobDef != JobDefOf.Wait && 
+                    riderData.mount == null)
                 {
                     //Log.Message("cancel wait for rider, rider is not mounting, curJob: " + Rider.CurJob.def.defName);                  
                     interrupted = true;
@@ -142,31 +121,26 @@ namespace GiddyUp.Jobs
             };
             return toil;
         }
-
-
-
-        public Toil delegateMovement()
+        public Toil DelegateMovement()
         {
             Toil toil = new Toil();
             toil.defaultCompleteMode = ToilCompleteMode.Never;
+            Pawn rider = Rider;
 
             toil.tickAction = delegate
             {
-                if (isFinished)
-                {
-                    return;
-                }
-                riderData = Setup._extendedDataStorage.GetExtendedDataFor(Rider.thingIDNumber);
-                if (shouldCancelJob(riderData))
+                if (isFinished) return;
+                riderData = Setup._extendedDataStorage.GetExtendedDataFor(rider.thingIDNumber);
+                if (ShouldCancelJob(riderData))
                 {
                     ReadyForNextToil();
                     return;
                 }
-                pawn.Drawer.tweener = Rider.Drawer.tweener;
+                pawn.Drawer.tweener = rider.Drawer.tweener;
 
-                pawn.Position = Rider.Position;
-                tryAttackEnemy();
-                pawn.Rotation = Rider.Rotation;
+                pawn.Position = rider.Position;
+                TryAttackEnemy();
+                pawn.Rotation = rider.Rotation;
             };
 
             toil.AddFinishAction(delegate
@@ -178,8 +152,7 @@ namespace GiddyUp.Jobs
             return toil;
 
         }
-
-        private void FinishAction()
+        void FinishAction()
         {
             isFinished = true;
             riderData = Setup._extendedDataStorage.GetExtendedDataFor(Rider.thingIDNumber);
@@ -192,23 +165,23 @@ namespace GiddyUp.Jobs
 
             pawn.pather.ResetToCurrentPosition();
         }
-
-        public void tryAttackEnemy()
+        public void TryAttackEnemy()
         {
             Thing targetThing = null;
+            Pawn rider = Rider;
 
-            if (Rider == null)
+            if (rider == null)
                 return;
             
-            if (Rider.TargetCurrentlyAimingAt != null)
+            if (rider.TargetCurrentlyAimingAt != null)
             {
-                targetThing = Rider.TargetCurrentlyAimingAt.Thing;
+                targetThing = rider.TargetCurrentlyAimingAt.Thing;
             }
-            else if (Rider.CurJob?.def == JobDefOf.AttackMelee && Rider.CurJob.targetA.Thing.HostileTo(Rider))
+            else if (rider.CurJob?.def == JobDefOf.AttackMelee && rider.CurJob.targetA.Thing.HostileTo(rider))
             {
-                targetThing = Rider.CurJob.targetA.Thing;
+                targetThing = rider.CurJob.targetA.Thing;
             }
-            if (targetThing != null && targetThing.HostileTo(Rider))
+            if (targetThing != null && targetThing.HostileTo(rider))
             {
                 if (pawn.meleeVerbs == null || pawn.meleeVerbs.TryGetMeleeVerb(targetThing) == null || !pawn.meleeVerbs.TryGetMeleeVerb(targetThing).CanHitTarget(targetThing))
                 {

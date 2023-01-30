@@ -1,5 +1,6 @@
 ﻿using Verse;
 using Verse.AI;
+using UnityEngine;
 
 //Note: Currently this class contains information specific for other mods (caravanMount, caravanRider, etc), which is of course not ideal for a core framework. Ideally it should be completely generic. However I have yet to come up with an
 // way to do this properly without introducing a lot of extra work. So for now I'll just keep it as it is. 
@@ -11,7 +12,7 @@ namespace GiddyUp.Storage
         public int ID;
         public Pawn mount, caravanMount, caravanRider, ownedBy, owning;
         public bool selectedForCaravan = false;
-        public float drawOffset = -1;
+        public float drawOffset;
         
         //used in Giddy-up Ride and Roll
         public Job targetJob = null;
@@ -27,6 +28,7 @@ namespace GiddyUp.Storage
              get { return mount; }
              set
              {
+                //Log.Message("[Giddy-Up] pawn " + ID.ToString() + " is now mounted.");
                 if (value == null) Setup.isMounted.Remove(ID);
                 else Setup.isMounted.Add(ID);
                 mount = value; 

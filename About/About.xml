@@ -1,13 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ModMetaData>
-	<name>Giddy-up 2</name>
+	<name>Giddy-up 2 (unlisted beta)</name>
 	<author>Roolo, Owlchemist</author>
 	<supportedVersions>
 		<li>1.4</li>
 	</supportedVersions>
 	<modVersion>2.0</modVersion>
 	<packageId>Owlchemist.GiddyUp</packageId>
-	<description>This is a renovated, overhauled fork of Giddy-Up, developed with permission from the original author Roolo. It's an all-in-one, containing all the modules in a single mod, internally modularized within the mod options. Giddy-Up allows pawns to ride animals around on the map, or even use them as battle mounts.
+	<url>https://github.com/Owlchemist/GiddyUpCore</url>
+	<description>This is a renovated, overhauled fork of Giddy-Up, developed with permission from the original author Roolo. It's an all-in-one, containing all the modules in a single mod, internally modularized within the mod options. Giddy-up allows pawns to ride animals around on the map, or even use them as battle mounts.
 	</description>	
 	<modDependencies>
 		<li>

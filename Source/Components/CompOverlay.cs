@@ -11,12 +11,8 @@ namespace GiddyUp
         public override void PostDraw()
         {
             if (!(parent is Pawn pawn)) return;
-            if (!IsMountableUtility.IsCurrentlyMounted(pawn))
-            {
-                return;
-            }
+            if (!IsMountableUtility.IsCurrentlyMounted(pawn)) return;
             base.PostDraw();
-
 
             CompProperties_Overlay.GraphicOverlay overlay = Props.GetOverlay(parent.Rotation);
             if(overlay == null) return;
@@ -36,8 +32,8 @@ namespace GiddyUp
                 bool foundTex = false;
                 foreach (var variant in overlay.allVariants)
                 {
-                    
                     string variantName = variant.texPath.Split('/').Last().Split(overlay.stringDelimiter.ToCharArray()).First();
+
                     if (graphicName == variantName)
                     {
                         //set required properties
@@ -55,18 +51,12 @@ namespace GiddyUp
                 }
             }
 
-
             //g.data.
             drawPos.y += 0.2f;
             Vector3 offset = (pawn.gender == Gender.Female) ? overlay.offsetFemale : overlay.offsetMale;
-            if(offset == Vector3.zero)
-            {
-                offset = overlay.offsetDefault;
-            }
-            if(pawn.Rotation == Rot4.West)
-            {
-                offset.x = -offset.x;
-            }
+            
+            if(offset == Vector3.zero) offset = overlay.offsetDefault;
+            if(pawn.Rotation == Rot4.West) offset.x = -offset.x;
 
             drawPos += offset;
 

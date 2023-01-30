@@ -229,33 +229,34 @@ namespace GiddyUpRideAndRoll.Harmony
 
         }
         //uses abstract unit of time. Real time values aren't needed, only relative values. 
-        static float CalculateTimeNeeded(Pawn pawn, IntVec3 target, float index, IntVec3 secondTarget, float firstToSecondTargetDistance, Pawn animal, bool firstTargetNoMount, bool secondTargetNoMount, Area areaDropAnimal)
+        static float CalculateTimeNeeded(Pawn pawn, IntVec3 target, int index, IntVec3 secondTarget, float firstToSecondTargetDistance, Pawn animal, bool firstTargetNoMount, bool secondTargetNoMount, Area areaDropAnimal)
         {
             var animalPos = animal.Position;
             float walkDistance = pawn.Position.DistanceTo(animalPos);
-            float rideDistance = animalPos.DistanceTo(target);
-            if (firstTargetNoMount && areaDropAnimal != null)
+            float rideDistance = 0f;
+            if (areaDropAnimal != null)
             {
-                rideDistance = 0;
-                IntVec3 parkLoc = DistanceUtility.getClosestAreaLoc(animalPos, areaDropAnimal);
-                rideDistance += animalPos.DistanceTo(parkLoc);
-                walkDistance += parkLoc.DistanceTo(target);
-                walkDistance += firstToSecondTargetDistance;
-            }
-            else if (secondTargetNoMount && secondTarget != null && secondTarget.IsValid && areaDropAnimal != null)
-            {
-                IntVec3 parkLoc = DistanceUtility.getClosestAreaLoc(target, areaDropAnimal);
-                rideDistance += target.DistanceTo(parkLoc);
-                walkDistance += parkLoc.DistanceTo(secondTarget);
+                if (firstTargetNoMount)
+                {
+                    IntVec3 parkLoc = DistanceUtility.getClosestAreaLoc(animalPos, areaDropAnimal);
+                    rideDistance = animalPos.DistanceTo(parkLoc);
+                    walkDistance += parkLoc.DistanceTo(target) + firstToSecondTargetDistance;
+                }
+                else if (secondTargetNoMount && secondTarget.IsValid)
+                {
+                    IntVec3 parkLoc = DistanceUtility.getClosestAreaLoc(target, areaDropAnimal);
+                    rideDistance += animalPos.DistanceTo(target) + target.DistanceTo(parkLoc);
+                    walkDistance += parkLoc.DistanceTo(secondTarget);
+                }
             }
             else
             {
-                rideDistance += firstToSecondTargetDistance;
+                rideDistance += animalPos.DistanceTo(target) + firstToSecondTargetDistance;
             }
             var areaNoMount = pawn.Map.areaManager.GetLabeled(GiddyUp.Setup.NOMOUNT_LABEL);
             if(areaNoMount != null)
             {
-                if (areaNoMount.ActiveCells.Contains(target) || (secondTarget != null && secondTarget.IsValid && areaNoMount.ActiveCells.Contains(secondTarget)))
+                if (areaNoMount.innerGrid[index] || (secondTarget.IsValid && areaNoMount.innerGrid[index]))
                 {
                     walkDistance += 10; //apply a fixed 10 cell walk penalty when the animal has to be penned
                 }
@@ -265,7 +266,6 @@ namespace GiddyUpRideAndRoll.Harmony
             var pawnPaseSpeed = pawn.GetStatValue(StatDefOf.MoveSpeed);
 
             var animalMountedSpeed = GiddyUp.Stats.StatPart_Riding.GetRidingSpeed(animalBaseSpeed, animal, pawn);
-
 
             float timeNeeded = walkDistance/pawnPaseSpeed + rideDistance/animalMountedSpeed;
             return timeNeeded;

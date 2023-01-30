@@ -21,7 +21,7 @@ namespace GiddyUp
         internal static HashSet<PawnKindDef> animalsWithBiome = new HashSet<PawnKindDef>();
         internal static HashSet<PawnKindDef> animalsWithoutBiome = new HashSet<PawnKindDef>();
         public static ThingDef[] allAnimals;
-        const float defaultSizeThreshold = 1.2f;
+        public const float defaultSizeThreshold = 1.2f;
 
         static Setup()
         {
@@ -33,27 +33,6 @@ namespace GiddyUp
             BuildCache();
             BuildAnimalBiomeCache();
             
-        }
-        static void BuildAnimalBiomeCache()
-        {
-            var biomeDefs = DefDatabase<BiomeDef>.AllDefsListForReading;
-            var length = biomeDefs.Count;
-            for (int i = 0; i < length; i++)
-            {
-                var biomeDef = biomeDefs[i];
-                foreach(PawnKindDef animalKind in biomeDef.AllWildAnimals)
-                {
-                    animalsWithBiome.Add(animalKind);
-                }
-            }
-            
-            var pawnKindDefs = DefDatabase<PawnKindDef>.AllDefsListForReading;
-            length = biomeDefs.Count;
-            for (int i = 0; i < length; i++)
-            {
-                var def = pawnKindDefs[i];
-                if (def.RaceProps.Animal && !animalsWithBiome.Contains(def)) animalsWithoutBiome.Add(def);
-            }
         }
         public static void BuildCache(bool reset = false)
         {
@@ -100,7 +79,28 @@ namespace GiddyUp
             workingList.SortBy(x => x.label);
             allAnimals = workingList.ToArray();
         }
-    
+        static void BuildAnimalBiomeCache()
+        {
+            var biomeDefs = DefDatabase<BiomeDef>.AllDefsListForReading;
+            var length = biomeDefs.Count;
+            for (int i = 0; i < length; i++)
+            {
+                var biomeDef = biomeDefs[i];
+                foreach(PawnKindDef animalKind in biomeDef.AllWildAnimals)
+                {
+                    animalsWithBiome.Add(animalKind);
+                }
+            }
+            
+            var pawnKindDefs = DefDatabase<PawnKindDef>.AllDefsListForReading;
+            length = biomeDefs.Count;
+            for (int i = 0; i < length; i++)
+            {
+                var def = pawnKindDefs[i];
+                if (def.RaceProps.Animal && !animalsWithBiome.Contains(def)) animalsWithoutBiome.Add(def);
+            }
+        }
+            
         //Mod names sometimes change when Rimworld changes its version. Checking for the assembly name, which probably won't change is therefore a better idea than using ModLister.HasActiveModWithName
         static bool AssemblyExists(string assemblyName)
         {
@@ -206,7 +206,7 @@ namespace GiddyUp
                 //========Scroll area=========
                 mountableFilterRect.y += 60f;
                 mountableFilterRect.yMax -= 60f;
-                Rect mountableFilterInnerRect = new Rect(0f, 0f, mountableFilterRect.width - 30f, (_animalSelecter.Count + 2) * 22f);
+                Rect mountableFilterInnerRect = new Rect(0f, 0f, mountableFilterRect.width - 30f, (DrawUtility.lineNumber + 2) * 22f);
                 Widgets.BeginScrollView(mountableFilterRect, ref scrollPos, mountableFilterInnerRect , true);
                     options.Begin(mountableFilterInnerRect);
                     options.DrawList(inRect);
@@ -220,8 +220,16 @@ namespace GiddyUp
 			return "Giddy-Up";
 		}
 		public override void WriteSettings()
-		{
-			base.WriteSettings();
+		{            
+            try
+            {
+                RebuildInversions();
+            }
+            catch (System.Exception ex)
+            {
+                Log.Error("[Giddy-up] Error writing Giddy-up settings. Skipping...\n" + ex);   
+            }
+            base.WriteSettings();
 		}
         
     }
@@ -242,8 +250,37 @@ namespace GiddyUp
 			
 			base.ExposeData();
 		}
+		//ToDo? It may be possible to fold this into th Setup.BuildCache method
+        public static void RebuildInversions()
+        {
+            //Reset
+            invertMountingRules = new HashSet<string>();
+            invertDrawRules = new HashSet<string>();
 
-		public static float handlingMovementImpact = 2.5f, bodySizeFilter = 1.2f, handlingAccuracyImpact = 0.5f;
+            foreach (var animalDef in Setup.allAnimals)
+            {
+                var hash = animalDef.shortHash;
+                //Search for abnormalities, meaning the player wants to invert the rules
+                if (animalDef.race.baseBodySize <= Setup.defaultSizeThreshold)
+                {
+                    if (_animalSelecter.Contains(hash)) invertMountingRules.Add(animalDef.defName);
+                }
+                else
+                {
+                    if (!_animalSelecter.Contains(hash)) invertMountingRules.Add(animalDef.defName);
+                }
+
+                //And now draw rules
+                bool drawFront = false;
+                var comp = animalDef.GetCompProperties<CompProperties_Mount>();
+                if (comp != null) drawFront = comp.drawFront;
+                
+                if (drawFront && !_drawSelecter.Contains(hash)) invertDrawRules.Add(animalDef.defName);
+                else if (!drawFront && _drawSelecter.Contains(hash)) invertDrawRules.Add(animalDef.defName);
+            } 
+        }
+        
+        public static float handlingMovementImpact = 2.5f, bodySizeFilter = 1.2f, handlingAccuracyImpact = 0.5f;
         public static int accuracyPenalty = 10, minAutoMountDistance = 16, minAutoMountDistanceFromAnimal = 12;
         public static bool rideAndRollEnabled = true, noMountedHunting;
         public static HashSet<string> invertMountingRules, invertDrawRules; //These are only used on game start to setup the below, fast cache collections

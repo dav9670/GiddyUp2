@@ -5,15 +5,16 @@ using Verse;
 
 namespace GiddyUpRideAndRoll.Harmony
 {
-    [HarmonyPatch(typeof(CompAnimalPenMarker), "AcceptsToPen")]
+    [HarmonyPatch(typeof(CompAnimalPenMarker), nameof(CompAnimalPenMarker.AcceptsToPen))]
     class CompAnimalPenMarker_AcceptsToPen
     {
-        static void Postfix(Pawn animal, ref bool __result)
+        static bool Postfix(bool __result, Pawn animal)
         {
             if (!__result)
             {
-                __result = IsMountableUtility.IsCurrentlyMounted(animal);
+                return IsMountableUtility.IsCurrentlyMounted(animal);
             }
+            return __result;
         }
     }
 

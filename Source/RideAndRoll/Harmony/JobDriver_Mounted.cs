@@ -9,7 +9,7 @@ using Verse.AI;
 
 namespace GiddyUpRideAndRoll.Harmony
 {
-    [HarmonyPatch(typeof(JobDriver_Mounted), nameof(JobDriver_Mounted.shouldCancelJob))]
+    [HarmonyPatch(typeof(JobDriver_Mounted), nameof(JobDriver_Mounted.ShouldCancelJob))]
     class JobDriver_Mounted_ShouldCancelJob
     {
         //TODO: maybe xml this instead of hard coding. 

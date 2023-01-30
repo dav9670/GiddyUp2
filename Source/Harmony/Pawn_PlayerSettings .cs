@@ -1,5 +1,4 @@
-﻿using GiddyUp.Jobs;
-using HarmonyLib;
+﻿using HarmonyLib;
 using RimWorld;
 //using Multiplayer.API;
 using System.Collections.Generic;
@@ -20,7 +19,7 @@ namespace GiddyUp.Harmony
             {
                 if (item is Command_Toggle toggle)
                 {
-                    toggle.toggleAction = () => UpdateAnimalRelease(__instance.pawn, __instance);
+                    toggle.toggleAction = () => UpdateAnimalRelease(__instance.pawn, ref __instance.animalsReleased);
                 }
                 yield return item;
             }
@@ -50,21 +49,16 @@ namespace GiddyUp.Harmony
         */
 
         //[SyncMethod]
-        private static void UpdateAnimalRelease(Pawn pawn, Pawn_PlayerSettings __instance)
+        static void UpdateAnimalRelease(Pawn pawn, ref bool animalsReleased)
         {
-            __instance.animalsReleased = !__instance.animalsReleased;
-            if (__instance.animalsReleased)
+            animalsReleased = !animalsReleased;
+            if (animalsReleased)
             {
                 foreach (Pawn current in PawnUtility.SpawnedMasteredPawns(pawn))
                 {
-                    if (current.caller != null)
-                    {
-                        current.caller.Notify_Released();
-                    }
-                    if (current.CurJob.def != ResourceBank.JobDefOf.Mounted)
-                    {
-                        current.jobs.EndCurrentJob(JobCondition.InterruptForced, true);
-                    }
+                    if (current.caller != null) current.caller.Notify_Released();
+
+                    if (current.CurJob.def != ResourceBank.JobDefOf.Mounted) current.jobs.EndCurrentJob(JobCondition.InterruptForced, true);
                 }
             }
         }

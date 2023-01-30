@@ -24,7 +24,7 @@ namespace GiddyUp.Storage
                 var workingList = new List<int>();
                 foreach (var item in _store)
                 {
-                    if (item.Value == null || item.Value.ID == -1) workingList.Add(item.Key);
+                    if (item.Value == null || item.Value.ID == 0) workingList.Add(item.Key);
                 }
                 _store.RemoveAll(x => workingList.Contains(x.Key));
             }

@@ -57,12 +57,13 @@ namespace GiddyUp.Stats
                     val = mountSpeed;
                     return;
                 }
-                if (pawn.jobs != null && pawn.jobs.curDriver is JobDriver_Mounted jdMounted)
+                if (pawn.jobs != null)
                 {
-                    val = GetRidingSpeed(val, pawn, jdMounted.Rider);
+                    if (pawn.jobs.curDriver is JobDriver_Mounted jdMounted) val = GetRidingSpeed(val, pawn, jdMounted.Rider);
+                    /// Set speed of mount so it always matches the speed of the pawn the animal is waiting for. 
+                    else if (pawn.jobs.curDriver is GiddyUpRideAndRoll.Jobs.JobDriver_WaitForRider jobDriver) val = jobDriver.Followee.GetStatValue(StatDefOf.MoveSpeed);
                 }
             }
-            
         }
 
         public static float GetRidingSpeed(float baseValue, Pawn pawn, Pawn rider)

@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using Verse;
 using Verse.AI;
 using GiddyUp.Utilities;
 using GiddyUp.Storage;
 using RimWorld;
+using UnityEngine;
 
 namespace GiddyUp.Jobs
 {
@@ -17,7 +15,6 @@ namespace GiddyUp.Jobs
             return true;
         }
         public Pawn Mount { get { return job.targetA.Thing as Pawn; } }
-
         protected override IEnumerable<Toil> MakeNewToils()
         {
             job.canBashDoors = true;
@@ -34,7 +31,7 @@ namespace GiddyUp.Jobs
             }
             yield return TalkToAnimal(TargetIndex.A);
         }
-        private Toil letMountParticipate()
+        Toil letMountParticipate()
         {
             Toil toil = new Toil();
 
@@ -50,8 +47,7 @@ namespace GiddyUp.Jobs
             };
             return toil;
         }
-
-        private Toil TalkToAnimal(TargetIndex tameeInd)
+        Toil TalkToAnimal(TargetIndex tameeInd)
         {
             Toil toil = new Toil();
             toil.AddFailCondition(delegate { return Mount.CurJob.def != ResourceBank.JobDefOf.Mounted; });
@@ -72,7 +68,6 @@ namespace GiddyUp.Jobs
             });
             return toil;
         }
-
         public void FinishAction()
         {
             if (Mount.CurJob != null && Mount.CurJob.def == ResourceBank.JobDefOf.Mounted)

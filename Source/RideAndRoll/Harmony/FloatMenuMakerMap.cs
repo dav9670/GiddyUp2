@@ -1,16 +1,13 @@
 ﻿using GiddyUp.Utilities;
 using HarmonyLib;
 using RimWorld;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 using Verse;
 
 namespace GiddyUpRideAndRoll.Harmony
 {
-    [HarmonyPatch(typeof(FloatMenuMakerMap), "ChoicesAtFor")]
+    [HarmonyPatch(typeof(FloatMenuMakerMap), nameof(FloatMenuMakerMap.ChoicesAtFor))]
     static class FloatMenuMakerMap_ChoicesAtFor
     {
         static void Postfix(Vector3 clickPos, Pawn pawn, List<FloatMenuOption> __result)

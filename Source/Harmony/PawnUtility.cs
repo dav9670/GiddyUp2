@@ -1,15 +1,10 @@
 ﻿using HarmonyLib;
 using RimWorld;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Verse;
 
 namespace GiddyUp.Harmony
 {
-    [HarmonyPatch(typeof(PawnUtility), "TrySpawnHatchedOrBornPawn")]
+    [HarmonyPatch(typeof(PawnUtility), nameof(PawnUtility.TrySpawnHatchedOrBornPawn))]
     class PawnUtility_TrySpawnHatchedOrBornPawn
     {
         static void Postfix(Pawn pawn, Thing motherOrEgg)
