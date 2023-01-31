@@ -27,9 +27,9 @@ namespace GiddyUpRideAndRoll.Jobs
             }
         }
         int moveInterval = Rand.Range(300, 1200);
-        private JobDef initialJob;
+        JobDef initialJob;
 
-        protected override IEnumerable<Toil> MakeNewToils()
+        public override IEnumerable<Toil> MakeNewToils()
         {
             this.FailOn(() => pawn.Map == null || this.Followee == null);
             initialJob = Followee.CurJobDef;
@@ -88,8 +88,7 @@ namespace GiddyUpRideAndRoll.Jobs
             });
             yield return toil;
         }
-
-        private void UnsetOwnership()
+        void UnsetOwnership()
         {
             if (GiddyUp.Setup._extendedDataStorage is ExtendedDataStorage store)
             {
@@ -102,14 +101,12 @@ namespace GiddyUpRideAndRoll.Jobs
                 animalData.ownedBy = null;
             }
         }
-
-        private void WalkRandomNearby()
+        void WalkRandomNearby()
         {
             IntVec3 target = RCellFinder.RandomWanderDestFor(Followee, this.Followee.Position, 8, ((Pawn p, IntVec3 loc, IntVec3 root) => true), Danger.Some);
             this.pawn.pather.StartPath(target, PathEndMode.Touch);
         }
-
-        private int TimeUntilExpire(Job job)
+        int TimeUntilExpire(Job job)
         {
             return job.expiryInterval - (Find.TickManager.TicksGame - job.startTick);
         }

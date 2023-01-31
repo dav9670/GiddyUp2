@@ -8,8 +8,8 @@ namespace GiddyUp.Storage
     public class ExtendedDataStorage : WorldComponent, IExposable
     {
         Dictionary<int, ExtendedPawnData> _store = new Dictionary<int, ExtendedPawnData>();
-        private List<int> _idWorkingList;
-        private List<ExtendedPawnData> _extendedPawnDataWorkingList;
+        List<int> _idWorkingList;
+        List<ExtendedPawnData> _extendedPawnDataWorkingList;
         public ExtendedDataStorage(World world) : base(world)
         {
         }

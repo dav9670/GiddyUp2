@@ -27,7 +27,7 @@ namespace GiddyUp.Utilities
             }
             return job.GetTarget(index);
         }
-        public static IntVec3 getClosestAreaLoc(IntVec3 sourceLocation, Area areaFound)
+        public static IntVec3 GetClosestAreaLoc(IntVec3 sourceLocation, Area areaFound)
         {
             IntVec3 targetLoc = new IntVec3();
             double minDistance = double.MaxValue;
@@ -45,7 +45,7 @@ namespace GiddyUp.Utilities
 
         public static IntVec3 getClosestAreaLoc(Pawn pawn, Area_GU areaFound)
         {
-            return getClosestAreaLoc(pawn.Position, areaFound);
+            return GetClosestAreaLoc(pawn.Position, areaFound);
         }
     }
 }

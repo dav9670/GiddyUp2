@@ -12,10 +12,14 @@ namespace GiddyUp.Jobs
     {
         public override bool TryMakePreToilReservations(bool errorOnFailed)
         {
+            if (ModSettings_GiddyUp.rideAndRollEnabled && GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(this.pawn.thingIDNumber).targetJob == null)
+            {
+                return true;
+            }
             return true;
         }
         public Pawn Mount { get { return job.targetA.Thing as Pawn; } }
-        protected override IEnumerable<Toil> MakeNewToils()
+        public override IEnumerable<Toil> MakeNewToils()
         {
             job.canBashDoors = true;
             job.canBashFences = true;
@@ -70,12 +74,24 @@ namespace GiddyUp.Jobs
         }
         public void FinishAction()
         {
-            if (Mount.CurJob != null && Mount.CurJob.def == ResourceBank.JobDefOf.Mounted)
+            bool flag = Mount.CurJob != null && Mount.CurJob.def == ResourceBank.JobDefOf.Mounted;
+            if (ModSettings_GiddyUp.rideAndRollEnabled || flag)
             {
-                ExtendedPawnData pawnData = Setup._extendedDataStorage.GetExtendedDataFor(this.pawn.thingIDNumber);
-                ExtendedPawnData animalData = Setup._extendedDataStorage.GetExtendedDataFor(Mount.thingIDNumber);
-                pawnData.Mount = Mount;
-                TextureUtility.setDrawOffset(pawnData);
+                var mount = Mount;
+                var pawnData = GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(this.pawn.thingIDNumber);
+                var animalData = GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(Mount.thingIDNumber);
+
+                if (flag)
+                {
+                    pawnData.Mount = mount;
+                    TextureUtility.SetDrawOffset(pawnData);
+                }
+
+                if (ModSettings_GiddyUp.rideAndRollEnabled)
+                {
+                    pawnData.owning = mount;
+                    animalData.ownedBy = this.pawn;
+                }
             }
         }
     }

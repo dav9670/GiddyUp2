@@ -1,9 +1,4 @@
-﻿using GiddyUp.Storage;
-using RimWorld;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using RimWorld;
 using UnityEngine;
 using Verse;
 
@@ -11,7 +6,7 @@ namespace GiddyUp.Utilities
 {
     public class TicksPerMoveUtility
     {
-        public static int adjustedTicksPerMove(Pawn pawn, Pawn mount, bool diagonal)
+        public static int AdjustedTicksPerMove(Pawn pawn, Pawn mount, bool diagonal)
         {
             float adjustedLevel = 5;
             if (pawn.skills != null && pawn.skills.GetSkill(SkillDefOf.Animals) is SkillRecord skill)

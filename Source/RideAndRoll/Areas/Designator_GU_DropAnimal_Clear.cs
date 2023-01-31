@@ -1,22 +1,17 @@
-﻿using RimWorld;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
+﻿using GiddyUp.Zones;
+using RimWorld;
 using Verse;
-using GiddyUp.Zones;
+
 namespace GiddyUpRideAndRoll.Zones
 {
-    class Designator_GU_NoMount_Clear : Designator_GU
+    class Designator_GU_DropAnimal_Clear : Designator_GU
     {
-
-        public Designator_GU_NoMount_Clear() : base(DesignateMode.Remove)
+        public Designator_GU_DropAnimal_Clear() : base(DesignateMode.Remove)
         {
-            defaultLabel = "GU_RR_Designator_GU_NoMount_Clear_Label".Translate();
-            defaultDesc = "GU_RR_Designator_GU_NoMount_Clear_Description".Translate();
-            icon = GiddyUp.ResourceBank.iconNoMountClear;
-            areaLabel = GiddyUp.Setup.NOMOUNT_LABEL;
+            defaultLabel = "GU_RR_Designator_GU_DropAnimal_Clear_Label".Translate();
+            defaultDesc = "GU_RR_Designator_GU_DropAnimal_Clear_Description".Translate();
+            icon = GiddyUp.ResourceBank.iconDropAnimalClear;
+            areaLabel = GiddyUp.Setup.DROPANIMAL_LABEL;
         }
         public override void DesignateSingleCell(IntVec3 c)
         {

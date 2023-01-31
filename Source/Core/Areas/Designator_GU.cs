@@ -1,9 +1,6 @@
 ﻿using HarmonyLib;
 using RimWorld;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 using Verse;
 
@@ -21,7 +18,6 @@ namespace GiddyUp.Zones
             this.soundDragChanged = SoundDefOf.Designate_DragStandard_Changed;
             this.useMouseIcon = true;
         }
-
         public override AcceptanceReport CanDesignateCell(IntVec3 loc)
         {
             if (!loc.InBounds(base.Map))
@@ -30,7 +26,6 @@ namespace GiddyUp.Zones
             }
             return true;
         }
-
         public override void ProcessInput(Event ev)
         {
             if (!base.CheckCanInteract())
@@ -43,7 +38,6 @@ namespace GiddyUp.Zones
                 base.ProcessInput(ev);
             }
         }
-
         protected void setSelectedArea(string areaLabel)
         {
             selectedArea = Map.areaManager.GetLabeled(areaLabel);
@@ -55,7 +49,6 @@ namespace GiddyUp.Zones
                 areaManager_areas.Add(selectedArea);
             }
         }
-
         public override void SelectedUpdate()
         {
             GenUI.RenderMouseoverBracket();
@@ -64,11 +57,9 @@ namespace GiddyUp.Zones
                 selectedArea.MarkForDraw();
             }
         }
-
-        protected override void FinalizeDesignationSucceeded()
+        public override void FinalizeDesignationSucceeded()
         {
             base.FinalizeDesignationSucceeded();
         }
-
     }
 }

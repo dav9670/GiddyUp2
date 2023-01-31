@@ -11,6 +11,10 @@ namespace GiddyUpRideAndRoll.Harmony
     [HarmonyPriority(Priority.First)]
     public class Pawn_GetGizmos
     {
+        static bool Prepare()
+        {
+            return GiddyUp.ModSettings_GiddyUp.rideAndRollEnabled;
+        }
         static IEnumerable<Gizmo> Postfix(IEnumerable<Gizmo> values, Pawn __instance)
         {
             foreach (var value in values) yield return value;
@@ -30,7 +34,7 @@ namespace GiddyUpRideAndRoll.Harmony
             }
         }
         //[SyncMethod]
-        private static void PawnEndCurrentJob(Pawn pawn)
+        static void PawnEndCurrentJob(Pawn pawn)
         {
             pawn.jobs.EndCurrentJob(JobCondition.InterruptForced);
         }

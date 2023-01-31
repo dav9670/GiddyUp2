@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using GiddyUpRideAndRoll;
 using Verse;
 using Verse.AI;
 
@@ -17,8 +18,49 @@ namespace GiddyUp.Jobs
         ExtendedPawnData riderData;
         public bool interrupted = false;
         bool isFinished = false;
+        static HashSet<JobDef> allowedJobs = new HashSet<JobDef>() {
+            JobDefOf.Arrest, 
+            JobDefOf.AttackMelee, 
+            JobDefOf.AttackStatic, 
+            JobDefOf.Capture, 
+            JobDefOf.DropEquipment, 
+            JobDefOf.EscortPrisonerToBed, 
+            JobDefOf.ExtinguishSelf, 
+            JobDefOf.Flee, 
+            JobDefOf.FleeAndCower, 
+            JobDefOf.Goto, 
+            JobDefOf.GotoSafeTemperature, 
+            JobDefOf.GotoWander, 
+            JobDefOf.HaulToCell, 
+            JobDefOf.HaulToContainer, 
+            JobDefOf.Ignite, 
+            JobDefOf.Insult, 
+            JobDefOf.Kidnap, 
+            JobDefOf.Open, 
+            JobDefOf.RemoveApparel, 
+            JobDefOf.Rescue, 
+            JobDefOf.TakeWoundedPrisonerToBed, 
+            JobDefOf.TradeWithPawn, 
+            JobDefOf.UnloadInventory, 
+            JobDefOf.UseArtifact, 
+            JobDefOf.UseVerbOnThing, 
+            JobDefOf.Vomit, 
+            JobDefOf.Wait, 
+            JobDefOf.Wait_Combat, 
+            JobDefOf.Wait_MaintainPosture, 
+            JobDefOf.Wait_SafeTemperature, 
+            JobDefOf.Wait_Wander, 
+            JobDefOf.Wear, 
+            JobDefOf.TakeInventory, 
+            JobDefOf.UnloadYourInventory, 
+            JobDefOf.RopeToPen, 
+            JobDefOf.ReturnedCaravan_PenAnimals, 
+            JobDefOf.RopeRoamerToUnenclosedPen, 
+            JobDefOf.Tame
+            };
+        
 
-        protected override IEnumerable<Toil> MakeNewToils()
+        public override IEnumerable<Toil> MakeNewToils()
         {
             this.FailOnDespawnedNullOrForbidden(TargetIndex.A);
             yield return WaitForRider();
@@ -31,12 +73,11 @@ namespace GiddyUp.Jobs
         public bool ShouldCancelJob(ExtendedPawnData riderData)
         {
             if (interrupted) return true;
-
             if (riderData == null || riderData.mount == null) return true;
 
-            Thing thing = pawn as Thing;
             Pawn rider = Rider;
-            if (rider.Downed || rider.Dead || pawn.Downed || pawn.Dead || pawn.IsBurning() || rider.IsBurning() || rider.GetPosture() != PawnPosture.Standing)
+            var riderIsDead = rider.Dead;
+            if (rider.Downed || riderIsDead || pawn.Downed || pawn.Dead || pawn.IsBurning() || rider.IsBurning() || rider.GetPosture() != PawnPosture.Standing)
             {
                 //Log.Message("cancel job, rider downed or dead");
                 return true;
@@ -48,13 +89,14 @@ namespace GiddyUp.Jobs
             }
             if (!rider.Spawned)
             {
-                if (!rider.IsColonist && !rider.Dead)
+                var riderIsColonist = rider.IsColonist;
+                if (!riderIsColonist && !riderIsDead)
                 {
                     //Log.Message("rider not spawned, despawn");
                     pawn.ExitMap(false, CellRect.WholeMap(base.Map).GetClosestEdge(this.pawn.Position));
                     return true;
                 }
-                else if(rider.IsColonist && rider.GetCaravan() != null)
+                else if(riderIsColonist && rider.GetCaravan() != null)
                 {
                     //Log.Message("rider moved to map, despawn");
                     pawn.ExitMap(true, CellRect.WholeMap(base.Map).GetClosestEdge(this.pawn.Position));
@@ -62,8 +104,8 @@ namespace GiddyUp.Jobs
                 }
                 else return true;
             }
-
-            if (!rider.Drafted && rider.IsColonist) //TODO refactor this as a postfix in Giddy-up Caravan. 
+            bool riderIsDrafted = rider.Drafted;
+            if (!riderIsDrafted && rider.IsColonist) //TODO refactor this as a postfix in Giddy-up Caravan. 
             {
                 if((rider.mindState != null && rider.mindState.duty != null && (rider.mindState.duty.def == DutyDefOf.TravelOrWait || rider.mindState.duty.def == DutyDefOf.TravelOrLeave || rider.mindState.duty.def == DutyDefOf.PrepareCaravan_GatherAnimals || rider.mindState.duty.def == DutyDefOf.PrepareCaravan_GatherDownedPawns)))
                 {
@@ -79,10 +121,23 @@ namespace GiddyUp.Jobs
                 }
                 else return true;
             }
-
             if (riderData.mount == null) return true;
-            return false;
+            
+            if (ModSettings_GiddyUp.rideAndRollEnabled)
+            {
+                if (pawn.factionInt.def.isPlayer && !riderIsDrafted && rider.CurJob != null && !allowedJobs.Contains(rider.CurJob.def))
+                {
+                    var jobDef = rider.CurJob.def;
 
+                    if(jobDef == JobDefOf.EnterTransporter) return true;
+
+                    if(jobDef == JobDefOf.Hunt && GiddyUp.ModSettings_GiddyUp.noMountedHunting) return true;
+                    else if (!rider.pather.Moving) return true;
+
+                    if(!riderIsDrafted && pawn.HungryOrTired()) return true;
+                }
+            }
+            return false;
         }
         Toil WaitForRider()
         {
@@ -155,15 +210,33 @@ namespace GiddyUp.Jobs
         void FinishAction()
         {
             isFinished = true;
-            riderData = Setup._extendedDataStorage.GetExtendedDataFor(Rider.thingIDNumber);
+            var rider = Rider;
+            riderData = Setup._extendedDataStorage.GetExtendedDataFor(rider.thingIDNumber);
+
             riderData.Reset();
             pawn.Drawer.tweener = new PawnTweener(pawn);
-            if (!interrupted)
-            {
-                pawn.Position = Rider.Position;
-            }
-
+            if (!interrupted) pawn.Position = rider.Position;
             pawn.pather.ResetToCurrentPosition();
+
+            if (ModSettings_GiddyUp.rideAndRollEnabled)
+            {
+                ExtendedPawnData pawnData = GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(pawn.thingIDNumber);
+                bool isRoped = pawn.roping != null && pawn.roping.IsRoped;
+                if(!isRoped && !rider.Drafted && pawn.factionInt.def.isPlayer)
+                {
+                    if (pawnData.ownedBy != null && !interrupted && rider.GetCaravan() == null)
+                    {
+                        pawn.jobs.jobQueue.EnqueueFirst(new Job(GiddyUp.ResourceBank.JobDefOf.WaitForRider, pawnData.ownedBy)
+                        {
+                            expiryInterval = 10000,
+                            checkOverrideOnExpire = true,
+                            followRadius = 8,
+                            locomotionUrgency = LocomotionUrgency.Walk
+                        }
+                        ); //follow the rider for a while to give it an opportunity to take a ride back.  
+                    }
+                }
+            }
         }
         public void TryAttackEnemy()
         {

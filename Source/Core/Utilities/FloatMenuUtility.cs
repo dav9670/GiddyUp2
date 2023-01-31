@@ -17,10 +17,7 @@ namespace GiddyUp.Utilities
         {
             var pawnData = Setup._extendedDataStorage.GetExtendedDataFor(pawn.thingIDNumber);
 
-            if (target.Faction != null && target.Faction != Faction.OfPlayer)
-            {
-                return;
-            }
+            if (target.Faction != null && !target.factionInt.def.isPlayer) return;
 
             if (pawnData.mount == null)
             {
@@ -107,13 +104,13 @@ namespace GiddyUp.Utilities
         }
 
         //[SyncMethod]
-        private static void UpdatePawnDrafted(Pawn pawn, bool draftedStatus)
+        static void UpdatePawnDrafted(Pawn pawn, bool draftedStatus)
         {
             pawn.drafter.Drafted = draftedStatus;
         }
 
         //[SyncMethod]
-        private static void ResetPawnData(Storage.ExtendedPawnData pawnData)
+        static void ResetPawnData(Storage.ExtendedPawnData pawnData)
         {
             pawnData.Reset();
         }

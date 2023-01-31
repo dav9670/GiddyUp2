@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<Product>Giddy-up</Product>
-		<AssemblyVersion>2.0.1</AssemblyVersion>
+		<AssemblyVersion>2.0.2</AssemblyVersion>
 		<Version>1.4</Version>
 		<Copyright>$([System.DateTime]::Now.ToString('yyyy'))</Copyright>
 		<Company>Owlchemist</Company>
@@ -39,6 +39,6 @@
 		<!-- <PackageReference Include="RimWorld.MultiplayerAPI" Version="0.4.0" /> -->
 	</ItemGroup>
 	<ItemGroup>
-		<Publicize Include="Assembly-CSharp;UnityEngine.IMGUIModule;UnityEngine.CoreModule" IncludeVirtualMembers="false" />
+		<Publicize Include="Assembly-CSharp;UnityEngine.IMGUIModule;UnityEngine.CoreModule" />
 	</ItemGroup>
 </Project>

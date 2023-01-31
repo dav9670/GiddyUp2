@@ -10,7 +10,7 @@ namespace GiddyUp.Jobs
         {
             return true;
         }
-        protected override IEnumerable<Toil> MakeNewToils()
+        public override IEnumerable<Toil> MakeNewToils()
         {
             ExtendedPawnData pawnData = Setup._extendedDataStorage.GetExtendedDataFor(pawn.thingIDNumber);
             yield return Dismount();

@@ -10,6 +10,10 @@ namespace GiddyUpRideAndRoll.Harmony
     [HarmonyPatch(typeof(FloatMenuMakerMap), nameof(FloatMenuMakerMap.ChoicesAtFor))]
     static class FloatMenuMakerMap_ChoicesAtFor
     {
+        static bool Prepare()
+        {
+            return GiddyUp.ModSettings_GiddyUp.rideAndRollEnabled;
+        }
         static void Postfix(Vector3 clickPos, Pawn pawn, List<FloatMenuOption> __result)
         {
             foreach (LocalTargetInfo current in GenUI.TargetsAt(clickPos, TargetingParameters.ForAttackHostile(), true))

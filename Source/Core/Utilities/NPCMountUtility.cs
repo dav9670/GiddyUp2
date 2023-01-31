@@ -19,7 +19,7 @@ namespace GiddyUp.Utilities
             ExtendedPawnData pawnData = Setup._extendedDataStorage.GetExtendedDataFor(pawn.thingIDNumber);
             ExtendedPawnData animalData = Setup._extendedDataStorage.GetExtendedDataFor(animal.thingIDNumber);
             pawnData.Mount = animal;
-            TextureUtility.setDrawOffset(pawnData);
+            TextureUtility.SetDrawOffset(pawnData);
             animal.mindState.duty = new PawnDuty(DutyDefOf.Defend);
             if (animal.jobs == null)
             {

@@ -6,6 +6,7 @@ using UnityEngine;
 using RimWorld;
 using RimWorld.Planet;
 using HarmonyLib;
+using GiddyUpRideAndRoll.Zones;
 using static GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUp
@@ -32,7 +33,18 @@ namespace GiddyUp
 
             BuildCache();
             BuildAnimalBiomeCache();
+            if (!rideAndRollEnabled) RemoveRideAndRoll();
             
+        }
+        //Mod names sometimes change when Rimworld changes its version. Checking for the assembly name, which probably won't change is therefore a better idea than using ModLister.HasActiveModWithName
+        static bool AssemblyExists(string assemblyName)
+        {
+            var list = AppDomain.CurrentDomain.GetAssemblies();
+            for (int i = 0; i < list.Length; i++)
+            {
+                if (list[i].FullName.StartsWith(assemblyName, StringComparison.Ordinal)) return true;
+            }
+            return false;
         }
         public static void BuildCache(bool reset = false)
         {
@@ -100,16 +112,30 @@ namespace GiddyUp
                 if (def.RaceProps.Animal && !animalsWithBiome.Contains(def)) animalsWithoutBiome.Add(def);
             }
         }
-            
-        //Mod names sometimes change when Rimworld changes its version. Checking for the assembly name, which probably won't change is therefore a better idea than using ModLister.HasActiveModWithName
-        static bool AssemblyExists(string assemblyName)
+        static void RemoveRideAndRoll()
         {
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            //Remove jobs
+            DefDatabase<JobDef>.Remove(ResourceBank.JobDefOf.WaitForRider);
+
+            //Remove pawn columns (UI icons in the pawn table)
+            DefDatabase<PawnColumnDef>.AllDefsListForReading.RemoveAll(x => x.defName == "MountableByAnyone" || x.defName == "MountableByMaster");
+            
+            //Remove area designators
+            var designationCategoryDef = DefDatabase<DesignationCategoryDef>.GetNamed("Zone");
+            designationCategoryDef.specialDesignatorClasses.RemoveAll(x => 
+                x == typeof(Designator_GU_DropAnimal_Expand) ||
+                x == typeof(Designator_GU_DropAnimal_Clear) ||
+                x == typeof(Designator_GU_NoMount_Expand) ||
+                x == typeof(Designator_GU_NoMount_Clear)
+             );
+            var workingList = new List<Designator>(designationCategoryDef.resolvedDesignators);
+            foreach (var designator in workingList)
             {
-                if (assembly.FullName.StartsWith(assemblyName))
-                    return true;
+                if (designator is Designator_GU_DropAnimal_Expand ||
+                    designator is Designator_GU_DropAnimal_Clear || 
+                    designator is Designator_GU_NoMount_Expand || 
+                    designator is Designator_GU_NoMount_Clear) designationCategoryDef.resolvedDesignators.Remove(designator);
             }
-            return false;
         }
     
         [HarmonyPatch(typeof(World), nameof(World.FinalizeInit))]
@@ -119,6 +145,13 @@ namespace GiddyUp
             {
                 _extendedDataStorage = Find.World.GetComponent<ExtendedDataStorage>();
                 LessonAutoActivator.TeachOpportunity(ResourceBank.ConceptDefOf.GUC_Animal_Handling, OpportunityType.GoodToKnow);
+
+                //Remove alert
+                if (!rideAndRollEnabled)
+                {
+                    try { Find.Alerts.AllAlerts.RemoveAll(x => x.GetType() == typeof(GiddyUpRideAndRoll.Alerts.Alert_NoDropAnimal)); }
+                    catch (System.Exception) { Log.Warning("[Giddy-up] Failed to remove Alert_NoDropAnimal instance."); }
+                }
             }
         }
     }
@@ -150,13 +183,21 @@ namespace GiddyUp
                 Listing_Standard options = new Listing_Standard();   
                 options.Begin(rect.ContractedBy(15f));
 
-                options.Label("GU_RR_MinAutoMountDistance_Title".Translate("0", "500", "16", minAutoMountDistance.ToString()), -1f, "GU_RR_MinAutoMountDistance_Description".Translate());
-                minAutoMountDistance = (int)options.Slider(minAutoMountDistance, 0f, 500f);
+                options.CheckboxLabeled("GU_Enable_RnR".Translate(), ref rideAndRollEnabled, "GU_Enable_RnR_Description".Translate());
+                if (rideAndRollEnabled)
+                {
+                    options.Gap();
+                    options.GapLine(); //=============================
+                    options.Gap();
+                    
+                    options.Label("GU_RR_MinAutoMountDistance_Title".Translate("0", "500", "16", minAutoMountDistance.ToString()), -1f, "GU_RR_MinAutoMountDistance_Description".Translate());
+                    minAutoMountDistance = (int)options.Slider(minAutoMountDistance, 0f, 500f);
 
-                options.Label("GU_RR_MinAutoMountDistanceFromAnimal_Title".Translate("0", "500", "12", minAutoMountDistanceFromAnimal.ToString()), -1f, "GU_RR_MinAutoMountDistanceFromAnimal_Description".Translate());
-                minAutoMountDistanceFromAnimal = (int)options.Slider(minAutoMountDistanceFromAnimal, 0f, 500f);
+                    options.Label("GU_RR_MinAutoMountDistanceFromAnimal_Title".Translate("0", "500", "12", minAutoMountDistanceFromAnimal.ToString()), -1f, "GU_RR_MinAutoMountDistanceFromAnimal_Description".Translate());
+                    minAutoMountDistanceFromAnimal = (int)options.Slider(minAutoMountDistanceFromAnimal, 0f, 500f);
 
-                options.CheckboxLabeled("GU_RR_NoMountedHunting_Title".Translate(), ref noMountedHunting, "GU_RR_NoMountedHunting_Description".Translate());
+                    options.CheckboxLabeled("GU_RR_NoMountedHunting_Title".Translate(), ref noMountedHunting, "GU_RR_NoMountedHunting_Description".Translate());
+                }
                 
                 options.End();
             }

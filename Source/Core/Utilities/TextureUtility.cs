@@ -10,10 +10,7 @@ namespace GiddyUp.Utilities
 {
     public class TextureUtility
     {
-
-
-
-        public static void setDrawOffset(ExtendedPawnData pawnData)
+        public static void SetDrawOffset(ExtendedPawnData pawnData)
         {
             if (pawnData.mount == null)
             {
@@ -21,7 +18,7 @@ namespace GiddyUp.Utilities
             }
             PawnKindLifeStage curKindLifeStage = pawnData.mount.ageTracker.CurKindLifeStage;
             Texture2D unreadableTexture = curKindLifeStage.bodyGraphicData.Graphic.MatEast.mainTexture as Texture2D;
-            Texture2D t = TextureUtility.getReadableTexture(unreadableTexture);
+            Texture2D t = TextureUtility.GetReadableTexture(unreadableTexture);
             int backHeight = TextureUtility.getBackHeight(t);
             float backHeightRelative = (float)backHeight / (float)t.height;
 
@@ -32,10 +29,6 @@ namespace GiddyUp.Utilities
             extraOffset += (float)textureHeight * backHeightRelative / 20f;
             pawnData.drawOffset = (textureHeight * backHeightRelative - extraOffset);
         }
-
-        /*
-         * Exctracts Vector3 object from its string representation. 
-         */
         public static Vector3 ExtractVector3(String extractFrom)
         {
             if (extractFrom.NullOrEmpty())
@@ -68,7 +61,7 @@ namespace GiddyUp.Utilities
         * Might still prove usable for non-vanilla animals
         */
 
-        public static bool hasLongNeckOrHorns(Texture2D t, int backHeight, int fraction)
+        public static bool HasLongNeckOrHorns(Texture2D t, int backHeight, int fraction)
         {
             int bodyPixels = 0;
             int checkFrom = backHeight + 10;
@@ -100,8 +93,7 @@ namespace GiddyUp.Utilities
 
             return false;
         }
-
-        private static int getBackHeight(Texture2D t)
+        static int getBackHeight(Texture2D t)
         {
 
             int middle = t.width / 2;
@@ -125,8 +117,7 @@ namespace GiddyUp.Utilities
             }
             return backHeight;
         }
-
-        private static Texture2D getReadableTexture(Texture2D texture)
+        static Texture2D GetReadableTexture(Texture2D texture)
         {
             // Create a temporary RenderTexture of the same size as the texture
             RenderTexture tmp = RenderTexture.GetTemporary(

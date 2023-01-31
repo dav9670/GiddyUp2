@@ -17,7 +17,7 @@ namespace GiddyUpRideAndRoll.Alerts
         }
         bool cacheResult;
         int ticker = 1;
-        private bool ShouldAlert()
+        bool ShouldAlert()
         {
             if (--ticker == 0)
             {
@@ -27,7 +27,7 @@ namespace GiddyUpRideAndRoll.Alerts
                     GiddyUp.Zones.Area_GU.GetGUAreasFast(map, out Area areaNoMount, out Area areaDropAnimal);
                     var unropablePlayerAnimals = map.mapPawns.SpawnedColonyAnimals.Any(animal => animal.factionInt.def.isPlayer && !AnimalPenUtility.NeedsToBeManagedByRope(animal));
 
-                    if (unropablePlayerAnimals && areaNoMount != null && areaDropAnimal != null && areaNoMount.ActiveCells.Count() > 0 && areaDropAnimal.ActiveCells.Count() == 0)
+                    if (unropablePlayerAnimals && areaNoMount != null && areaDropAnimal != null && areaNoMount.innerGrid.TrueCount != 0 && areaDropAnimal.innerGrid.TrueCount != 0)
                     {
                         cacheResult = true;
                         return true;
