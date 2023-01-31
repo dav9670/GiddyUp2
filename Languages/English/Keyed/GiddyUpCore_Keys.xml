@@ -48,7 +48,11 @@
 	
 	<GUC_Core_Tab>Core</GUC_Core_Tab>
 	<GUC_RnR_Tab>Ride and Roll</GUC_RnR_Tab>
+	<GUC_BattleMounts_Tab>Battle Mounts</GUC_BattleMounts_Tab>
 	
 	<GU_Enable_RnR>Enable Ride and Roll</GU_Enable_RnR>
 	<GU_Enable_RnR_Description>Disabling this module will remove functionality related to pawns using mounts to get around the map out of convenience or for jobs. Changing this setting requires a restart.</GU_Enable_RnR_Description>
+	
+	<GU_Enable_BattleMounts>Enable Battle Mounts</GU_Enable_BattleMounts>
+	<GU_Enable_BattleMounts_Description>Disabling this module will remove functionality related to pawns (both colonists and enemies) using animals as battle mounts. Changing this setting requires a restart.</GU_Enable_BattleMounts_Description>
 </LanguageData>

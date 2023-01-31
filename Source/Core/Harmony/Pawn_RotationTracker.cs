@@ -7,7 +7,7 @@ using Verse;
 namespace GiddyUp.Harmony
 {
     [HarmonyPatch(typeof(Thing), nameof(Thing.Rotation), MethodType.Setter)]
-    public static class Pawn_RotationTracker_UpdateRotation
+    public static class Patch_Rotation
     {
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
@@ -17,7 +17,7 @@ namespace GiddyUp.Harmony
                 if (code.opcode == OpCodes.Stfld)
                 {
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
-                    yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Pawn_RotationTracker_UpdateRotation), nameof(Pawn_RotationTracker_UpdateRotation.RotChanged)));
+                    yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Patch_Rotation), nameof(Patch_Rotation.RotChanged)));
                 }
             }
         }

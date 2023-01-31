@@ -16,6 +16,8 @@ namespace GiddyUp
         public class ConceptDefOf
         {
             public static ConceptDef GUC_Animal_Handling;
+            public static ConceptDef BM_Mounting;
+            public static ConceptDef BM_Enemy_Mounting;
         }
         [DefOf]
         public static class JobDefOf

@@ -152,6 +152,13 @@ namespace GiddyUp
                     try { Find.Alerts.AllAlerts.RemoveAll(x => x.GetType() == typeof(GiddyUpRideAndRoll.Alerts.Alert_NoDropAnimal)); }
                     catch (System.Exception) { Log.Warning("[Giddy-up] Failed to remove Alert_NoDropAnimal instance."); }
                 }
+
+                //BM
+                if (battleMountsEnabled)
+                {
+                    LessonAutoActivator.TeachOpportunity(ResourceBank.ConceptDefOf.BM_Mounting, OpportunityType.GoodToKnow);
+                    LessonAutoActivator.TeachOpportunity(ResourceBank.ConceptDefOf.BM_Enemy_Mounting, OpportunityType.GoodToKnow);
+                }
             }
         }
     }
@@ -169,6 +176,7 @@ namespace GiddyUp
             var tabs = new List<TabRecord>();
             tabs.Add(new TabRecord("GUC_Core_Tab".Translate(), delegate { selectedTab = SelectedTab.core; }, selectedTab == SelectedTab.core || selectedTab == SelectedTab.bodySize || selectedTab == SelectedTab.drawBehavior));
             tabs.Add(new TabRecord("GUC_RnR_Tab".Translate(), delegate { selectedTab = SelectedTab.rnr; }, selectedTab == SelectedTab.rnr));
+            tabs.Add(new TabRecord("GUC_BattleMounts_Tab".Translate(), delegate { selectedTab = SelectedTab.battlemounts; }, selectedTab == SelectedTab.battlemounts));
 
             Rect rect = new Rect(0f, 32f, inRect.width, inRect.height - 32f);
             Widgets.DrawMenuSection(rect);
@@ -176,6 +184,7 @@ namespace GiddyUp
 
             if (selectedTab == SelectedTab.core || selectedTab == SelectedTab.bodySize || selectedTab == SelectedTab.drawBehavior) DrawCore();
             else if (selectedTab == SelectedTab.rnr) DrawRnR();
+            else if (selectedTab == SelectedTab.battlemounts) DrawBattleMounts();
             GUI.EndGroup();
             
             void DrawRnR()
@@ -197,6 +206,36 @@ namespace GiddyUp
                     minAutoMountDistanceFromAnimal = (int)options.Slider(minAutoMountDistanceFromAnimal, 0f, 500f);
 
                     options.CheckboxLabeled("GU_RR_NoMountedHunting_Title".Translate(), ref noMountedHunting, "GU_RR_NoMountedHunting_Description".Translate());
+                }
+                
+                options.End();
+            }
+            void DrawBattleMounts()
+            {
+                Listing_Standard options = new Listing_Standard();   
+                options.Begin(rect.ContractedBy(15f));
+
+                options.CheckboxLabeled("GU_Enable_BattleMounts".Translate(), ref battleMountsEnabled, "GU_Enable_BattleMounts_Description".Translate());
+                if (battleMountsEnabled)
+                {
+                    options.Gap();
+                    options.GapLine(); //=============================
+                    options.Gap();
+                    
+                    options.Label("BM_EnemyMountChance_Title".Translate("0", "100", "20", enemyMountChance.ToString()), -1f, "BM_EnemyMountChance_Description".Translate());
+                    enemyMountChance = (int)options.Slider(enemyMountChance, 0f, 100f);
+
+                    options.Label("BM_EnemyMountChanceTribal_Title".Translate("0", "100", "40", enemyMountChanceTribal.ToString()), -1f, "BM_EnemyMountChanceTribal_Description".Translate());
+                    enemyMountChanceTribal = (int)options.Slider(enemyMountChanceTribal, 0f, 100f);
+
+                    options.Label("BM_InBiomeWeight_Title".Translate("0", "100", "70", inBiomeWeight.ToString()), -1f, "BM_InBiomeWeight_Description".Translate());
+                    inBiomeWeight = (int)options.Slider(inBiomeWeight, 0f, 100f);
+
+                    options.Label("BM_OutBiomeWeight_Title".Translate("0", "100", "15", outBiomeWeight.ToString()), -1f, "BM_OutBiomeWeight_Description".Translate());
+                    outBiomeWeight = (int)options.Slider(outBiomeWeight, 0f, 100f);
+
+                    options.Label("BM_NonWildWeight_Title".Translate("0", "100", "15", nonWildWeight.ToString()), -1f, "BM_NonWildWeight_Description".Translate());
+                    nonWildWeight = (int)options.Slider(nonWildWeight, 0f, 100f);
                 }
                 
                 options.End();
@@ -283,8 +322,14 @@ namespace GiddyUp
             Scribe_Values.Look(ref accuracyPenalty, "accuracyPenalty", 10);
             Scribe_Values.Look(ref minAutoMountDistance, "minAutoMountDistance", 16);
             Scribe_Values.Look(ref minAutoMountDistanceFromAnimal, "minAutoMountDistanceFromAnimal", 12);
+            Scribe_Values.Look(ref enemyMountChance, "enemyMountChance", 20);
+            Scribe_Values.Look(ref enemyMountChanceTribal, "enemyMountChanceTribal", 40);
+            Scribe_Values.Look(ref inBiomeWeight, "inBiomeWeight", 70);
+            Scribe_Values.Look(ref outBiomeWeight, "outBiomeWeight", 15);
+            Scribe_Values.Look(ref nonWildWeight, "nonWildWeight", 15);
             Scribe_Values.Look(ref tabsHandler, "tabsHandler");
             Scribe_Values.Look(ref rideAndRollEnabled, "rideAndRollEnabled", true);
+            Scribe_Values.Look(ref battleMountsEnabled, "battleMountsEnabled", true);
             Scribe_Values.Look(ref noMountedHunting, "noMountedHunting");
             Scribe_Collections.Look(ref invertMountingRules, "invertMountingRules", LookMode.Value);
             Scribe_Collections.Look(ref invertDrawRules, "invertDrawRules", LookMode.Value);
@@ -322,13 +367,20 @@ namespace GiddyUp
         }
         
         public static float handlingMovementImpact = 2.5f, bodySizeFilter = 1.2f, handlingAccuracyImpact = 0.5f;
-        public static int accuracyPenalty = 10, minAutoMountDistance = 16, minAutoMountDistanceFromAnimal = 12;
-        public static bool rideAndRollEnabled = true, noMountedHunting;
+        public static int accuracyPenalty = 10,
+            minAutoMountDistance = 16,
+            minAutoMountDistanceFromAnimal = 12, 
+            enemyMountChance = 20, 
+            enemyMountChanceTribal = 40, 
+            inBiomeWeight = 70, 
+            outBiomeWeight = 15, 
+            nonWildWeight = 15;
+        public static bool rideAndRollEnabled = true, battleMountsEnabled = true, noMountedHunting;
         public static HashSet<string> invertMountingRules, invertDrawRules; //These are only used on game start to setup the below, fast cache collections
         public static HashSet<ushort> _animalSelecter, _drawSelecter;
         public static string tabsHandler;
         public static Vector2 scrollPos;
         public static SelectedTab selectedTab = SelectedTab.bodySize;
-        public enum SelectedTab { bodySize, drawBehavior, core, rnr };
+        public enum SelectedTab { bodySize, drawBehavior, core, rnr, battlemounts };
 	}
 }
