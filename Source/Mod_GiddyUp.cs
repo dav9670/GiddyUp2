@@ -177,6 +177,7 @@ namespace GiddyUp
             tabs.Add(new TabRecord("GUC_Core_Tab".Translate(), delegate { selectedTab = SelectedTab.core; }, selectedTab == SelectedTab.core || selectedTab == SelectedTab.bodySize || selectedTab == SelectedTab.drawBehavior));
             tabs.Add(new TabRecord("GUC_RnR_Tab".Translate(), delegate { selectedTab = SelectedTab.rnr; }, selectedTab == SelectedTab.rnr));
             tabs.Add(new TabRecord("GUC_BattleMounts_Tab".Translate(), delegate { selectedTab = SelectedTab.battlemounts; }, selectedTab == SelectedTab.battlemounts));
+            tabs.Add(new TabRecord("GUC_Caravans_Tab".Translate(), delegate { selectedTab = SelectedTab.caravans; }, selectedTab == SelectedTab.caravans));
 
             Rect rect = new Rect(0f, 32f, inRect.width, inRect.height - 32f);
             Widgets.DrawMenuSection(rect);
@@ -185,6 +186,7 @@ namespace GiddyUp
             if (selectedTab == SelectedTab.core || selectedTab == SelectedTab.bodySize || selectedTab == SelectedTab.drawBehavior) DrawCore();
             else if (selectedTab == SelectedTab.rnr) DrawRnR();
             else if (selectedTab == SelectedTab.battlemounts) DrawBattleMounts();
+            else DrawCaravan();
             GUI.EndGroup();
             
             void DrawRnR()
@@ -236,6 +238,33 @@ namespace GiddyUp
 
                     options.Label("BM_NonWildWeight_Title".Translate("0", "100", "15", nonWildWeight.ToString()), -1f, "BM_NonWildWeight_Description".Translate());
                     nonWildWeight = (int)options.Slider(nonWildWeight, 0f, 100f);
+                }
+                
+                options.End();
+            }
+            void DrawCaravan()
+            {
+                Listing_Standard options = new Listing_Standard();   
+                options.Begin(rect.ContractedBy(15f));
+
+                options.CheckboxLabeled("GU_Enable_Caravans".Translate(), ref caravansEnabled, "GU_Enable_Caravans_Description".Translate());
+                if (battleMountsEnabled)
+                {
+                    options.Gap();
+                    options.GapLine(); //=============================
+                    options.Gap();
+                    
+                    //options.Label("GU_Car_CompleteCaravanBonus_Title".Translate("0", "200", "60", completeCaravanBonus.ToString()), -1f, "GU_Car_CompleteCaravanBonus_Description".Translate());
+                    //completeCaravanBonus = (int)options.Slider(completeCaravanBonus, 0f, 200f);
+
+                    //options.Label("GU_Car_incompleteCaravanBonusCap_Title".Translate("0", "200", "25", incompleteCaravanBonusCap.ToString()), -1f, "GU_Car_incompleteCaravanBonusCap_Description".Translate());
+                    //incompleteCaravanBonusCap = (int)options.Slider(incompleteCaravanBonusCap, 0f, 200f);
+
+                    options.Label("GU_Car_visitorMountChance_Title".Translate("0", "100", "20", visitorMountChance.ToString()), -1f, "GU_Car_visitorMountChance_Description".Translate());
+                    visitorMountChance = (int)options.Slider(visitorMountChance, 0f, 100f);
+
+                    options.Label("GU_Car_visitorMountChanceTribal_Title".Translate("0", "100", "40", visitorMountChanceTribal.ToString()), -1f, "GU_Car_visitorMountChanceTribal_Description".Translate());
+                    visitorMountChanceTribal = (int)options.Slider(visitorMountChanceTribal, 0f, 100f);
                 }
                 
                 options.End();
@@ -327,9 +356,14 @@ namespace GiddyUp
             Scribe_Values.Look(ref inBiomeWeight, "inBiomeWeight", 70);
             Scribe_Values.Look(ref outBiomeWeight, "outBiomeWeight", 15);
             Scribe_Values.Look(ref nonWildWeight, "nonWildWeight", 15);
+            //Scribe_Values.Look(ref completeCaravanBonus, "completeCaravanBonus", 60);
+            //Scribe_Values.Look(ref incompleteCaravanBonusCap, "incompleteCaravanBonusCap", 25);
+            Scribe_Values.Look(ref visitorMountChance, "visitorMountChance", 20);
+            Scribe_Values.Look(ref visitorMountChanceTribal, "visitorMountChanceTribal", 40);
             Scribe_Values.Look(ref tabsHandler, "tabsHandler");
             Scribe_Values.Look(ref rideAndRollEnabled, "rideAndRollEnabled", true);
             Scribe_Values.Look(ref battleMountsEnabled, "battleMountsEnabled", true);
+            Scribe_Values.Look(ref caravansEnabled, "caravansEnabled", true);
             Scribe_Values.Look(ref noMountedHunting, "noMountedHunting");
             Scribe_Collections.Look(ref invertMountingRules, "invertMountingRules", LookMode.Value);
             Scribe_Collections.Look(ref invertDrawRules, "invertDrawRules", LookMode.Value);
@@ -374,13 +408,17 @@ namespace GiddyUp
             enemyMountChanceTribal = 40, 
             inBiomeWeight = 70, 
             outBiomeWeight = 15, 
-            nonWildWeight = 15;
-        public static bool rideAndRollEnabled = true, battleMountsEnabled = true, noMountedHunting;
+            nonWildWeight = 15,
+            //completeCaravanBonus = 60, 
+            //incompleteCaravanBonusCap = 25, 
+            visitorMountChance = 20, 
+            visitorMountChanceTribal = 40;
+        public static bool rideAndRollEnabled = true, battleMountsEnabled = true, caravansEnabled = true, noMountedHunting;
         public static HashSet<string> invertMountingRules, invertDrawRules; //These are only used on game start to setup the below, fast cache collections
         public static HashSet<ushort> _animalSelecter, _drawSelecter;
         public static string tabsHandler;
         public static Vector2 scrollPos;
         public static SelectedTab selectedTab = SelectedTab.bodySize;
-        public enum SelectedTab { bodySize, drawBehavior, core, rnr, battlemounts };
+        public enum SelectedTab { bodySize, drawBehavior, core, rnr, battlemounts, caravans };
 	}
 }

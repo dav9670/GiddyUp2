@@ -30,7 +30,7 @@ namespace GiddyUp.ModExtensions
             
             MP.RegisterAll();
             
-            Type type = AccessTools.TypeByName("GiddyUpCore.Storage.ExtendedDataStorage");
+            
 
             giddyUpMultiplayerHarmony.Patch(AccessTools.Constructor(type),
                 postfix: new HarmonyMethod(typeof(MultiplayerPatch), nameof(ExtendedDataStoragePostfix)));
@@ -41,13 +41,13 @@ namespace GiddyUp.ModExtensions
             giddyUpMultiplayerHarmony.Patch(AccessTools.Method(type, "DeleteExtendedDataFor", new Type[] { typeof(Pawn) }),
                 postfix: new HarmonyMethod(typeof(MultiplayerPatch), nameof(DeleteExtendedDataForPostfix)));
 
-            type = AccessTools.TypeByName("GiddyUpCore.Storage.ExtendedPawnData");
+            
             
             MP.RegisterSyncWorker<object>(ExtendedPawnData, type);
             
             var rngFixMethods = new[]
             {
-                "GiddyUpCore.Utilities.NPCMountUtility:determinePawnKind",
+                "GiddyUp.Utilities.NPCMountUtility:determinePawnKind",
             };
             PatchPushPopRand(rngFixMethods); // Needed for other faction pawn arrival
             MP.RegisterSyncMethod(typeof(Jobs.JobDriver_Mounted), nameof(Jobs.JobDriver_Mounted.tryAttackEnemy)); // Needed to sync aiming pie

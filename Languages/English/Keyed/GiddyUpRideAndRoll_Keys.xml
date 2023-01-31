@@ -6,7 +6,7 @@
 	<GU_RR_MinAutoMountDistance_Title>Min. distance for auto mounting (Min: {0} Max: {1} Default: {2} Current: {3})</GU_RR_MinAutoMountDistance_Title>
 	<GU_RR_MinAutoMountDistance_Description>Minimum distance from which a pawn will consider using a mount to get to its destination. If the job can be done mounted, the distance to the second target of the job is also taken into account</GU_RR_MinAutoMountDistance_Description>
 	
-	<GU_RR_MinAutoMountDistanceFromAnimal_Title>Min. distance for auto mounting from animal (Min: {0} Max: {1} Default: {2} Current: {3}%)</GU_RR_MinAutoMountDistanceFromAnimal_Title>
+	<GU_RR_MinAutoMountDistanceFromAnimal_Title>Min. distance for auto mounting from animal (Min: {0} Max: {1} Default: {2} Current: {3})</GU_RR_MinAutoMountDistanceFromAnimal_Title>
 	<GU_RR_MinAutoMountDistanceFromAnimal_Description>Minimum distance from an animal a pawn is considering, to the job. If the job can be done mounted, the distance to the second target of the job is also taken into account</GU_RR_MinAutoMountDistanceFromAnimal_Description>
 	
 	<GU_RR_Designator_GU_DropAnimal_Expand_Label>Place mount drop spot</GU_RR_Designator_GU_DropAnimal_Expand_Label> <!--Should be short-->
