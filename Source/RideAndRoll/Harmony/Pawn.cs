@@ -19,7 +19,7 @@ namespace GiddyUpRideAndRoll.Harmony
         {
             foreach (var value in values) yield return value;
             
-            if (__instance.jobs != null && __instance.jobs.curJob.def == GiddyUp.ResourceBank.JobDefOf.WaitForRider && __instance.def.race.Animal)
+            if (__instance.jobs?.curJob?.def == GiddyUp.ResourceBank.JobDefOf.WaitForRider && __instance.def.race.Animal)
             {
                 yield return new Command_Action
                 {

@@ -7,6 +7,7 @@ using RimWorld;
 using RimWorld.Planet;
 using HarmonyLib;
 using GiddyUpRideAndRoll.Zones;
+using GiddyUpCaravan.Zones;
 using static GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUp
@@ -16,6 +17,7 @@ namespace GiddyUp
     {
         public const string DROPANIMAL_LABEL = "Gu_Area_DropMount";
         public const string NOMOUNT_LABEL = "Gu_Area_NoMount";
+        public const string DropAnimal_NPC_LABEL = "GU_Car_Area_GU_DropAnimal_NPC";
         public static ExtendedDataStorage _extendedDataStorage;
         public static HashSet<int> isMounted = new HashSet<int>();
         public static bool GiddyUpMechanoidsLoaded, facialStuffLoaded;
@@ -34,6 +36,7 @@ namespace GiddyUp
             BuildCache();
             BuildAnimalBiomeCache();
             if (!rideAndRollEnabled) RemoveRideAndRoll();
+            if (!caravansEnabled) RemoveCaravans();
             
         }
         //Mod names sometimes change when Rimworld changes its version. Checking for the assembly name, which probably won't change is therefore a better idea than using ModLister.HasActiveModWithName
@@ -135,6 +138,21 @@ namespace GiddyUp
                     designator is Designator_GU_DropAnimal_Clear || 
                     designator is Designator_GU_NoMount_Expand || 
                     designator is Designator_GU_NoMount_Clear) designationCategoryDef.resolvedDesignators.Remove(designator);
+            }
+        }
+        static void RemoveCaravans()
+        {            
+            //Remove area designators
+            var designationCategoryDef = DefDatabase<DesignationCategoryDef>.GetNamed("Zone");
+            designationCategoryDef.specialDesignatorClasses.RemoveAll(x => 
+                x == typeof(Designator_GU_DropAnimal_NPC_Clear) ||
+                x == typeof(Designator_GU_DropAnimal_NPC_Expand)
+             );
+            var workingList = new List<Designator>(designationCategoryDef.resolvedDesignators);
+            foreach (var designator in workingList)
+            {
+                if (designator is Designator_GU_DropAnimal_NPC_Clear ||
+                    designator is Designator_GU_DropAnimal_NPC_Expand) designationCategoryDef.resolvedDesignators.Remove(designator);
             }
         }
     
@@ -248,7 +266,7 @@ namespace GiddyUp
                 options.Begin(rect.ContractedBy(15f));
 
                 options.CheckboxLabeled("GU_Enable_Caravans".Translate(), ref caravansEnabled, "GU_Enable_Caravans_Description".Translate());
-                if (battleMountsEnabled)
+                if (caravansEnabled)
                 {
                     options.Gap();
                     options.GapLine(); //=============================

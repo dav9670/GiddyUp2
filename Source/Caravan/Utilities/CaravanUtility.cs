@@ -5,13 +5,11 @@ namespace GiddyUpCaravan.Utilities
 {
     static class CaravanUtility
     {
-        public static bool RidingCaravanMount(this Pawn pawn)
+        public static bool RidingCaravanMount(this Pawn pawn, ExtendedPawnData pawndata)
         {
-            ExtendedPawnData pawndata = GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(pawn.thingIDNumber);
-            if (pawn.IsColonist && pawndata != null && pawndata.caravanMount != null)
+            if (pawn.IsColonist && pawndata.caravanMount != null)
             {
                 return true;
-
             }
             return false;
         }

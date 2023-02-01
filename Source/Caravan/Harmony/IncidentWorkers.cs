@@ -10,6 +10,10 @@ namespace GiddyUpCaravan.Harmony
 {
     static class Patch_IncidentWorkers
     {
+        static bool Prepare()
+        {
+            return GiddyUp.ModSettings_GiddyUp.caravansEnabled;
+        }
         static IEnumerable<MethodBase> TargetMethods()
         {
             yield return AccessTools.Method(typeof(IncidentWorker_TraderCaravanArrival), nameof(IncidentWorker_TraderCaravanArrival.TryExecuteWorker));
@@ -36,6 +40,10 @@ namespace GiddyUpCaravan.Harmony
     [HarmonyPatch(typeof(IncidentWorker_VisitorGroup), nameof(IncidentWorker_VisitorGroup.TryConvertOnePawnToSmallTrader))]
     static class Patch_TryConvertOnePawnToSmallTrader
     {
+        static bool Prepare()
+        {
+            return GiddyUp.ModSettings_GiddyUp.caravansEnabled;
+        }
         static void Prefix(List<Pawn> pawns)
         {
             pawns.RemoveAll(x => x.RaceProps.Animal);

@@ -1,11 +1,7 @@
 ﻿using GiddyUp.Storage;
 using RimWorld;
 using RimWorld.Planet;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
 using GiddyUpRideAndRoll;
 using Verse;
 using Verse.AI;
@@ -160,7 +156,7 @@ namespace GiddyUp.Jobs
                     ReadyForNextToil();
                 }
 
-                var curJobDef = rider.CurJob.def;
+                var curJobDef = rider.CurJob?.def;
                 if (curJobDef != ResourceBank.JobDefOf.Mount && 
                     curJobDef != JobDefOf.Vomit && 
                     curJobDef != JobDefOf.Wait_MaintainPosture && 

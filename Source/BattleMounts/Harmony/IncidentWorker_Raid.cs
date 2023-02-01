@@ -19,15 +19,8 @@ namespace Battlemounts.Harmony
         }
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
-            foreach (var code in instructions)
-            {
-                if (code.operand as MethodInfo == AccessTools.Method(typeof(PawnsArrivalModeWorker), nameof(PawnsArrivalModeWorker.Arrive)))
-                {
-                    yield return new CodeInstruction(OpCodes.Call, typeof(Patch_TryGenerateRaidInfo).GetMethod(nameof(Patch_TryGenerateRaidInfo.MountAnimals)));
-                    continue;
-                }
-                yield return code;
-            }
+            return instructions.MethodReplacer(AccessTools.Method(typeof(PawnsArrivalModeWorker), nameof(PawnsArrivalModeWorker.Arrive)),
+				AccessTools.Method(typeof(Patch_TryGenerateRaidInfo), nameof(Patch_TryGenerateRaidInfo.MountAnimals)));
         }
 
         public static void MountAnimals(PawnsArrivalModeWorker instance, List<Pawn> pawns, IncidentParms parms)

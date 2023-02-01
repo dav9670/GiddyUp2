@@ -11,6 +11,10 @@ namespace GiddyUpCaravan.Harmony
     [HarmonyPatch(typeof(LordToil_PrepareCaravan_Leave), nameof(LordToil_PrepareCaravan_Leave.UpdateAllDuties))]
     static class Lordtoil_PrepareCaravan_Leave_UpdateAllDuties
     {
+        static bool Prepare()
+        {
+            return GiddyUp.ModSettings_GiddyUp.caravansEnabled;
+        }
         static void Prefix(LordToil_PrepareCaravan_Leave __instance)
         {
             AddMissingPawnsToLord(__instance);

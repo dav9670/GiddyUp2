@@ -14,15 +14,21 @@ namespace GiddyUpCaravan.Harmony
         new Type[] { typeof(Caravan), typeof(Map), typeof(Func<Pawn, IntVec3>), typeof(CaravanDropInventoryMode), typeof(bool) })]
     class CaravanEnterMapUtility_Enter
     {
+        static bool Prepare()
+        {
+            return GiddyUp.ModSettings_GiddyUp.caravansEnabled;
+        }
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
+            bool done = false;
             foreach (CodeInstruction instruction in instructions)
             {
                 yield return instruction;
-                if (instruction.OperandIs(AccessTools.Method(typeof(Caravan), nameof(Caravan.RemoveAllPawns) ) ) )
+                if (!done && instruction.OperandIs(AccessTools.Method(typeof(Caravan), nameof(Caravan.RemoveAllPawns) ) ) )
                 {
                     yield return new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(CaravanEnterMapUtility), nameof(CaravanEnterMapUtility.tmpPawns)));
                     yield return new CodeInstruction(OpCodes.Call, typeof(CaravanEnterMapUtility_Enter).GetMethod(nameof(CaravanEnterMapUtility_Enter.MountCaravanMounts)));
+                    done = true;
                 }
             }
 
@@ -30,7 +36,6 @@ namespace GiddyUpCaravan.Harmony
         //[SyncMethod]
         public static void MountCaravanMounts(List<Pawn> pawns)
         {
-
             foreach (Pawn pawn in pawns)
             {
                 if (pawn.IsColonist && pawn.Spawned)

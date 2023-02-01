@@ -3,7 +3,6 @@ using GiddyUp.Utilities;
 using HarmonyLib;
 using RimWorld;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using UnityEngine;
@@ -15,6 +14,10 @@ namespace GiddyUpCaravan.Harmony
     [HarmonyPatch(typeof(TransferableOneWayWidget), nameof(TransferableOneWayWidget.DoRow))]
     static class TransferableOneWayWidget_DoRow
     {
+        static bool Prepare()
+        {
+            return GiddyUp.ModSettings_GiddyUp.caravansEnabled;
+        }
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             bool flag = false;
@@ -223,6 +226,10 @@ namespace GiddyUpCaravan.Harmony
     [HarmonyPatch(typeof(TransferableOneWayWidget), nameof(TransferableOneWayWidget.FillMainRect))]
     static class TransferableOneWayWidget_FillMainRect
     {
+        static bool Prepare()
+        {
+            return GiddyUp.ModSettings_GiddyUp.caravansEnabled;
+        }
         static void Postfix(TransferableOneWayWidget __instance, ref bool anythingChanged)
         {
             if (__instance.sections.Count < 4) return;

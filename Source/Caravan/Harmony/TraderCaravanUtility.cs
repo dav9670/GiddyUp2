@@ -1,10 +1,6 @@
 ﻿using GiddyUp.Storage;
 using HarmonyLib;
 using RimWorld;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Verse;
 
 namespace GiddyUpCaravan.Harmony
@@ -13,6 +9,10 @@ namespace GiddyUpCaravan.Harmony
     [HarmonyPatch(typeof(TraderCaravanUtility), nameof(TraderCaravanUtility.GetTraderCaravanRole))]
     static class Patch_GetTraderCaravanRole
     {
+        static bool Prepare()
+        {
+            return GiddyUp.ModSettings_GiddyUp.caravansEnabled;
+        }
         static void Postfix(Pawn p, ref TraderCaravanRole __result)
         {
             if (p.RaceProps.Animal)

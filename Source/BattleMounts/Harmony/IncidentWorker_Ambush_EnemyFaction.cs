@@ -16,14 +16,16 @@ namespace Battlemounts.Harmony
         }
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
+            bool done = false;
             foreach (var code in instructions)
             {
                 yield return code;
-                if (code.operand as MethodInfo == AccessTools.Method(typeof(IncidentWorker_Ambush), nameof(IncidentWorker_Ambush.PostProcessGeneratedPawnsAfterSpawning)))
+                if (!done && code.operand as MethodInfo == AccessTools.Method(typeof(IncidentWorker_Ambush), nameof(IncidentWorker_Ambush.PostProcessGeneratedPawnsAfterSpawning)))
                 {
                     yield return new CodeInstruction(OpCodes.Ldarga_S, 2); //load generated pawns as parameter
                     yield return new CodeInstruction(OpCodes.Ldarg_1); //load incidentparms as parameter
                     yield return new CodeInstruction(OpCodes.Call, typeof(EnemyMountUtility).GetMethod(nameof(EnemyMountUtility.MountAnimals)));
+                    done = true;
                 }
             }
         }
