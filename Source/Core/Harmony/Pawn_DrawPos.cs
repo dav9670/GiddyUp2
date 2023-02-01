@@ -12,8 +12,14 @@ namespace GiddyUp.Harmony
         {
             if (!Setup.isMounted.Contains(___pawn.thingIDNumber)) return;
             ExtendedPawnData pawnData = Setup._extendedDataStorage.GetExtendedDataFor(___pawn.thingIDNumber);
-            var offset = pawnData.mount.Drawer.DrawPos;
 
+            //Failsafe. Should never happen but too dangerous to chance
+            if (pawnData.mount == null)
+            {
+                pawnData.Reset();
+                return;
+            }
+            var offset = pawnData.mount.Drawer.DrawPos;
             if (pawnData.drawOffset != -1)
             {
                 offset.z = offset.z + pawnData.drawOffset;
@@ -21,7 +27,7 @@ namespace GiddyUp.Harmony
             var modX = pawnData.mount.def.GetModExtension<DrawingOffsetPatch>();
             if (modX != null) offset += AddCustomOffsets(___pawn.rotationInt, modX);
             offset.y += 0.1f;
-            
+
             __result = offset;
         }
 

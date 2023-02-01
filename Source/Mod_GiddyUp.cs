@@ -222,8 +222,8 @@ namespace GiddyUp
                     options.Label("GU_RR_MinAutoMountDistance_Title".Translate("0", "500", "16", minAutoMountDistance.ToString()), -1f, "GU_RR_MinAutoMountDistance_Description".Translate());
                     minAutoMountDistance = (int)options.Slider(minAutoMountDistance, 0f, 500f);
 
-                    options.Label("GU_RR_MinAutoMountDistanceFromAnimal_Title".Translate("0", "500", "12", minAutoMountDistanceFromAnimal.ToString()), -1f, "GU_RR_MinAutoMountDistanceFromAnimal_Description".Translate());
-                    minAutoMountDistanceFromAnimal = (int)options.Slider(minAutoMountDistanceFromAnimal, 0f, 500f);
+                    options.Label("GU_RR_MinAutoMountDistanceFromAnimal_Title".Translate("0", "500", "12", distanceFromAnimal.ToString()), -1f, "GU_RR_MinAutoMountDistanceFromAnimal_Description".Translate());
+                    distanceFromAnimal = (int)options.Slider(distanceFromAnimal, 0f, 500f);
 
                     options.CheckboxLabeled("GU_RR_NoMountedHunting_Title".Translate(), ref noMountedHunting, "GU_RR_NoMountedHunting_Description".Translate());
                 }
@@ -367,8 +367,8 @@ namespace GiddyUp
 			Scribe_Values.Look(ref handlingMovementImpact, "handlingMovementImpact", 2.5f);
             Scribe_Values.Look(ref handlingAccuracyImpact, "handlingAccuracyImpact", 0.5f);
             Scribe_Values.Look(ref accuracyPenalty, "accuracyPenalty", 10);
-            Scribe_Values.Look(ref minAutoMountDistance, "minAutoMountDistance", 16);
-            Scribe_Values.Look(ref minAutoMountDistanceFromAnimal, "minAutoMountDistanceFromAnimal", 12);
+            Scribe_Values.Look(ref minAutoMountDistance, "minAutoMountDistanceNew", 200);
+            Scribe_Values.Look(ref distanceFromAnimal, "distanceFromAnimal", 50);
             Scribe_Values.Look(ref enemyMountChance, "enemyMountChance", 20);
             Scribe_Values.Look(ref enemyMountChanceTribal, "enemyMountChanceTribal", 40);
             Scribe_Values.Look(ref inBiomeWeight, "inBiomeWeight", 70);
@@ -420,8 +420,8 @@ namespace GiddyUp
         
         public static float handlingMovementImpact = 2.5f, bodySizeFilter = 1.2f, handlingAccuracyImpact = 0.5f;
         public static int accuracyPenalty = 10,
-            minAutoMountDistance = 16,
-            minAutoMountDistanceFromAnimal = 12, 
+            minAutoMountDistance = 200,
+            distanceFromAnimal = 50, 
             enemyMountChance = 20, 
             enemyMountChanceTribal = 40, 
             inBiomeWeight = 70, 

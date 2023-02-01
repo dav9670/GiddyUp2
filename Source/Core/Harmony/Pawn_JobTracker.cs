@@ -9,6 +9,7 @@ using GiddyUpRideAndRoll;
 using System.Linq;
 using Verse.AI.Group;
 using GiddyUp.Zones;
+using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUp.Harmony
 {
@@ -73,8 +74,8 @@ namespace GiddyUp.Harmony
                 __instance.jobQueue.EnqueueFirst(mountJob);
             }
 
-            if (ModSettings_GiddyUp.rideAndRollEnabled) RnRPostfix(__instance, ref __result, pawn);
-            if (ModSettings_GiddyUp.caravansEnabled) CaravanPostFix(__instance, ref __result, pawn);
+            if (Settings.rideAndRollEnabled) RnRPostfix(__instance, ref __result, pawn);
+            if (Settings.caravansEnabled) CaravanPostFix(__instance, ref __result, pawn);
 
             void RnRPostfix(Pawn_JobTracker jobTracker, ref ThinkResult thinkResult, Pawn pawn)
             {
@@ -138,7 +139,7 @@ namespace GiddyUp.Harmony
                     }
                 }
                 float totalDistance = pawnTargetDistance + firstToSecondTargetDistance;
-                if (totalDistance > GiddyUp.ModSettings_GiddyUp.minAutoMountDistance)
+                if (totalDistance > Settings.minAutoMountDistance)
                 {
                     bestChoiceAnimal = GetBestChoiceAnimal(pawn, firstTarget, secondTarget, pawnTargetDistance, firstToSecondTargetDistance);
                     if (bestChoiceAnimal != null)
@@ -169,7 +170,7 @@ namespace GiddyUp.Harmony
                     if (areaNoMount != null && areaNoMount.innerGrid[index])
                     {
                         firstTargetNoMount = true;
-                        if(pawnTargetDistance < GiddyUp.ModSettings_GiddyUp.minAutoMountDistance)
+                        if(pawnTargetDistance < Settings.minAutoMountDistance)
                         {
                             return null;
                         }
@@ -190,12 +191,14 @@ namespace GiddyUp.Harmony
                         {
                             continue;
                         }
+                        /*
                         float distanceFromAnimal = animal.Position.DistanceTo(target.Cell);
                         if (!firstTargetNoMount)
                         {
-                            distanceFromAnimal += firstToSecondTargetDistance;
+                            distanceFromAnimal += firstToSecondTargetDistance + animal.Position.DistanceTo(pawn.Position);
                         }
-                        if(distanceFromAnimal < GiddyUp.ModSettings_GiddyUp.minAutoMountDistanceFromAnimal)
+                        */
+                        if(animal.Position.DistanceTo(pawn.Position) > Settings.distanceFromAnimal)
                         {
                             continue;
                         }
@@ -224,6 +227,12 @@ namespace GiddyUp.Harmony
                             timeNeededMin = timeNeeded;
                         }
                     }
+                    if (Prefs.DevMode) Log.Message("[Giddy-up] " + (pawn.Name?.ToString() ?? "NULL") + " picked animal " + (closestAnimal?.Name?.ToString() ?? closestAnimal?.thingIDNumber.ToString()) + 
+                        " because their job is a distance of " + pawnTargetDistance.ToString() + " "+ target.Cell.ToString() + " + " + firstToSecondTargetDistance.ToString() + " " + 
+                        secondTarget.Cell.ToString() + " which would take them " + ((pawnTargetDistance + firstToSecondTargetDistance) / pawn.GetStatValue(StatDefOf.MoveSpeed)).ToString() + 
+                        " seconds to reach. The animal is a distance of " + (closestAnimal?.Position.DistanceTo(target.Cell).ToString() + " + " + firstToSecondTargetDistance.ToString() + 
+                        " and it would take them " + timeNeededMin.ToString() + " seconds to get there by riding."));
+                    
                     return closestAnimal;
                 }
                 ThinkResult InsertMountingJobs(ThinkResult __result, Pawn pawn, Pawn closestAnimal, LocalTargetInfo target, Pawn_JobTracker __instance)

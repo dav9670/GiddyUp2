@@ -1,9 +1,9 @@
-﻿using GiddyUp.Jobs;
+﻿/*
+using GiddyUp.Jobs;
 using GiddyUp.Storage;
 using HarmonyLib;
 using Verse;
 using Verse.AI;
-using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace BattleMounts.Harmony
 {
@@ -18,13 +18,12 @@ namespace BattleMounts.Harmony
         {
             if(__instance.job.def != GiddyUp.ResourceBank.JobDefOf.Mounted) return;
 
-            JobDriver_Mounted jobDriver = (JobDriver_Mounted) __instance;
-            ExtendedPawnData pawnData = GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(jobDriver.pawn.thingIDNumber);
-            Pawn Rider = jobDriver.Rider;
-            ExtendedPawnData riderData = GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(Rider.thingIDNumber);
+            JobDriver_Mounted jobDriver = (JobDriver_Mounted)__instance;
+            ExtendedPawnData riderData = GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(jobDriver.Rider.thingIDNumber);
 
             riderData.Reset();
             jobDriver.pawn.Drawer.tweener = new PawnTweener(jobDriver.pawn);
         }
     }
 }
+*/

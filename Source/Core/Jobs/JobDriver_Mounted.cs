@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using GiddyUpRideAndRoll;
 using Verse;
 using Verse.AI;
+using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUp.Jobs
 {
@@ -66,6 +67,7 @@ namespace GiddyUp.Jobs
         {
             return true;
         }
+        //This method is often responsible for why pawns dismount
         public bool ShouldCancelJob(ExtendedPawnData riderData)
         {
             if (interrupted) return true;
@@ -73,63 +75,68 @@ namespace GiddyUp.Jobs
 
             Pawn rider = Rider;
             var riderIsDead = rider.Dead;
+            
             if (rider.Downed || riderIsDead || pawn.Downed || pawn.Dead || pawn.IsBurning() || rider.IsBurning() || rider.GetPosture() != PawnPosture.Standing)
             {
-                //Log.Message("cancel job, rider downed or dead");
-                return true;
+                return true; //Down or dead?
             }
             if (pawn.InMentalState || (rider.InMentalState && rider.MentalState.def != MentalStateDefOf.PanicFlee))
             {
-                //Log.Message("cancel job, rider or mount in mental state");
-                return true;
+                return true; //In mental state?
             }
             if (!rider.Spawned)
             {
                 var riderIsColonist = rider.IsColonist;
                 if (!riderIsColonist && !riderIsDead)
                 {
-                    //Log.Message("rider not spawned, despawn");
                     pawn.ExitMap(false, CellRect.WholeMap(base.Map).GetClosestEdge(this.pawn.Position));
-                    return true;
+                    return true; //No longer spawned?
                 }
                 else if(riderIsColonist && rider.GetCaravan() != null)
                 {
-                    //Log.Message("rider moved to map, despawn");
                     pawn.ExitMap(true, CellRect.WholeMap(base.Map).GetClosestEdge(this.pawn.Position));
-                    return true;
+                    return true; //Left map?
                 }
                 else return true;
             }
             bool riderIsDrafted = rider.Drafted;
+            //Log.Message("A1");
             if (!riderIsDrafted && rider.IsColonist) //TODO refactor this as a postfix in Giddy-up Caravan. 
             {
-                if((rider.mindState != null && rider.mindState.duty != null && (rider.mindState.duty.def == DutyDefOf.TravelOrWait || rider.mindState.duty.def == DutyDefOf.TravelOrLeave || rider.mindState.duty.def == DutyDefOf.PrepareCaravan_GatherAnimals || rider.mindState.duty.def == DutyDefOf.PrepareCaravan_GatherDownedPawns)))
+                if((rider.mindState != null && rider.mindState.duty != null && 
+                    (rider.mindState.duty.def == DutyDefOf.TravelOrWait || 
+                    rider.mindState.duty.def == DutyDefOf.TravelOrLeave || 
+                    rider.mindState.duty.def == DutyDefOf.PrepareCaravan_GatherAnimals || 
+                    rider.mindState.duty.def == DutyDefOf.PrepareCaravan_GatherDownedPawns)))
                 {
                     if(riderData.caravanMount == pawn) return false;
-                    return true;
-                    //if forming caravan, stay mounted. 
+                    return true; //if forming caravan, stay mounted.
                 }
-                else if(riderData.owning == pawn)
+                else if(riderData.owning == pawn) return false;
+                if (Settings.caravansEnabled)
                 {
-                    //Log.Message("cancel job, rider not drafted while being colonist");
-                    //Log.Message("riderData.owning: " + riderData.owning);
-                    return false;
+                    //Log.Message("A2");
+                    if (rider.CurJob != null && !allowedJobs.Contains(rider.CurJob.def)) return false;
+                    else if (rider.Position.CloseToEdge(rider.Map, 10)) return false; //Caravan just entered map and has not picked a job yet on this tick.
+                    //Log.Message("A3");
                 }
                 else return true;
             }
+            //Log.Message("A4");
             if (riderData.mount == null) return true;
             
-            if (ModSettings_GiddyUp.rideAndRollEnabled)
+            if (Settings.rideAndRollEnabled)
             {
+                //Log.Message("A5");
                 if (pawn.factionInt.def.isPlayer && !riderIsDrafted && rider.CurJob != null && !allowedJobs.Contains(rider.CurJob.def))
                 {
                     var jobDef = rider.CurJob.def;
-
+                    //Log.Message("A6");
                     if(jobDef == JobDefOf.EnterTransporter) return true;
-
-                    if(jobDef == JobDefOf.Hunt && GiddyUp.ModSettings_GiddyUp.noMountedHunting) return true;
+                    //Log.Message("A7");
+                    if(jobDef == JobDefOf.Hunt && Settings.noMountedHunting) return true;
                     else if (!rider.pather.Moving) return true;
-
+                    //Log.Message("A8");
                     if(!riderIsDrafted && pawn.HungryOrTired()) return true;
                 }
             }
@@ -194,14 +201,9 @@ namespace GiddyUp.Jobs
                 pawn.Rotation = rider.Rotation;
             };
 
-            toil.AddFinishAction(delegate
-            {
-
-                FinishAction();
-            });
+            toil.AddFinishAction(delegate { FinishAction(); });
             
             return toil;
-
         }
         void FinishAction()
         {
@@ -213,8 +215,7 @@ namespace GiddyUp.Jobs
             pawn.Drawer.tweener = new PawnTweener(pawn);
             if (!interrupted) pawn.Position = rider.Position;
             pawn.pather.ResetToCurrentPosition();
-
-            if (ModSettings_GiddyUp.rideAndRollEnabled)
+            if (Settings.rideAndRollEnabled)
             {
                 ExtendedPawnData pawnData = GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(pawn.thingIDNumber);
                 bool isRoped = pawn.roping != null && pawn.roping.IsRoped;

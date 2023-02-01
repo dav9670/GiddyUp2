@@ -30,7 +30,7 @@ namespace GiddyUpCaravan.Harmony
             var pawns = instance.SpawnPawns(parms);
             if (!pawns.NullOrEmpty())
             {
-                NPCMountUtility.generateMounts(ref pawns, parms, Settings.inBiomeWeight, Settings.outBiomeWeight, Settings.nonWildWeight, Settings.visitorMountChance, Settings.visitorMountChanceTribal);
+                NPCMountUtility.GenerateMounts(ref pawns, parms, Settings.inBiomeWeight, Settings.outBiomeWeight, Settings.nonWildWeight, Settings.visitorMountChance, Settings.visitorMountChanceTribal);
             }
             return pawns;
         }

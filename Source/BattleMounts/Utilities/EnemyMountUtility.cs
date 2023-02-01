@@ -19,7 +19,7 @@ namespace Battlemounts.Utilities
             {
                 return;
             }
-            NPCMountUtility.generateMounts(ref list, parms, Setting.inBiomeWeight, Setting.outBiomeWeight, Setting.nonWildWeight, Setting.enemyMountChance, Setting.enemyMountChanceTribal);
+            NPCMountUtility.GenerateMounts(ref list, parms, Setting.inBiomeWeight, Setting.outBiomeWeight, Setting.nonWildWeight, Setting.enemyMountChance, Setting.enemyMountChanceTribal);
             
             foreach(Pawn pawn in list)
             {

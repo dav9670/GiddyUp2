@@ -12,11 +12,11 @@ namespace GiddyUp
         public int mountChance = -1;
         public int wildAnimalWeight = -1;
         public int nonWildAnimalWeight = -1;
-        public List<string> getAllowedNonWildAnimalsAsList()
+        public List<string> GetAllowedNonWildAnimalsAsList()
         {
             return allowedNonWildAnimalsCSV.Split(',').ToList();
         }
-        public List<string> getAllowedWildAnimalsAsList()
+        public List<string> GetAllowedWildAnimalsAsList()
         {
             return allowedWildAnimalsCSV.Split(',').ToList();
         }

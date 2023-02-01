@@ -28,9 +28,16 @@ namespace GiddyUp.Storage
              get { return mount; }
              set
              {
-                //Log.Message("[Giddy-Up] pawn " + ID.ToString() + " is now mounted.");
-                if (value == null) Setup.isMounted.Remove(ID);
-                else Setup.isMounted.Add(ID);
+                if (value == null) 
+                {
+                    //if (Prefs.DevMode) Log.Message("[Giddy-Up] pawn " + ID.ToString() + " no longer now mounted upon " + mount?.thingIDNumber.ToString() ?? "NULL");
+                    Setup.isMounted.Remove(ID);
+                }
+                else
+                {
+                    //if (Prefs.DevMode) Log.Message("[Giddy-Up] pawn " + ID.ToString() + " is now mounted upon " + value.thingIDNumber.ToString());
+                    Setup.isMounted.Add(ID);
+                }
                 mount = value; 
              }
         }

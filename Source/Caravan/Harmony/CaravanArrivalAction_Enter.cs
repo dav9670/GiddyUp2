@@ -45,10 +45,11 @@ namespace GiddyUpCaravan.Harmony
                     if (pawnData.caravanMount is Pawn animal)
                     {
                         ExtendedPawnData animalData = store.GetExtendedDataFor(animal.thingIDNumber);
-                        pawnData.mount = animal;
+                        pawnData.Mount = animal;
                         Job jobAnimal = new Job(GiddyUp.ResourceBank.JobDefOf.Mounted, pawn);
                         jobAnimal.count = 1;
                         animal.jobs.TryTakeOrderedJob(jobAnimal);
+                        GiddyUp.Utilities.TextureUtility.SetDrawOffset(pawnData);
                     }
                 }
             }

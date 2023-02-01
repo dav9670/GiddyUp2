@@ -5,6 +5,7 @@ using GiddyUp.Utilities;
 using GiddyUp.Storage;
 using RimWorld;
 using UnityEngine;
+using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUp.Jobs
 {
@@ -12,7 +13,7 @@ namespace GiddyUp.Jobs
     {
         public override bool TryMakePreToilReservations(bool errorOnFailed)
         {
-            if (ModSettings_GiddyUp.rideAndRollEnabled && GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(this.pawn.thingIDNumber).targetJob == null)
+            if (Settings.rideAndRollEnabled && GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(this.pawn.thingIDNumber).targetJob == null)
             {
                 return true;
             }
@@ -55,7 +56,6 @@ namespace GiddyUp.Jobs
         {
             Toil toil = new Toil();
             toil.AddFailCondition(delegate { return Mount.CurJob.def != ResourceBank.JobDefOf.Mounted; });
-            //toil.AddFailCondition(delegate { return Mount.CurJob.targetA.Thing != pawn; });
             toil.initAction = delegate
             {
                 Pawn actor = toil.GetActor();
@@ -75,7 +75,7 @@ namespace GiddyUp.Jobs
         public void FinishAction()
         {
             bool flag = Mount.CurJob != null && Mount.CurJob.def == ResourceBank.JobDefOf.Mounted;
-            if (ModSettings_GiddyUp.rideAndRollEnabled || flag)
+            if (Settings.rideAndRollEnabled || flag)
             {
                 var mount = Mount;
                 var pawnData = GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(this.pawn.thingIDNumber);
@@ -87,7 +87,7 @@ namespace GiddyUp.Jobs
                     TextureUtility.SetDrawOffset(pawnData);
                 }
 
-                if (ModSettings_GiddyUp.rideAndRollEnabled)
+                if (Settings.rideAndRollEnabled)
                 {
                     pawnData.owning = mount;
                     animalData.ownedBy = this.pawn;
