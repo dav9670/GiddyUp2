@@ -21,7 +21,7 @@ namespace GiddyUpCaravan.Harmony
         }
         static bool Prefix(Pawn pawn, ref bool __result)
         {
-            if(IsMountableUtility.isMountable(pawn))
+            if(IsMountableUtility.IsMountable(pawn))
             {
                 __result = true;
                 return false;

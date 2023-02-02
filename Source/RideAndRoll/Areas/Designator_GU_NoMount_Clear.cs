@@ -10,7 +10,7 @@ namespace GiddyUpRideAndRoll.Zones
             defaultLabel = "GU_RR_Designator_GU_NoMount_Clear_Label".Translate();
             defaultDesc = "GU_RR_Designator_GU_NoMount_Clear_Description".Translate();
             icon = GiddyUp.ResourceBank.iconNoMountClear;
-            areaLabel = GiddyUp.Setup.NOMOUNT_LABEL;
+            areaLabel = GiddyUp.ResourceBank.NOMOUNT_LABEL;
         }
         public override void DesignateSingleCell(IntVec3 c)
         {

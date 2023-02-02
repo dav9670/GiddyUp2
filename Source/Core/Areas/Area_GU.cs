@@ -67,8 +67,8 @@ namespace GiddyUp.Zones
             {
                 var area = list[i];
                 var label = area.Label;
-                if (label == GiddyUp.Setup.NOMOUNT_LABEL) areaNoMount = area;
-                else if (label == GiddyUp.Setup.DROPANIMAL_LABEL) areaDropAnimal = area;
+                if (label == GiddyUp.ResourceBank.NOMOUNT_LABEL) areaNoMount = area;
+                else if (label == GiddyUp.ResourceBank.DROPANIMAL_LABEL) areaDropAnimal = area;
             }
         }
     }

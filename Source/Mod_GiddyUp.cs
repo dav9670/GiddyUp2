@@ -15,14 +15,9 @@ namespace GiddyUp
     [StaticConstructorOnStartup]
     public static class Setup
     {
-        public const string DROPANIMAL_LABEL = "Gu_Area_DropMount";
-        public const string NOMOUNT_LABEL = "Gu_Area_NoMount";
-        public const string DropAnimal_NPC_LABEL = "GU_Car_Area_GU_DropAnimal_NPC";
         public static ExtendedDataStorage _extendedDataStorage;
         public static HashSet<int> isMounted = new HashSet<int>();
-        public static bool GiddyUpMechanoidsLoaded, facialStuffLoaded;
-        internal static HashSet<PawnKindDef> animalsWithBiome = new HashSet<PawnKindDef>();
-        internal static HashSet<PawnKindDef> animalsWithoutBiome = new HashSet<PawnKindDef>();
+        internal static HashSet<PawnKindDef> animalsWithBiome = new HashSet<PawnKindDef>(), animalsWithoutBiome = new HashSet<PawnKindDef>();
         public static ThingDef[] allAnimals;
         public const float defaultSizeThreshold = 1.2f;
 
@@ -30,31 +25,18 @@ namespace GiddyUp
         {
             new HarmonyLib.Harmony("GiddyUp").PatchAll();
 
-            GiddyUpMechanoidsLoaded = AssemblyExists("GiddyUpMechanoids");
-            facialStuffLoaded = AssemblyExists("FacialStuff");
-
             BuildCache();
             BuildAnimalBiomeCache();
             if (!rideAndRollEnabled) RemoveRideAndRoll();
             if (!caravansEnabled) RemoveCaravans();
             
         }
-        //Mod names sometimes change when Rimworld changes its version. Checking for the assembly name, which probably won't change is therefore a better idea than using ModLister.HasActiveModWithName
-        static bool AssemblyExists(string assemblyName)
-        {
-            var list = AppDomain.CurrentDomain.GetAssemblies();
-            for (int i = 0; i < list.Length; i++)
-            {
-                if (list[i].FullName.StartsWith(assemblyName, StringComparison.Ordinal)) return true;
-            }
-            return false;
-        }
         public static void BuildCache(bool reset = false)
         {
             //Setup collections
             List<ThingDef> workingList = new List<ThingDef>();
             if (invertMountingRules == null) invertMountingRules = new HashSet<string>();
-            _animalSelecter = new HashSet<ushort>();
+            mountableCache = new HashSet<ushort>();
 
             if (invertDrawRules == null) invertDrawRules = new HashSet<string>();
             _drawSelecter = new HashSet<ushort>();
@@ -71,8 +53,8 @@ namespace GiddyUp
                     bool setting = def.race.baseBodySize > defaultSizeThreshold;
                     if (invertMountingRules.Contains(def.defName)) setting = !setting; //Player customization says to invert rule.
                     
-                    if (setting) _animalSelecter.Add(def.shortHash);
-                    else _animalSelecter.Remove(def.shortHash);
+                    if (setting) mountableCache.Add(def.shortHash);
+                    else mountableCache.Remove(def.shortHash);
 
                     //Handle the mod extension
                     if (!reset)
@@ -121,7 +103,7 @@ namespace GiddyUp
             DefDatabase<JobDef>.Remove(ResourceBank.JobDefOf.WaitForRider);
 
             //Remove pawn columns (UI icons in the pawn table)
-            DefDatabase<PawnColumnDef>.AllDefsListForReading.RemoveAll(x => x.defName == "MountableByAnyone" || x.defName == "MountableByMaster");
+            DefDatabase<PawnTableDef>.GetNamed("Animals").columns.RemoveAll(x => x.defName == "MountableByAnyone");
             
             //Remove area designators
             var designationCategoryDef = DefDatabase<DesignationCategoryDef>.GetNamed("Zone");
@@ -186,7 +168,6 @@ namespace GiddyUp
 		{
 			base.GetSettings<ModSettings_GiddyUp>();
 		}
-
         public override void DoSettingsWindowContents(Rect inRect)
 		{
             //========Setup tabs=========
@@ -222,10 +203,8 @@ namespace GiddyUp
                     options.Label("GU_RR_MinAutoMountDistance_Title".Translate("0", "500", "16", minAutoMountDistance.ToString()), -1f, "GU_RR_MinAutoMountDistance_Description".Translate());
                     minAutoMountDistance = (int)options.Slider(minAutoMountDistance, 0f, 500f);
 
-                    options.Label("GU_RR_MinAutoMountDistanceFromAnimal_Title".Translate("0", "500", "12", distanceFromAnimal.ToString()), -1f, "GU_RR_MinAutoMountDistanceFromAnimal_Description".Translate());
-                    distanceFromAnimal = (int)options.Slider(distanceFromAnimal, 0f, 500f);
-
                     options.CheckboxLabeled("GU_RR_NoMountedHunting_Title".Translate(), ref noMountedHunting, "GU_RR_NoMountedHunting_Description".Translate());
+                    if (Prefs.DevMode) options.CheckboxLabeled("Enable dev mode logging", ref logging);
                 }
                 
                 options.End();
@@ -341,7 +320,6 @@ namespace GiddyUp
                 Widgets.EndScrollView();   
             }
         }
-
         public override string SettingsCategory()
 		{
 			return "Giddy-Up";
@@ -357,8 +335,7 @@ namespace GiddyUp
                 Log.Error("[Giddy-up] Error writing Giddy-up settings. Skipping...\n" + ex);   
             }
             base.WriteSettings();
-		}
-        
+		}   
     }
     public class ModSettings_GiddyUp : ModSettings
 	{
@@ -368,7 +345,6 @@ namespace GiddyUp
             Scribe_Values.Look(ref handlingAccuracyImpact, "handlingAccuracyImpact", 0.5f);
             Scribe_Values.Look(ref accuracyPenalty, "accuracyPenalty", 10);
             Scribe_Values.Look(ref minAutoMountDistance, "minAutoMountDistanceNew", 200);
-            Scribe_Values.Look(ref distanceFromAnimal, "distanceFromAnimal", 50);
             Scribe_Values.Look(ref enemyMountChance, "enemyMountChance", 20);
             Scribe_Values.Look(ref enemyMountChanceTribal, "enemyMountChanceTribal", 40);
             Scribe_Values.Look(ref inBiomeWeight, "inBiomeWeight", 70);
@@ -401,11 +377,11 @@ namespace GiddyUp
                 //Search for abnormalities, meaning the player wants to invert the rules
                 if (animalDef.race.baseBodySize <= Setup.defaultSizeThreshold)
                 {
-                    if (_animalSelecter.Contains(hash)) invertMountingRules.Add(animalDef.defName);
+                    if (mountableCache.Contains(hash)) invertMountingRules.Add(animalDef.defName);
                 }
                 else
                 {
-                    if (!_animalSelecter.Contains(hash)) invertMountingRules.Add(animalDef.defName);
+                    if (!mountableCache.Contains(hash)) invertMountingRules.Add(animalDef.defName);
                 }
 
                 //And now draw rules
@@ -421,7 +397,6 @@ namespace GiddyUp
         public static float handlingMovementImpact = 2.5f, bodySizeFilter = 1.2f, handlingAccuracyImpact = 0.5f;
         public static int accuracyPenalty = 10,
             minAutoMountDistance = 200,
-            distanceFromAnimal = 50, 
             enemyMountChance = 20, 
             enemyMountChanceTribal = 40, 
             inBiomeWeight = 70, 
@@ -431,9 +406,9 @@ namespace GiddyUp
             //incompleteCaravanBonusCap = 25, 
             visitorMountChance = 20, 
             visitorMountChanceTribal = 40;
-        public static bool rideAndRollEnabled = true, battleMountsEnabled = true, caravansEnabled = true, noMountedHunting;
+        public static bool rideAndRollEnabled = true, battleMountsEnabled = true, caravansEnabled = true, noMountedHunting, logging;
         public static HashSet<string> invertMountingRules, invertDrawRules; //These are only used on game start to setup the below, fast cache collections
-        public static HashSet<ushort> _animalSelecter, _drawSelecter;
+        public static HashSet<ushort> mountableCache, _drawSelecter;
         public static string tabsHandler;
         public static Vector2 scrollPos;
         public static SelectedTab selectedTab = SelectedTab.bodySize;

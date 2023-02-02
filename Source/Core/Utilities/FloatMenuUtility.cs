@@ -22,13 +22,15 @@ namespace GiddyUp.Utilities
             if (pawnData.mount == null)
             {
                 bool canMount = false;
+                /*
                 if (Setup.GiddyUpMechanoidsLoaded && target.RaceProps.IsMechanoid)
                 {
                     canMount = true; //additional checking takes place in Giddy-up! Battle Mechs. 
                 }
+                */
                 if (target.RaceProps.Animal)
                 {
-                    canMount = IsMountableUtility.isMountable(target, out IsMountableUtility.Reason reason);
+                    canMount = IsMountableUtility.IsMountable(target, out IsMountableUtility.Reason reason);
 
                     if (!canMount && reason == IsMountableUtility.Reason.NotInModOptions)
                     {
@@ -69,6 +71,7 @@ namespace GiddyUp.Utilities
                 {
                     Action action = delegate
                     {
+                        /*
                         if (Setup.GiddyUpMechanoidsLoaded && target.RaceProps.IsMechanoid)
                         {
                             if (!pawn.Drafted)
@@ -82,6 +85,7 @@ namespace GiddyUp.Utilities
                                 UpdatePawnDrafted(target, false);
                             }
                         }
+                        */
                         Job jobRider = new Job(ResourceBank.JobDefOf.Mount, target);
                         jobRider.count = 1;
                         pawn.jobs.TryTakeOrderedJob(jobRider);

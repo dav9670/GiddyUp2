@@ -12,7 +12,7 @@ namespace GiddyUpCaravan.Zones
             defaultLabel = "GU_Car_Designator_GU_DropAnimal_NPC_Expand_Label".Translate();
             defaultDesc = "GU_Car_Designator_GU_DropAnimal_NPC_Expand_Description".Translate();
             icon = ContentFinder<Texture2D>.Get("UI/GU_Car_Designator_GU_DropAnimal_NPC_Expand", true);
-            areaLabel = GiddyUp.Setup.DropAnimal_NPC_LABEL;
+            areaLabel = GiddyUp.ResourceBank.DropAnimal_NPC_LABEL;
         }
 
         public override void DesignateSingleCell(IntVec3 c)

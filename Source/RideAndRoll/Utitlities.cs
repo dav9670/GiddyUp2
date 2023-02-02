@@ -5,17 +5,16 @@ namespace GiddyUpRideAndRoll
 {
     public static class Utitlities
     {
-        public static bool HungryOrTired(this Pawn animal)
+        public static bool HungryOrTired(Pawn_NeedsTracker needs)
         {
-            bool value = false;
-            if (animal.needs != null)
+            if (needs != null)
             {
                 //animal needs break?
-                value = (animal.needs.food != null && animal.needs.food.CurCategory >= HungerCategory.UrgentlyHungry) || 
-                    (animal.needs.rest != null && animal.needs.rest.CurCategory >= RestCategory.VeryTired);
+                return (needs.food != null && needs.food.CurCategory >= HungerCategory.UrgentlyHungry) || 
+                    (needs.rest != null && needs.rest.CurCategory >= RestCategory.VeryTired);
             }
 
-            return value;
+            return false;
         }
     }
 }

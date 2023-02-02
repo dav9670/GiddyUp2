@@ -127,7 +127,7 @@ namespace GiddyUpCaravan.Harmony
                 canMount = false;
             }
 
-            bool isMountable = IsMountableUtility.isMountable(animal, out IsMountableUtility.Reason reason);
+            bool isMountable = IsMountableUtility.IsMountable(animal, out IsMountableUtility.Reason reason);
             if (!isMountable)
             {
                 if (reason == IsMountableUtility.Reason.NotFullyGrown)

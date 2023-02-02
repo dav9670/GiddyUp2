@@ -9,9 +9,9 @@ namespace GiddyUp.Utilities
         public static int AdjustedTicksPerMove(Pawn_SkillTracker skills, Pawn mount, bool diagonal)
         {
             float adjustedLevel = 5;
-            if (skills != null && skills.GetSkill(SkillDefOf.Animals) is SkillRecord skill)
+            if (skills != null)
             {
-                adjustedLevel = skill.levelInt - (int)System.Math.Round(mount.GetStatValue(StatDefOf.MinimumHandlingSkill, true));
+                adjustedLevel = skills.GetSkill(SkillDefOf.Animals).levelInt - (int)System.Math.Round(mount.GetStatValue(StatDefOf.MinimumHandlingSkill, true));
             }
 
             float animalHandlingOffset = 1f - (adjustedLevel * ModSettings_GiddyUp.handlingMovementImpact) / 100f;

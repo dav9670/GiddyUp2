@@ -2,10 +2,15 @@
 <!-- These patches set the exceptions of the mod settings. The same patching method can be used for other mods that add animals and want default options for them. 
 Two patch operations per animal are needed for vanilla animals to ensure compatibility with mods that add comps. Note that this is probably not needed for patches of other mods that add animals-->
 <Patch>
-	
 	<Operation Class="PatchOperationSequence">
 		<success>Always</success>
 		<operations>
+			<li Class="PatchOperationInsert">
+				<xpath>/Defs/PawnTableDef[defName="Animals"]/columns/li[last()-1]</xpath>
+				<value>
+					<li>MountableByAnyone</li>
+				</value>
+			</li>
 			<li Class="PatchOperationAdd">
 				<success>Always</success>
 				<xpath>Defs/ThingDef[defName="Ostrich" or 
@@ -17,7 +22,7 @@ Two patch operations per animal are needed for vanilla animals to ensure compati
 					defName="LabradorRetriever" or 
 					defName="Alpaca" or 
 					defName="Elk" or 
-					defName="Thrumbo"][not(comps)]</xpath>
+				defName="Thrumbo"][not(comps)]</xpath>
 				<value>
 					<comps />
 				</value>
@@ -189,6 +194,8 @@ Two patch operations per animal are needed for vanilla animals to ensure compati
 					<li>GiddyUpRideAndRoll.Zones.Designator_GU_DropAnimal_Clear</li>
 					<li>GiddyUpRideAndRoll.Zones.Designator_GU_NoMount_Expand</li>
 					<li>GiddyUpRideAndRoll.Zones.Designator_GU_NoMount_Clear</li>
+					<li>GiddyUpCaravan.Zones.Designator_GU_DropAnimal_NPC_Expand</li>
+					<li>GiddyUpCaravan.Zones.Designator_GU_DropAnimal_NPC_Clear</li>
 				</value>
 			</li>
 		</operations>

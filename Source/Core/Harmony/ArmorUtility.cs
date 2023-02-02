@@ -9,17 +9,22 @@ namespace GiddyUp.Harmony
     {
         static void Postfix(ref float armorRating, Pawn pawn)
         {
-            if (IsMountableUtility.IsCurrentlyMounted(pawn) && pawn.def.GetModExtension<CustomStatsPatch>() is CustomStatsPatch modExt)
+            if (IsMountableUtility.IsCurrentlyMounted(pawn))
             {
-                armorRating *= modExt.armorModifier;
+                var modExt = pawn.def.GetModExtension<CustomStatsPatch>();
+                if (modExt != null) armorRating *= modExt.armorModifier;
             }
         }
         static void Postfix(ref float damAmount, Pawn pawn, ref bool metalArmor)
         {
-            if (IsMountableUtility.IsCurrentlyMounted(pawn) && pawn.def.GetModExtension<CustomStatsPatch>() is CustomStatsPatch modExt)
+            if (IsMountableUtility.IsCurrentlyMounted(pawn))
             {
-                damAmount /= modExt.armorModifier;
-                metalArmor = modExt.useMetalArmor;
+                var modExt = pawn.def.GetModExtension<CustomStatsPatch>();
+                if (modExt != null)
+                {
+                    damAmount /= modExt.armorModifier;
+                    metalArmor = modExt.useMetalArmor;
+                }
             }
         }
     }

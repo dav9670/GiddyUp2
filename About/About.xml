@@ -1,14 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ModMetaData>
-	<name>Giddy-up 2 (unlisted beta)</name>
+	<name>Giddy-Up 2 (unlisted beta)</name>
 	<author>Roolo, Owlchemist</author>
 	<supportedVersions>
 		<li>1.4</li>
 	</supportedVersions>
-	<modVersion>2.0.8</modVersion>
+	<modVersion>2.0.11</modVersion>
 	<packageId>Owlchemist.GiddyUp</packageId>
 	<url>https://github.com/Owlchemist/GiddyUpCore</url>
-	<description>This is a renovated, overhauled fork of Giddy-Up, developed with permission from the original author Roolo. It's an all-in-one, containing all the modules in a single mod, internally modularized within the mod options. Giddy-up allows pawns to ride animals around on the map, or even use them as battle mounts.
+	<description>This is a renovated, overhauled fork of Giddy-Up, developed with permission from the original author Roolo. It's an all-in-one, containing all the modules in a single mod, internally modularized within the mod options. Giddy-Up allows pawns to ride animals around on the map, or even use them as battle mounts.
 	</description>	
 	<modDependencies>
 		<li>
@@ -17,4 +17,13 @@
 			<steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl>
 		</li>
 	</modDependencies>
+	<loadBefore>
+		<li>dylan.animalgear</li>
+	</loadBefore>
+	<incompatibleWith>
+		<li>roolo.giddyupcore</li>
+		<li>roolo.giddyuprideandroll</li>
+		<li>roolo.giddyupcaravan</li>
+		<li>roolo.giddyupbattlemounts</li>
+	</incompatibleWith>
 </ModMetaData>

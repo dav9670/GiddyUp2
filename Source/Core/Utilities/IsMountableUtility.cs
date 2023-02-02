@@ -2,6 +2,7 @@
 using RimWorld;
 using System.Linq;
 using Verse;
+using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUp.Utilities
 {
@@ -15,11 +16,11 @@ namespace GiddyUp.Utilities
         }
         public static bool IsMountable(ThingDef thingDef)
         {
-            return isMountable(thingDef.GetConcreteExample() as Pawn);
+            return IsMountable(thingDef.GetConcreteExample() as Pawn);
         }
-        public static bool isMountable(Pawn pawn)
+        public static bool IsMountable(Pawn pawn)
         {
-            return isMountable(pawn, out Reason reason);
+            return IsMountable(pawn, out Reason reason);
         }
 
         public static bool IsCurrentlyMounted(Pawn animal)
@@ -33,10 +34,10 @@ namespace GiddyUp.Utilities
             return Setup.isMounted.Contains(rider.thingIDNumber);
         }
 
-        public static bool isMountable(Pawn animal, out Reason reason)
+        public static bool IsMountable(Pawn animal, out Reason reason)
         {
             reason = Reason.CanMount;
-            if (!isAllowedInModOptions(animal.def.shortHash))
+            if (!Settings.mountableCache.Contains(animal.def.shortHash))
             {
                 reason = Reason.NotInModOptions;
                 return false;
@@ -44,36 +45,23 @@ namespace GiddyUp.Utilities
             if (animal.ageTracker.CurLifeStageIndex != animal.RaceProps.lifeStageAges.Count - 1)
             {
                 var customLifeStages = animal.def.GetModExtension<AllowedLifeStagesPatch>();
-                if (customLifeStages == null)
+                if (customLifeStages == null || !customLifeStages.GetAllowedLifeStagesAsList().Contains(animal.ageTracker.CurLifeStageIndex))
                 {
                     reason = Reason.NotFullyGrown;
                     return false;
                 }
-                else //Use custom life stages instead of last life stage if a patch exists for that
-                {
-                    if (!customLifeStages.GetAllowedLifeStagesAsList().Contains(animal.ageTracker.CurLifeStageIndex))
-                    {
-                        reason = Reason.NotFullyGrown;
-                        return false;
-                    }
-                }
             }
-            if (animal.training == null || (animal.training != null && !animal.training.HasLearned(TrainableDefOf.Tameness)))
+            if (animal.training == null || !animal.training.HasLearned(TrainableDefOf.Tameness))
             {
                 reason = Reason.NeedsTraining;
                 return false;
             }
-            if (animal.roping != null && animal.roping.IsRoped)
+            if (animal.roping?.IsRoped ?? false)
             {
                 reason = Reason.IsRoped;
                 return false;
             }
             return true;
-        }
-
-        public static bool isAllowedInModOptions(ushort hash)
-        {
-            return ModSettings_GiddyUp._animalSelecter.Contains(hash);
         }
     }
 }

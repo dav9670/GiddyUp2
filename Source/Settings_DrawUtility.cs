@@ -37,7 +37,7 @@ namespace GiddyUp
 			//Determine checkbox status...
 			bool checkOn;
 			ushort hash = def.shortHash;
-			if (selectedTab == SelectedTab.bodySize) checkOn = _animalSelecter.Contains(hash);
+			if (selectedTab == SelectedTab.bodySize) checkOn = mountableCache.Contains(hash);
 			else checkOn = _drawSelecter.Contains(hash);
 			
 			//Fetch bounding rect
@@ -60,8 +60,8 @@ namespace GiddyUp
 			
 			if (selectedTab == SelectedTab.bodySize)
 			{
-				if (checkOn && !_animalSelecter.Contains(hash)) _animalSelecter.Add(hash);
-				else if (!checkOn && _animalSelecter.Contains(hash)) _animalSelecter.Remove(hash);
+				if (checkOn && !mountableCache.Contains(hash)) mountableCache.Add(hash);
+				else if (!checkOn && mountableCache.Contains(hash)) mountableCache.Remove(hash);
 			}
 			else
 			{

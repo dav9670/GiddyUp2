@@ -11,29 +11,29 @@ namespace GiddyUp.Utilities
 {
     public static class DistanceUtility
     {
-        public static LocalTargetInfo GetFirstTarget(Job job, TargetIndex index)
+        public static IntVec3 GetFirstTarget(Job job, TargetIndex index)
         {
             if (!job.GetTargetQueue(index).NullOrEmpty<LocalTargetInfo>())
             {
-                return job.GetTargetQueue(index)[0];
+                return job.GetTargetQueue(index)[0].Cell;
             }
-            return job.GetTarget(index);
+            return job.GetTarget(index).Cell;
         }
-        public static LocalTargetInfo GetLastTarget(Job job, TargetIndex index)
+        public static IntVec3 GetLastTarget(Job job, TargetIndex index)
         {
             if (!job.GetTargetQueue(index).NullOrEmpty<LocalTargetInfo>())
             {
-                return job.GetTargetQueue(index)[job.GetTargetQueue(index).Count - 1];
+                return job.GetTargetQueue(index)[job.GetTargetQueue(index).Count - 1].Cell;
             }
-            return job.GetTarget(index);
+            return job.GetTarget(index).Cell;
         }
-        public static IntVec3 GetClosestAreaLoc(IntVec3 sourceLocation, Area areaFound)
+        public static IntVec3 GetClosestAreaLoc(IntVec3 sourceLocation, Area area)
         {
             IntVec3 targetLoc = new IntVec3();
-            double minDistance = double.MaxValue;
-            foreach (IntVec3 loc in areaFound.ActiveCells)
+            float minDistance = float.MaxValue;
+            foreach (IntVec3 loc in area.ActiveCells)
             {
-                double distance = loc.DistanceTo(sourceLocation);
+                float distance = loc.DistanceTo(sourceLocation);
                 if (distance < minDistance)
                 {
                     minDistance = distance;
@@ -43,7 +43,24 @@ namespace GiddyUp.Utilities
             return targetLoc;
         }
 
-        public static IntVec3 getClosestAreaLoc(Pawn pawn, Area_GU areaFound)
+        public static IntVec3 GetClosestAreaLoc(IntVec3 sourceLocation, IntVec3[] cells)
+        {
+            IntVec3 targetLoc = new IntVec3();
+            float minDistance = float.MaxValue;
+            for (int i = 0; i < cells.Length; i++)
+            {
+                var loc = cells[i];
+                float distance = loc.DistanceTo(sourceLocation);
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    targetLoc = loc;
+                }
+            }
+            return targetLoc;
+        }
+
+        public static IntVec3 GetClosestAreaLoc(Pawn pawn, Area areaFound)
         {
             return GetClosestAreaLoc(pawn.Position, areaFound);
         }

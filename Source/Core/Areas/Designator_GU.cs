@@ -32,13 +32,13 @@ namespace GiddyUp.Zones
             {
                 return;
             }
-            setSelectedArea(areaLabel);
+            SetSelectedArea(areaLabel);
             if (selectedArea != null)
             {
                 base.ProcessInput(ev);
             }
         }
-        protected void setSelectedArea(string areaLabel)
+        protected void SetSelectedArea(string areaLabel)
         {
             selectedArea = Map.areaManager.GetLabeled(areaLabel);
             if (selectedArea == null)

@@ -8,6 +8,7 @@ using System.Linq;
 //using Multiplayer.API;
 using Verse;
 using Verse.AI;
+using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUp.Utilities
 {
@@ -143,7 +144,7 @@ namespace GiddyUp.Utilities
         {
             PawnKindDef pawnKindDef = null;
             float averageCommonality = AverageAnimalCommonality(map);
-            Predicate<PawnKindDef> canUseAnimal = (PawnKindDef a) => map.mapTemperature.SeasonAcceptableFor(a.race) && IsMountableUtility.isAllowedInModOptions(a.shortHash) && parms.points > a.combatPower * 2f;
+            Predicate<PawnKindDef> canUseAnimal = (PawnKindDef a) => map.mapTemperature.SeasonAcceptableFor(a.race) && Settings.mountableCache.Contains(a.shortHash) && parms.points > a.combatPower * 2f;
             Rand.PushState();
             if (factionWildAnimalRestrictions.NullOrEmpty() && rndInt <= inBiomeWeightNormalized)
             {

@@ -100,7 +100,7 @@ namespace GiddyUp.Jobs
                 else return true;
             }
             bool riderIsDrafted = rider.Drafted;
-            //Log.Message("A1");
+
             if (!riderIsDrafted && rider.IsColonist) //TODO refactor this as a postfix in Giddy-up Caravan. 
             {
                 if((rider.mindState != null && rider.mindState.duty != null && 
@@ -115,29 +115,25 @@ namespace GiddyUp.Jobs
                 else if(riderData.owning == pawn) return false;
                 if (Settings.caravansEnabled)
                 {
-                    //Log.Message("A2");
                     if (rider.CurJob != null && !allowedJobs.Contains(rider.CurJob.def)) return false;
                     else if (rider.Position.CloseToEdge(rider.Map, 10)) return false; //Caravan just entered map and has not picked a job yet on this tick.
-                    //Log.Message("A3");
                 }
                 else return true;
             }
-            //Log.Message("A4");
             if (riderData.mount == null) return true;
             
             if (Settings.rideAndRollEnabled)
             {
-                //Log.Message("A5");
                 if (pawn.factionInt.def.isPlayer && !riderIsDrafted && rider.CurJob != null && !allowedJobs.Contains(rider.CurJob.def))
                 {
                     var jobDef = rider.CurJob.def;
-                    //Log.Message("A6");
+                    
                     if(jobDef == JobDefOf.EnterTransporter) return true;
-                    //Log.Message("A7");
+
                     if(jobDef == JobDefOf.Hunt && Settings.noMountedHunting) return true;
                     else if (!rider.pather.Moving) return true;
-                    //Log.Message("A8");
-                    if(!riderIsDrafted && pawn.HungryOrTired()) return true;
+
+                    if(!riderIsDrafted && Utitlities.HungryOrTired(pawn.needs)) return true;
                 }
             }
             return false;
