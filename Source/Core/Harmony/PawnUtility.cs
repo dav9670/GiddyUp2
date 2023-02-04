@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using RimWorld;
 using Verse;
+using GiddyUp.Storage;
 
 namespace GiddyUp.Harmony
 {
@@ -11,8 +12,8 @@ namespace GiddyUp.Harmony
         {
             if(motherOrEgg is Pawn mother)
             {
-                var pawnData = Setup._extendedDataStorage.GetExtendedDataFor(pawn.thingIDNumber);
-                var motherData = Setup._extendedDataStorage.GetExtendedDataFor(mother.thingIDNumber);
+                var pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
+                var motherData = ExtendedDataStorage.GUComp[mother.thingIDNumber];
                 pawnData.mountableByAnyone = motherData.mountableByAnyone;
                 pawnData.mountableByMaster = motherData.mountableByMaster;
             }

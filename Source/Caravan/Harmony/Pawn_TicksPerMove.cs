@@ -16,7 +16,7 @@ namespace GiddyUpCaravan.Harmony
         }
         static int Postfix(int __result, Pawn __instance, ref bool diagonal)
         {
-            ExtendedPawnData pawnData = GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(__instance.thingIDNumber);
+            ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[__instance.thingIDNumber];
             if (pawnData.caravanMount != null && __instance.RidingCaravanMount(pawnData) && !__instance.Spawned)
             {
                 return TicksPerMoveUtility.AdjustedTicksPerMove(__instance.skills, pawnData.caravanMount, diagonal);

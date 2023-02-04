@@ -30,5 +30,4 @@ namespace GiddyUp.Harmony
             return __result;
         }
     }
-
 }

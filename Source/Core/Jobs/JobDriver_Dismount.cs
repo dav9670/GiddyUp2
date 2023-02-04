@@ -12,17 +12,15 @@ namespace GiddyUp.Jobs
         }
         public override IEnumerable<Toil> MakeNewToils()
         {
-            ExtendedPawnData pawnData = Setup._extendedDataStorage.GetExtendedDataFor(pawn.thingIDNumber);
+            ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
             yield return Dismount();
         }
         Toil Dismount()
         {
-            ExtendedDataStorage store = Setup._extendedDataStorage;
-
             Toil toil = new Toil();
             toil.defaultCompleteMode = ToilCompleteMode.Never;
             toil.initAction = delegate {
-                ExtendedPawnData pawnData = store.GetExtendedDataFor(pawn.thingIDNumber);
+                ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
                 if(pawnData.mount != null)
                 {
                     pawnData.mount.jobs.EndCurrentJob(JobCondition.InterruptForced);

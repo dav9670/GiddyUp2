@@ -31,12 +31,12 @@ namespace GiddyUp.Storage
                 if (value == null) 
                 {
                     //if (Prefs.DevMode) Log.Message("[Giddy-Up] pawn " + ID.ToString() + " no longer now mounted upon " + mount?.thingIDNumber.ToString() ?? "NULL");
-                    Setup.isMounted.Remove(ID);
+                    ExtendedDataStorage.isMounted.Remove(ID);
                 }
                 else
                 {
                     //if (Prefs.DevMode) Log.Message("[Giddy-Up] pawn " + ID.ToString() + " is now mounted upon " + value.thingIDNumber.ToString());
-                    Setup.isMounted.Add(ID);
+                    ExtendedDataStorage.isMounted.Add(ID);
                 }
                 mount = value; 
              }
@@ -57,6 +57,10 @@ namespace GiddyUp.Storage
             Scribe_Values.Look(ref wasRidingToJob, "wasRidingToJob", false);
             Scribe_Values.Look(ref drawOffset, "drawOffset", 0);
             
+            if (Scribe.mode == LoadSaveMode.PostLoadInit)
+            {
+                if (mount != null) ExtendedDataStorage.isMounted.Add(ID);
+            }
         }
 
         public void Reset()

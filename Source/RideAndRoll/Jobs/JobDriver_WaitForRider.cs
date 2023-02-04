@@ -90,16 +90,13 @@ namespace GiddyUpRideAndRoll.Jobs
         }
         void UnsetOwnership()
         {
-            if (GiddyUp.Setup._extendedDataStorage is ExtendedDataStorage store)
+            ExtendedPawnData animalData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
+            if (animalData.ownedBy != null)
             {
-                ExtendedPawnData animalData = store.GetExtendedDataFor(pawn.thingIDNumber);
-                if (animalData.ownedBy != null)
-                {
-                    ExtendedPawnData riderData = store.GetExtendedDataFor(animalData.ownedBy.thingIDNumber);
-                    riderData.owning = null;
-                }
-                animalData.ownedBy = null;
+                ExtendedPawnData riderData = ExtendedDataStorage.GUComp[animalData.ownedBy.thingIDNumber];
+                riderData.owning = null;
             }
+            animalData.ownedBy = null;
         }
         void WalkRandomNearby()
         {

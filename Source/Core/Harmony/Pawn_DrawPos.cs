@@ -10,8 +10,8 @@ namespace GiddyUp.Harmony
     {
         static void Postfix(ref Vector3 __result, Pawn ___pawn)
         {
-            if (!Setup.isMounted.Contains(___pawn.thingIDNumber)) return;
-            ExtendedPawnData pawnData = Setup._extendedDataStorage.GetExtendedDataFor(___pawn.thingIDNumber);
+            if (!ExtendedDataStorage.isMounted.Contains(___pawn.thingIDNumber)) return;
+            ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[___pawn.thingIDNumber];
 
             //Failsafe. Should never happen but too dangerous to chance
             if (pawnData.mount == null)

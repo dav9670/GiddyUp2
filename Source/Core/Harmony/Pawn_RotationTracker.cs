@@ -7,7 +7,7 @@ using Verse;
 namespace GiddyUp.Harmony
 {
     [HarmonyPatch(typeof(Thing), nameof(Thing.Rotation), MethodType.Setter)]
-    public static class Patch_Rotation
+    static class Patch_Rotation
     {
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
@@ -22,13 +22,13 @@ namespace GiddyUp.Harmony
             }
         }
 
-        public static void RotChanged(Thing __instance)
+        static void RotChanged(Thing __instance)
         {
             if (__instance is not Pawn pawn) return;
 
             if (!__instance.Destroyed && pawn.jobs != null && pawn.jobs.curDriver is JobDriver_Mounted jobDriver)
             {
-                __instance.Rotation = jobDriver.Rider.Rotation;
+                __instance.rotationInt = jobDriver.Rider.Rotation;
             }
         }
     }

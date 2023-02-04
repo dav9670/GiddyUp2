@@ -2,6 +2,7 @@
 using RimWorld;
 using System;
 using Verse;
+using GiddyUp.Storage;
 
 namespace GiddyUp.Harmony
 {
@@ -17,7 +18,7 @@ namespace GiddyUp.Harmony
             }
             Pawn pawn = eqt.pawn;
             if (pawn == null || pawn.stances == null) return __result;
-            Pawn mount = Setup._extendedDataStorage.GetExtendedDataFor(pawn.thingIDNumber).mount;
+            Pawn mount = ExtendedDataStorage.GUComp[pawn.thingIDNumber].mount;
             if (mount == null)
             {
                 return __result;

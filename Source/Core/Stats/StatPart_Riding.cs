@@ -16,9 +16,9 @@ namespace GiddyUp.Stats
 
             if (req.Thing is Pawn pawn)
             {
-                if (Setup.isMounted.Contains(pawn.thingIDNumber))
+                if (ExtendedDataStorage.isMounted.Contains(pawn.thingIDNumber))
                 {
-                    ExtendedPawnData pawnData = Setup._extendedDataStorage.GetExtendedDataFor(pawn.thingIDNumber);
+                    ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
                     float mountSpeed = pawnData.mount.GetStatValue(StatDefOf.MoveSpeed);
                     sb.AppendLine("GUC_GiddyUp".Translate());
                     sb.AppendLine("    " + "GUC_StatPart_MountMoveSpeed".Translate() + ": " + mountSpeed.ToStringByStyle(ToStringStyle.FloatTwo));
@@ -53,9 +53,9 @@ namespace GiddyUp.Stats
         {
             if(req.Thing is Pawn pawn)
             {
-                if (Setup.isMounted.Contains(pawn.thingIDNumber))
+                if (ExtendedDataStorage.isMounted.Contains(pawn.thingIDNumber))
                 {
-                    ExtendedPawnData pawnData = Setup._extendedDataStorage.GetExtendedDataFor(pawn.thingIDNumber);
+                    ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
                     float mountSpeed = pawnData.mount.GetStatValue(StatDefOf.MoveSpeed);
                     val = mountSpeed;
                     return;

@@ -40,11 +40,10 @@ namespace GiddyUpCaravan.Harmony
             {
                 if (pawn.IsColonist && pawn.Spawned)
                 {
-                    var store = GiddyUp.Setup._extendedDataStorage;
-                    ExtendedPawnData pawnData = store.GetExtendedDataFor(pawn.thingIDNumber);
+                    ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
                     if (pawnData.caravanMount is Pawn animal)
                     {
-                        ExtendedPawnData animalData = store.GetExtendedDataFor(animal.thingIDNumber);
+                        ExtendedPawnData animalData = ExtendedDataStorage.GUComp[animal.thingIDNumber];
                         pawnData.Mount = animal;
                         Job jobAnimal = new Job(GiddyUp.ResourceBank.JobDefOf.Mounted, pawn);
                         jobAnimal.count = 1;

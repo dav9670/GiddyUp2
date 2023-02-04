@@ -41,7 +41,6 @@ namespace GiddyUpCaravan.Harmony
                 }
             }
         }
-
         public static float AddMountSelector(TransferableOneWayWidget widget, float num, Rect rect, TransferableOneWay trad)
         {
             float buttonWidth = 150f;
@@ -70,10 +69,9 @@ namespace GiddyUpCaravan.Harmony
 
             return num - buttonWidth;
         }
-
         static void SetSelectedForCaravan(Pawn pawn, TransferableOneWay trad)
         {
-            ExtendedPawnData pawnData = GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(pawn.thingIDNumber);
+            ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
 
             if (trad.CountToTransfer == 0) //unset pawndata when pawn is not selected for caravan. 
             {
@@ -97,22 +95,19 @@ namespace GiddyUpCaravan.Harmony
                 pawnData.selectedForCaravan = true;
             }
         }
-
         static void UnsetDataForRider(ExtendedPawnData pawnData)
         {
-            GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(pawnData.caravanMount.thingIDNumber).caravanRider = null;
+            ExtendedDataStorage.GUComp[pawnData.caravanMount.thingIDNumber].caravanRider = null;
             pawnData.caravanMount = null;
         }
-
         static void UnsetDataForMount(ExtendedPawnData pawnData)
         {
-            GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(pawnData.caravanRider.thingIDNumber).caravanMount = null;
+            ExtendedDataStorage.GUComp[pawnData.caravanRider.thingIDNumber].caravanMount = null;
             pawnData.caravanRider = null;
         }
-
         static void HandleAnimal(float num, Rect buttonRect, Pawn animal, List<Pawn> pawns, TransferableOneWay trad)
         {
-            ExtendedPawnData animalData = GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(animal.thingIDNumber);
+            ExtendedPawnData animalData = ExtendedDataStorage.GUComp[animal.thingIDNumber];
             Text.Anchor = TextAnchor.MiddleLeft;
 
             List<FloatMenuOption> list = new List<FloatMenuOption>();
@@ -144,7 +139,7 @@ namespace GiddyUpCaravan.Harmony
 
             if (animalData.caravanRider != null)
             {
-                ExtendedPawnData riderData = GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(animalData.caravanRider.thingIDNumber);
+                ExtendedPawnData riderData = ExtendedDataStorage.GUComp[animalData.caravanRider.thingIDNumber];
                 if (riderData.selectedForCaravan)
                 {
                     buttonText = animalData.caravanRider.Name.ToStringShort;
@@ -160,7 +155,7 @@ namespace GiddyUpCaravan.Harmony
                 {
                     if (pawn.IsColonist)
                     {
-                        ExtendedPawnData pawnData = GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(pawn.thingIDNumber);
+                        ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
                         if (!pawnData.selectedForCaravan)
                         {
                             list.Add(new FloatMenuOption(pawn.Name.ToStringShort + " (" + "GU_Car_PawnNotSelected".Translate() + ")", null, MenuOptionPriority.Default, null, null, 0f, null, null));
@@ -190,13 +185,12 @@ namespace GiddyUpCaravan.Harmony
                 Find.WindowStack.Add(new FloatMenu(list));
             }
         }
-
         //[SyncMethod]
         static void SelectMountRider(ExtendedPawnData animalData, ExtendedPawnData pawnData, Pawn animal, Pawn pawn)
         {
             if (animalData.caravanRider != null)
             {
-                ExtendedPawnData riderData = GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(animalData.caravanRider.thingIDNumber);
+                ExtendedPawnData riderData = ExtendedDataStorage.GUComp[animalData.caravanRider.thingIDNumber];
                 riderData.caravanMount = null;
             }
 
@@ -205,20 +199,18 @@ namespace GiddyUpCaravan.Harmony
 
             animalData.selectedForCaravan = true;
         }
-
         //[SyncMethod]
         static void ClearMountRider(ExtendedPawnData animalData)
         {
             if (animalData.caravanRider != null)
             {
-                ExtendedPawnData riderData = GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(animalData.caravanRider.thingIDNumber);
+                ExtendedPawnData riderData = ExtendedDataStorage.GUComp[animalData.caravanRider.thingIDNumber];
                 riderData.caravanMount = null;
             }
             animalData.caravanRider = null;
 
             animalData.selectedForCaravan = true;
         }
-
     }
 
     //This code makes sure total pack weight is refreshed after a rider is set for an animal. 
@@ -246,7 +238,7 @@ namespace GiddyUpCaravan.Harmony
                     }
                     if (tow.CountToTransfer == -1)
                     {
-                        ExtendedPawnData PawnData = GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(towPawn.thingIDNumber);
+                        ExtendedPawnData PawnData = ExtendedDataStorage.GUComp[towPawn.thingIDNumber];
                         if (PawnData.selectedForCaravan == true)
                         {
                             anythingChanged = true;

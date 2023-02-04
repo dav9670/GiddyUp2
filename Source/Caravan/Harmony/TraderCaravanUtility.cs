@@ -17,7 +17,7 @@ namespace GiddyUpCaravan.Harmony
         {
             if (p.RaceProps.Animal)
             {
-                ExtendedPawnData pawnData = GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(p.thingIDNumber);
+                ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[p.thingIDNumber];
 
                 if (pawnData.ownedBy != null)
                 {

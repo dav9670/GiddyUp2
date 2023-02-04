@@ -1,20 +1,43 @@
-﻿using System;
+﻿using RimWorld;
 using System.Collections.Generic;
 using RimWorld.Planet;
 using Verse;
+using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUp.Storage
 {
     public class ExtendedDataStorage : WorldComponent, IExposable
     {
+        public static ExtendedDataStorage GUComp;
+        public static HashSet<int> isMounted = new HashSet<int>();
         Dictionary<int, ExtendedPawnData> _store = new Dictionary<int, ExtendedPawnData>();
-        List<int> _idWorkingList;
-        List<ExtendedPawnData> _extendedPawnDataWorkingList;
-        public ExtendedDataStorage(World world) : base(world)
+        public ExtendedDataStorage(World world) : base(world) {}
+
+        public override void FinalizeInit()
         {
+            GUComp = this;
+            ExtendedDataStorage.isMounted = new HashSet<int>();
+
+            LessonAutoActivator.TeachOpportunity(ResourceBank.ConceptDefOf.GUC_Animal_Handling, OpportunityType.GoodToKnow);
+            //Remove alert
+            if (!Settings.rideAndRollEnabled)
+            {
+                try { Find.Alerts.AllAlerts.RemoveAll(x => x.GetType() == typeof(GiddyUpRideAndRoll.Alerts.Alert_NoDropAnimal)); }
+                catch (System.Exception) { Log.Warning("[Giddy-up] Failed to remove Alert_NoDropAnimal instance."); }
+            }
+
+            //BM
+            if (Settings.battleMountsEnabled)
+            {
+                LessonAutoActivator.TeachOpportunity(ResourceBank.ConceptDefOf.BM_Mounting, OpportunityType.GoodToKnow);
+                LessonAutoActivator.TeachOpportunity(ResourceBank.ConceptDefOf.BM_Enemy_Mounting, OpportunityType.GoodToKnow);
+            }
         }
         public override void ExposeData()
         {
+            List<ExtendedPawnData> _extendedPawnDataWorkingList = new List<ExtendedPawnData>();
+            List<int> _idWorkingList = new List<int>();
+            
             base.ExposeData();
             Scribe_Collections.Look(ref _store, "store", LookMode.Value, LookMode.Deep, ref _idWorkingList, ref _extendedPawnDataWorkingList);
             
@@ -32,22 +55,27 @@ namespace GiddyUp.Storage
 
         // Return the associate extended data for a given Pawn, creating a new association
         // if required.
-        public ExtendedPawnData GetExtendedDataFor(int pawnID)
+        public ExtendedPawnData this[int pawnID]
         {
-            if (_store.TryGetValue(pawnID, out ExtendedPawnData data))
+            get
             {
-                return data;
+                if (_store.TryGetValue(pawnID, out ExtendedPawnData data))
+                {
+                    return data;
+                }
+
+                var newExtendedData = new ExtendedPawnData(pawnID);
+
+                _store[pawnID] = newExtendedData;
+                return newExtendedData;
             }
-
-            var newExtendedData = new ExtendedPawnData(pawnID);
-
-            _store[pawnID] = newExtendedData;
-            return newExtendedData;
         }
 
+        /*
         public void DeleteExtendedDataFor(Pawn pawn)
         {
             _store.Remove(pawn.thingIDNumber);
         }
+        */
     }
 }

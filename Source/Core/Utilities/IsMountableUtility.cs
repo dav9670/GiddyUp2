@@ -2,6 +2,7 @@
 using RimWorld;
 using System.Linq;
 using Verse;
+using GiddyUp.Storage;
 using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUp.Utilities
@@ -10,30 +11,19 @@ namespace GiddyUp.Utilities
     {
         public enum Reason{NotFullyGrown, NotInModOptions, CanMount, IsRoped, NeedsTraining};
 
-        public static Pawn CurMount(this Pawn pawn)
-        {
-            return Setup._extendedDataStorage.GetExtendedDataFor(pawn.thingIDNumber).mount;
-        }
-        public static bool IsMountable(ThingDef thingDef)
-        {
-            return IsMountable(thingDef.GetConcreteExample() as Pawn);
-        }
         public static bool IsMountable(Pawn pawn)
         {
             return IsMountable(pawn, out Reason reason);
         }
-
         public static bool IsCurrentlyMounted(Pawn animal)
         {
             if(animal.CurJob == null || animal.CurJob.def != ResourceBank.JobDefOf.Mounted)
             {
                 return false;
             }
-            JobDriver_Mounted mountedDriver = (JobDriver_Mounted)animal.jobs.curDriver;
-            Pawn rider = mountedDriver.Rider;
-            return Setup.isMounted.Contains(rider.thingIDNumber);
+            var rider = animal.jobs.curDriver.job.targetA.Thing;
+            return ExtendedDataStorage.isMounted.Contains(rider.thingIDNumber);
         }
-
         public static bool IsMountable(Pawn animal, out Reason reason)
         {
             reason = Reason.CanMount;

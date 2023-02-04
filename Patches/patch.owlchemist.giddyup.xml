@@ -22,6 +22,7 @@ Two patch operations per animal are needed for vanilla animals to ensure compati
 					defName="LabradorRetriever" or 
 					defName="Alpaca" or 
 					defName="Elk" or 
+					defName="Horse" or 
 				defName="Thrumbo"][not(comps)]</xpath>
 				<value>
 					<comps />
@@ -157,18 +158,18 @@ Two patch operations per animal are needed for vanilla animals to ensure compati
 					</li>
 				</value>
 			</li>
-			<li Class="PatchOperationAdd">
-				<xpath>Defs/ThingDef[defName="LabradorRetriever"]/comps</xpath>
+			<li Class="PatchOperationAddModExtension">
+				<xpath>Defs/ThingDef[defName="LabradorRetriever"]</xpath>
 				<value>
-					<li Class="GiddyUp.CompProperties_Mount">
+					<li Class="GiddyUp.DrawOverride">
 						<isException>true</isException>
 					</li>
 				</value>
 			</li>
-			<li Class="PatchOperationAdd">
-				<xpath>Defs/ThingDef[defName="Alpaca" or defName="Elk" or defName="Thrumbo"]/comps</xpath>
+			<li Class="PatchOperationAddModExtension">
+				<xpath>Defs/ThingDef[defName="Alpaca" or defName="Elk" or defName="Thrumbo"]</xpath>
 				<value>
-					<li Class="GiddyUp.CompProperties_Mount">
+					<li Class="GiddyUp.DrawOverride">
 						<drawFront>true</drawFront>
 					</li>
 				</value>
@@ -196,6 +197,30 @@ Two patch operations per animal are needed for vanilla animals to ensure compati
 					<li>GiddyUpRideAndRoll.Zones.Designator_GU_NoMount_Clear</li>
 					<li>GiddyUpCaravan.Zones.Designator_GU_DropAnimal_NPC_Expand</li>
 					<li>GiddyUpCaravan.Zones.Designator_GU_DropAnimal_NPC_Clear</li>
+				</value>
+			</li>
+			<li Class="PatchOperationAdd">
+				<xpath>Defs/ThingDef[defName="Horse"]/comps</xpath>
+				<value>
+					<li Class="GiddyUp.CompProperties_Overlay">
+						<overlayFront>
+							<graphicDataDefault>
+								<graphicClass>Graphic_Single</graphicClass>
+								<drawSize>2.1</drawSize>
+								<drawRotated>false</drawRotated>
+							</graphicDataDefault>
+							<allVariants>
+								<li><texPath>Things/Pawn/Horse_overlay_south</texPath></li>
+								<li><texPath>Things/Pawn/Horse1_overlay_south</texPath></li>							
+								<li><texPath>Things/Pawn/Horse2_overlay_south</texPath></li>							
+								<li><texPath>Things/Pawn/Horse3_overlay_south</texPath></li>							
+								<li><texPath>Things/Pawn/Horse4_overlay_south</texPath></li>							
+								<li><texPath>Things/Pawn/Horse5_overlay_south</texPath></li>						
+								<li><texPath>Things/Pawn/Horse6_overlay_south</texPath></li>
+							</allVariants>
+							<offsetDefault>(0,0,0,0)</offsetDefault>
+						</overlayFront>
+					</li>
 				</value>
 			</li>
 		</operations>

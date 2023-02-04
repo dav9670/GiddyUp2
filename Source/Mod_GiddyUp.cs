@@ -1,13 +1,11 @@
-﻿using System;
+﻿using GiddyUpRideAndRoll.Zones;
+using GiddyUpCaravan.Zones;
+using GiddyUp.Utilities;
+using RimWorld;
+using System;
 using System.Collections.Generic;
-using GiddyUp.Storage;
 using Verse;
 using UnityEngine;
-using RimWorld;
-using RimWorld.Planet;
-using HarmonyLib;
-using GiddyUpRideAndRoll.Zones;
-using GiddyUpCaravan.Zones;
 using static GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUp
@@ -15,9 +13,6 @@ namespace GiddyUp
     [StaticConstructorOnStartup]
     public static class Setup
     {
-        public static ExtendedDataStorage _extendedDataStorage;
-        public static HashSet<int> isMounted = new HashSet<int>();
-        internal static HashSet<PawnKindDef> animalsWithBiome = new HashSet<PawnKindDef>(), animalsWithoutBiome = new HashSet<PawnKindDef>();
         public static ThingDef[] allAnimals;
         public const float defaultSizeThreshold = 1.2f;
 
@@ -39,7 +34,7 @@ namespace GiddyUp
             mountableCache = new HashSet<ushort>();
 
             if (invertDrawRules == null) invertDrawRules = new HashSet<string>();
-            _drawSelecter = new HashSet<ushort>();
+            drawRulesCache = new HashSet<ushort>();
 
             var list = DefDatabase<ThingDef>.AllDefsListForReading;
             var length = list.Count;
@@ -65,12 +60,12 @@ namespace GiddyUp
 
                     //Handle the draw front/behind draw instruction cache
                     setting = false;
-                    var comp = def.GetCompProperties<CompProperties_Mount>();
-                    if (comp != null) setting = comp.drawFront;
+                    var modExt = def.GetModExtension<DrawOverride>();
+                    if (modExt != null) setting = modExt.drawFront;
                     if (invertDrawRules.Contains(def.defName)) setting = !setting;
                     
-                    if (setting) _drawSelecter.Add(def.shortHash);
-                    else _drawSelecter.Remove(def.shortHash);
+                    if (setting) drawRulesCache.Add(def.shortHash);
+                    else drawRulesCache.Remove(def.shortHash);
                 }
             }
             workingList.SortBy(x => x.label);
@@ -85,7 +80,7 @@ namespace GiddyUp
                 var biomeDef = biomeDefs[i];
                 foreach(PawnKindDef animalKind in biomeDef.AllWildAnimals)
                 {
-                    animalsWithBiome.Add(animalKind);
+                    NPCMountUtility.animalsWithBiome.Add(animalKind);
                 }
             }
             
@@ -94,7 +89,7 @@ namespace GiddyUp
             for (int i = 0; i < length; i++)
             {
                 var def = pawnKindDefs[i];
-                if (def.RaceProps.Animal && !animalsWithBiome.Contains(def)) animalsWithoutBiome.Add(def);
+                if (def.RaceProps.Animal && !NPCMountUtility.animalsWithBiome.Contains(def)) NPCMountUtility.animalsWithoutBiome.Add(def);
             }
         }
         static void RemoveRideAndRoll()
@@ -135,30 +130,6 @@ namespace GiddyUp
             {
                 if (designator is Designator_GU_DropAnimal_NPC_Clear ||
                     designator is Designator_GU_DropAnimal_NPC_Expand) designationCategoryDef.resolvedDesignators.Remove(designator);
-            }
-        }
-    
-        [HarmonyPatch(typeof(World), nameof(World.FinalizeInit))]
-        static class Patch_WorldLoaded
-        {
-            static void Postfix()
-            {
-                _extendedDataStorage = Find.World.GetComponent<ExtendedDataStorage>();
-                LessonAutoActivator.TeachOpportunity(ResourceBank.ConceptDefOf.GUC_Animal_Handling, OpportunityType.GoodToKnow);
-
-                //Remove alert
-                if (!rideAndRollEnabled)
-                {
-                    try { Find.Alerts.AllAlerts.RemoveAll(x => x.GetType() == typeof(GiddyUpRideAndRoll.Alerts.Alert_NoDropAnimal)); }
-                    catch (System.Exception) { Log.Warning("[Giddy-up] Failed to remove Alert_NoDropAnimal instance."); }
-                }
-
-                //BM
-                if (battleMountsEnabled)
-                {
-                    LessonAutoActivator.TeachOpportunity(ResourceBank.ConceptDefOf.BM_Mounting, OpportunityType.GoodToKnow);
-                    LessonAutoActivator.TeachOpportunity(ResourceBank.ConceptDefOf.BM_Enemy_Mounting, OpportunityType.GoodToKnow);
-                }
             }
         }
     }
@@ -250,12 +221,6 @@ namespace GiddyUp
                     options.Gap();
                     options.GapLine(); //=============================
                     options.Gap();
-                    
-                    //options.Label("GU_Car_CompleteCaravanBonus_Title".Translate("0", "200", "60", completeCaravanBonus.ToString()), -1f, "GU_Car_CompleteCaravanBonus_Description".Translate());
-                    //completeCaravanBonus = (int)options.Slider(completeCaravanBonus, 0f, 200f);
-
-                    //options.Label("GU_Car_incompleteCaravanBonusCap_Title".Translate("0", "200", "25", incompleteCaravanBonusCap.ToString()), -1f, "GU_Car_incompleteCaravanBonusCap_Description".Translate());
-                    //incompleteCaravanBonusCap = (int)options.Slider(incompleteCaravanBonusCap, 0f, 200f);
 
                     options.Label("GU_Car_visitorMountChance_Title".Translate("0", "100", "20", visitorMountChance.ToString()), -1f, "GU_Car_visitorMountChance_Description".Translate());
                     visitorMountChance = (int)options.Slider(visitorMountChance, 0f, 100f);
@@ -386,11 +351,11 @@ namespace GiddyUp
 
                 //And now draw rules
                 bool drawFront = false;
-                var comp = animalDef.GetCompProperties<CompProperties_Mount>();
-                if (comp != null) drawFront = comp.drawFront;
+                var modExt = animalDef.GetModExtension<DrawOverride>();
+                if (modExt != null) drawFront = modExt.drawFront;
                 
-                if (drawFront && !_drawSelecter.Contains(hash)) invertDrawRules.Add(animalDef.defName);
-                else if (!drawFront && _drawSelecter.Contains(hash)) invertDrawRules.Add(animalDef.defName);
+                if (drawFront && !drawRulesCache.Contains(hash)) invertDrawRules.Add(animalDef.defName);
+                else if (!drawFront && drawRulesCache.Contains(hash)) invertDrawRules.Add(animalDef.defName);
             } 
         }
         
@@ -402,13 +367,11 @@ namespace GiddyUp
             inBiomeWeight = 70, 
             outBiomeWeight = 15, 
             nonWildWeight = 15,
-            //completeCaravanBonus = 60, 
-            //incompleteCaravanBonusCap = 25, 
             visitorMountChance = 20, 
             visitorMountChanceTribal = 40;
         public static bool rideAndRollEnabled = true, battleMountsEnabled = true, caravansEnabled = true, noMountedHunting, logging;
         public static HashSet<string> invertMountingRules, invertDrawRules; //These are only used on game start to setup the below, fast cache collections
-        public static HashSet<ushort> mountableCache, _drawSelecter;
+        public static HashSet<ushort> mountableCache, drawRulesCache;
         public static string tabsHandler;
         public static Vector2 scrollPos;
         public static SelectedTab selectedTab = SelectedTab.bodySize;

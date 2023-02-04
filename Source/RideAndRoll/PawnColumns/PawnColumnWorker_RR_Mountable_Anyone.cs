@@ -1,6 +1,7 @@
 ﻿using GiddyUp.Utilities;
 using RimWorld;
 using Verse;
+using GiddyUp.Storage;
 //using Multiplayer.API;
 
 namespace GiddyUpRideAndRoll.PawnColumns
@@ -13,13 +14,13 @@ namespace GiddyUpRideAndRoll.PawnColumns
         }
         public override bool GetValue(Pawn pawn)
         {
-            return GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(pawn.thingIDNumber).mountableByAnyone;
+            return ExtendedDataStorage.GUComp[pawn.thingIDNumber].mountableByAnyone;
         }
 
         //[SyncMethod]
         public override void SetValue(Pawn pawn, bool value, PawnTable table)
         {
-            GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(pawn.thingIDNumber).mountableByAnyone = value;
+            ExtendedDataStorage.GUComp[pawn.thingIDNumber].mountableByAnyone = value;
         }
     }
 }

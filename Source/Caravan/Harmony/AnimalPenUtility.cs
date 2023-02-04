@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using RimWorld.Planet;
 using Verse;
+using GiddyUp.Storage;
 
 namespace GiddyUpCaravan.Harmony
 {
@@ -15,7 +16,7 @@ namespace GiddyUpCaravan.Harmony
         {
             if (__result && pawn.IsFormingCaravan())
             {
-                return GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(pawn.thingIDNumber).caravanRider == null;
+                return ExtendedDataStorage.GUComp[pawn.thingIDNumber].caravanRider == null;
             }
             return __result;
         }

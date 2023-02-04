@@ -2,9 +2,8 @@
 using Verse;
 using Verse.AI;
 using GiddyUp.Utilities;
-using GiddyUp.Storage;
 using RimWorld;
-using UnityEngine;
+using GiddyUp.Storage;
 using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUp.Jobs
@@ -13,10 +12,6 @@ namespace GiddyUp.Jobs
     {
         public override bool TryMakePreToilReservations(bool errorOnFailed)
         {
-            if (Settings.rideAndRollEnabled && GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(this.pawn.thingIDNumber).targetJob == null)
-            {
-                return true;
-            }
             return true;
         }
         public Pawn Mount { get { return job.targetA.Thing as Pawn; } }
@@ -27,16 +22,16 @@ namespace GiddyUp.Jobs
             this.FailOnDespawnedNullOrForbidden(TargetIndex.A);
             this.FailOnDowned(TargetIndex.A);
 
-            yield return letMountParticipate();
+            yield return LetMountParticipate();
             //yield return Toils_General.Wait(1);//wait one tick to ensure animal is waiting to get mounted before proceding. 
             yield return Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.Touch);
             if(this.pawn.interactions != null)
             {
                 yield return Toils_Interpersonal.WaitToBeAbleToInteract(this.pawn);
             }
-            yield return TalkToAnimal(TargetIndex.A);
+            yield return TalkToAnimal();
         }
-        Toil letMountParticipate()
+        Toil LetMountParticipate()
         {
             Toil toil = new Toil();
 
@@ -52,7 +47,7 @@ namespace GiddyUp.Jobs
             };
             return toil;
         }
-        Toil TalkToAnimal(TargetIndex tameeInd)
+        Toil TalkToAnimal()
         {
             Toil toil = new Toil();
             toil.AddFailCondition(delegate { return Mount.CurJob.def != ResourceBank.JobDefOf.Mounted; });
@@ -74,12 +69,12 @@ namespace GiddyUp.Jobs
         }
         public void FinishAction()
         {
-            bool flag = Mount.CurJob != null && Mount.CurJob.def == ResourceBank.JobDefOf.Mounted;
+            var mount = Mount;
+            bool flag = mount.CurJob != null && mount.CurJob.def == ResourceBank.JobDefOf.Mounted;
             if (Settings.rideAndRollEnabled || flag)
             {
-                var mount = Mount;
-                var pawnData = GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(this.pawn.thingIDNumber);
-                var animalData = GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(Mount.thingIDNumber);
+                var pawnData = ExtendedDataStorage.GUComp[this.pawn.thingIDNumber];
+                var animalData = ExtendedDataStorage.GUComp[mount.thingIDNumber];
 
                 if (flag)
                 {

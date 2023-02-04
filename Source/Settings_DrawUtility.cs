@@ -38,7 +38,7 @@ namespace GiddyUp
 			bool checkOn;
 			ushort hash = def.shortHash;
 			if (selectedTab == SelectedTab.bodySize) checkOn = mountableCache.Contains(hash);
-			else checkOn = _drawSelecter.Contains(hash);
+			else checkOn = drawRulesCache.Contains(hash);
 			
 			//Fetch bounding rect
 			Rect rect = options.GetRect(lineHeight);
@@ -65,8 +65,8 @@ namespace GiddyUp
 			}
 			else
 			{
-				if (checkOn && !_drawSelecter.Contains(hash)) _drawSelecter.Add(hash);
-				else if (!checkOn && _drawSelecter.Contains(hash)) _drawSelecter.Remove(hash);
+				if (checkOn && !drawRulesCache.Contains(hash)) drawRulesCache.Add(hash);
+				else if (!checkOn && drawRulesCache.Contains(hash)) drawRulesCache.Remove(hash);
 			}
 		}
 

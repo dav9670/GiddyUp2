@@ -1,67 +1,89 @@
 ﻿using GiddyUp.Utilities;
 using System.Linq;
+using System.Collections.Generic;
 using UnityEngine;
 using Verse;
 
 namespace GiddyUp
 {
-    class CompOverlay : ThingComp
-    {
-        public CompProperties_Overlay Props => props as CompProperties_Overlay;
-        public override void PostDraw()
-        {
-            if (!(parent is Pawn pawn)) return;
-            if (!IsMountableUtility.IsCurrentlyMounted(pawn)) return;
-            base.PostDraw();
+	class CompOverlay : ThingComp
+	{
+		CompProperties_Overlay overlayComp;
+		bool valid;
+		bool incompatible;
+		Pawn pawn;
+		Dictionary<Rot4, (GraphicData, Vector3, Vector3, Vector3)> graphicCache = new Dictionary<Rot4, (GraphicData, Vector3, Vector3, Vector3)>();
+		
+		void CacheGraphicData(Verse.Rot4 rotation)
+		{
+			var overlay = overlayComp.GetOverlay(rotation);
+			if (overlay == null) return;
+			
+			GraphicData graphicData = ((pawn.gender == Gender.Female) ? overlay.graphicDataFemale : overlay.graphicDataMale) ?? overlay.graphicDataDefault;
+			if (graphicData == null) return;
 
-            CompProperties_Overlay.GraphicOverlay overlay = Props.GetOverlay(parent.Rotation);
-            if(overlay == null) return;
-
-            Vector3 drawPos = parent.DrawPos;
-            GraphicData gd;
-
-            gd = (pawn.gender == Gender.Female) ? overlay.graphicDataFemale : overlay.graphicDataMale;
-            if (gd == null) gd = overlay.graphicDataDefault;
-            if (gd == null) return;
-
-            //support multi texture animals
+			//support multi texture animals
             if(overlay.allVariants != null)
             {
-                string graphicPath = pawn.Drawer.renderer.graphics.nakedGraphic.path;
+                string graphicPath = pawn.Drawer?.renderer?.graphics?.nakedGraphic?.path;
+				if (graphicPath.NullOrEmpty()) return;
                 string graphicName = graphicPath.Split('/').Last();
-                bool foundTex = false;
-                foreach (var variant in overlay.allVariants)
+                bool found = false;
+				foreach (var variant in overlay.allVariants)
                 {
-                    string variantName = variant.texPath.Split('/').Last().Split(overlay.stringDelimiter.ToCharArray()).First();
+                    string variantName = variant.texPath.Split('/').Last().Split(overlay.stringDelimiter.ToCharArray())[0];
 
                     if (graphicName == variantName)
                     {
                         //set required properties
                         string texPath = variant.texPath;
-                        variant.CopyFrom(gd);
+                        variant.CopyFrom(graphicData);
                         variant.texPath = texPath;
-                        gd = variant;
-                        foundTex = true;
+                        graphicData = variant;
+						found = true;
+						break;
                     }
                 }
-                if (!foundTex)
-                {
-                    //Don't throw errors when there's no valid texture. 
-                    return;
-                }
+				if (!found)
+				{
+					incompatible = true;
+					return;
+				}
             }
 
-            //g.data.
-            drawPos.y += 0.2f;
-            Vector3 offset = (pawn.gender == Gender.Female) ? overlay.offsetFemale : overlay.offsetMale;
-            
-            if(offset == Vector3.zero) offset = overlay.offsetDefault;
-            if(pawn.Rotation == Rot4.West) offset.x = -offset.x;
+			overlay.offsetFemale.y += 0.2f;
+			overlay.offsetMale.y += 0.2f;
+			overlay.offsetDefault.y += 0.2f;
 
-            drawPos += offset;
+			graphicCache.Add(rotation, (graphicData, overlay.offsetFemale, overlay.offsetMale, overlay.offsetDefault));
+			valid = true;
+		}
+		public void TryCache()
+		{
+			overlayComp = props as CompProperties_Overlay;
+			if (parent is Pawn pawn)
+			{
+				this.pawn = pawn;
+				CacheGraphicData(Rot4.South);
+				CacheGraphicData(Rot4.North);
+				CacheGraphicData(Rot4.West);
+			}
+		}
+		public override void PostDraw()
+		{
+			if (valid && IsMountableUtility.IsCurrentlyMounted(pawn) && graphicCache.TryGetValue(pawn.Rotation, out (GraphicData, Vector3, Vector3, Vector3) cache))
+			{	
+				Vector3 drawPos = parent.DrawPos;
+				Vector3 offset = (pawn.gender == Gender.Female) ? cache.Item2 : cache.Item3;
+				if (offset == Vector3.zero) offset = cache.Item4;
+				if (pawn.Rotation == Rot4.West) offset.x = -offset.x;
 
-            //Somehow the rotation is flipped, hence the use of GetOpposite. 
-            gd.Graphic.Draw(drawPos, parent.Rotation, parent, 0f);
-        }
-    }
+				drawPos += offset;
+				
+				//Somehow the rotation is flipped, hence the use of GetOpposite.
+				cache.Item1.Graphic.Draw(drawPos, parent.Rotation, parent, 0f);
+			}
+			else if (!valid && !incompatible) TryCache();
+		}
+	}
 }

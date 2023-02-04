@@ -1,5 +1,4 @@
-﻿using GiddyUp.Jobs;
-using GiddyUp.Storage;
+﻿using GiddyUp.Storage;
 using HarmonyLib;
 using RimWorld;
 using System.Collections.Generic;
@@ -20,7 +19,7 @@ namespace GiddyUpCaravan.Harmony
             AddMissingPawnsToLord(__instance);
             foreach (Pawn pawn in __instance.lord.ownedPawns)
             {
-                ExtendedPawnData pawnData = GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(pawn.thingIDNumber);
+                ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
                 if (pawnData.caravanMount != null)
                 {
                     Pawn animal = pawnData.caravanMount;
@@ -42,7 +41,7 @@ namespace GiddyUpCaravan.Harmony
             List<Pawn> shouldAddOwnedPawns = new List<Pawn>();
             foreach (Pawn pawn in __instance.lord.ownedPawns)
             {
-                ExtendedPawnData pawnData = GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(pawn.thingIDNumber);
+                ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
                 bool caravanContainsMount = __instance.lord.ownedPawns.Contains(pawnData.caravanMount);
                 if (pawnData.caravanMount != null && !caravanContainsMount)
                 {

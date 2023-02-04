@@ -55,7 +55,6 @@ namespace GiddyUp.Jobs
             JobDefOf.RopeRoamerToUnenclosedPen, 
             JobDefOf.Tame
             };
-        
 
         public override IEnumerable<Toil> MakeNewToils()
         {
@@ -68,7 +67,7 @@ namespace GiddyUp.Jobs
             return true;
         }
         //This method is often responsible for why pawns dismount
-        public bool ShouldCancelJob(ExtendedPawnData riderData)
+        bool ShouldCancelJob(ExtendedPawnData riderData)
         {
             if (interrupted) return true;
             if (riderData == null || riderData.mount == null) return true;
@@ -153,7 +152,7 @@ namespace GiddyUp.Jobs
                     return;
                 }
 
-                riderData = Setup._extendedDataStorage.GetExtendedDataFor(rider.thingIDNumber);
+                riderData = ExtendedDataStorage.GUComp[rider.thingIDNumber];
                 if (riderData.mount != null && riderData.mount == pawn)
                 {
                     ReadyForNextToil();
@@ -175,7 +174,7 @@ namespace GiddyUp.Jobs
             };
             return toil;
         }
-        public Toil DelegateMovement()
+        Toil DelegateMovement()
         {
             Toil toil = new Toil();
             toil.defaultCompleteMode = ToilCompleteMode.Never;
@@ -184,16 +183,15 @@ namespace GiddyUp.Jobs
             toil.tickAction = delegate
             {
                 if (isFinished) return;
-                riderData = Setup._extendedDataStorage.GetExtendedDataFor(rider.thingIDNumber);
+                riderData = ExtendedDataStorage.GUComp[rider.thingIDNumber];
                 if (ShouldCancelJob(riderData))
                 {
                     ReadyForNextToil();
                     return;
                 }
                 pawn.Drawer.tweener = rider.Drawer.tweener;
-
                 pawn.Position = rider.Position;
-                TryAttackEnemy();
+                TryAttackEnemy(rider);
                 pawn.Rotation = rider.Rotation;
             };
 
@@ -205,7 +203,7 @@ namespace GiddyUp.Jobs
         {
             isFinished = true;
             var rider = Rider;
-            riderData = Setup._extendedDataStorage.GetExtendedDataFor(rider.thingIDNumber);
+            riderData = ExtendedDataStorage.GUComp[rider.thingIDNumber];
 
             riderData.Reset();
             pawn.Drawer.tweener = new PawnTweener(pawn);
@@ -213,7 +211,7 @@ namespace GiddyUp.Jobs
             pawn.pather.ResetToCurrentPosition();
             if (Settings.rideAndRollEnabled)
             {
-                ExtendedPawnData pawnData = GiddyUp.Setup._extendedDataStorage.GetExtendedDataFor(pawn.thingIDNumber);
+                ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
                 bool isRoped = pawn.roping != null && pawn.roping.IsRoped;
                 if(!isRoped && !rider.Drafted && pawn.factionInt.def.isPlayer)
                 {
@@ -231,13 +229,9 @@ namespace GiddyUp.Jobs
                 }
             }
         }
-        public void TryAttackEnemy()
+        void TryAttackEnemy(Pawn rider)
         {
             Thing targetThing = null;
-            Pawn rider = Rider;
-
-            if (rider == null)
-                return;
             
             if (rider.TargetCurrentlyAimingAt != null)
             {
@@ -253,10 +247,7 @@ namespace GiddyUp.Jobs
                 {
                     pawn.TryStartAttack(targetThing); //Try start ranged attack if possible
                 }
-                else
-                {
-                    pawn.meleeVerbs.TryMeleeAttack(targetThing);
-                }
+                else pawn.meleeVerbs.TryMeleeAttack(targetThing);
             }
         }
     }

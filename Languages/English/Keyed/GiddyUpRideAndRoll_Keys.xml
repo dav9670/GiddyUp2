@@ -3,8 +3,8 @@
 	<GU_RR_NoMountedHunting_Title>No mounted hunting</GU_RR_NoMountedHunting_Title>
 	<GU_RR_NoMountedHunting_Description>Forbid mounted hunting, when using Combat Extended it is recommended to turn this on, as otherwise animals may get harmed while playing the game</GU_RR_NoMountedHunting_Description>
 	
-	<GU_RR_MinAutoMountDistance_Title>Minimum distance for auto mounting (Min: {0} Max: {1} Default: {2} Current: {3})</GU_RR_MinAutoMountDistance_Title>
-	<GU_RR_MinAutoMountDistance_Description>A pawn will measure their distance to their first target, and from there to the second target (such as the drop-off point for a haul job). If this distance is greater than this threshold, they will try to find a ride.</GU_RR_MinAutoMountDistance_Description>
+	<GU_RR_MinAutoMountDistance_Title>Find a mount if trip is longer than... (Min: {0} Max: {1} Default: {2} Current: {3})</GU_RR_MinAutoMountDistance_Title>
+	<GU_RR_MinAutoMountDistance_Description>A pawn will seek a mount to do their job if the distance exceeds this threshold. The job's distance factors multiple steps, for example picking something up and hauling it to storage.</GU_RR_MinAutoMountDistance_Description>
 	
 	<GU_RR_MinAutoMountDistanceFromAnimal_Title>Maximum distance from animal (Min: {0} Max: {1} Default: {2} Current: {3})</GU_RR_MinAutoMountDistanceFromAnimal_Title>
 	<GU_RR_MinAutoMountDistanceFromAnimal_Description>If the distance between a pawn and a mount is less than this threshold, they will consider riding it.</GU_RR_MinAutoMountDistanceFromAnimal_Description>

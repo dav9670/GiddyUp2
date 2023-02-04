@@ -1,4 +1,3 @@
-using GiddyUp.Jobs;
 using GiddyUp.Storage;
 using RimWorld;
 using RimWorld.Planet;
@@ -14,6 +13,7 @@ namespace GiddyUp.Utilities
 {
     public class NPCMountUtility
     {
+        public static HashSet<PawnKindDef> animalsWithBiome = new HashSet<PawnKindDef>(), animalsWithoutBiome = new HashSet<PawnKindDef>();
         public static bool GenerateMounts(ref List<Pawn> list, IncidentParms parms, int inBiomeWeight, int outBiomeWeight, int nonWildWeight, int mountChance, int mountChanceTribal)
         {
             //if (MP.enabled) return false; // Best we can do for now
@@ -120,11 +120,10 @@ namespace GiddyUp.Utilities
             list.AddRange(animals);
             return true;
         }
-
-        public static void ConfigureSpawnedAnimal(Pawn pawn, ref Pawn animal)
+        static void ConfigureSpawnedAnimal(Pawn pawn, ref Pawn animal)
         {
-            ExtendedPawnData pawnData = Setup._extendedDataStorage.GetExtendedDataFor(pawn.thingIDNumber);
-            ExtendedPawnData animalData = Setup._extendedDataStorage.GetExtendedDataFor(animal.thingIDNumber);
+            ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
+            ExtendedPawnData animalData = ExtendedDataStorage.GUComp[animal.thingIDNumber];
             pawnData.Mount = animal;
             TextureUtility.SetDrawOffset(pawnData);
             animal.mindState.duty = new PawnDuty(DutyDefOf.Defend);
@@ -152,12 +151,12 @@ namespace GiddyUp.Utilities
             }
             else if (rndInt <= inBiomeWeightNormalized + outBiomeWeightNormalized)
             {
-                Setup.animalsWithBiome.Where(x => isAnimal(x) && canUseAnimal(x) && (factionWildAnimalRestrictions.NullOrEmpty() || factionWildAnimalRestrictions.Contains(x.defName))).
+                animalsWithBiome.Where(x => isAnimal(x) && canUseAnimal(x) && (factionWildAnimalRestrictions.NullOrEmpty() || factionWildAnimalRestrictions.Contains(x.defName))).
                     TryRandomElementByWeight((PawnKindDef def) => CalculateCommonality(def, map, pawnHandlingLevel, averageCommonality), out pawnKindDef);
             }
             else
             {
-                Setup.animalsWithoutBiome.Where(x => isAnimal(x) && canUseAnimal(x) && (factionFarmAnimalRestrictions.NullOrEmpty() || factionFarmAnimalRestrictions.Contains(x.defName))).
+                animalsWithoutBiome.Where(x => isAnimal(x) && canUseAnimal(x) && (factionFarmAnimalRestrictions.NullOrEmpty() || factionFarmAnimalRestrictions.Contains(x.defName))).
                     TryRandomElementByWeight((PawnKindDef def) => CalculateCommonality(def, map, pawnHandlingLevel, averageCommonality), out pawnKindDef);
             }
             Rand.PopState();

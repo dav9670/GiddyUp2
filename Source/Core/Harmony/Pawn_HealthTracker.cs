@@ -5,7 +5,7 @@ using Verse;
 
 namespace GiddyUp.Harmony
 {
-    [HarmonyPatch(typeof(Pawn_HealthTracker), "MakeDowned")]
+    [HarmonyPatch(typeof(Pawn_HealthTracker), nameof(Pawn_HealthTracker.MakeDowned))]
     static class Pawn_HealthTracker_MakeDowned
     {
         static void Postfix(Pawn_HealthTracker __instance)
@@ -21,14 +21,10 @@ namespace GiddyUp.Harmony
             //If the owner of an NPC mount is downed, let the animal flee
             if (pawn.RaceProps.Humanlike && pawn.Faction != null && !pawn.Faction.IsPlayer)
             {
-                ExtendedDataStorage dataStorage = Setup._extendedDataStorage;
-                if(dataStorage != null)
+                ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
+                if (pawnData != null && pawnData.owning != null && !pawnData.owning.Dead && pawnData.owning.Spawned && pawnData.owning.RaceProps.Animal)
                 {
-                    ExtendedPawnData pawnData = dataStorage.GetExtendedDataFor(pawn.thingIDNumber);
-                    if (pawnData != null && pawnData.owning != null && !pawnData.owning.Dead && pawnData.owning.Spawned && pawnData.owning.RaceProps.Animal)
-                    {
-                        pawnData.owning.mindState.mentalStateHandler.TryStartMentalState(MentalStateDefOf.PanicFlee);
-                    }
+                    pawnData.owning.mindState.mentalStateHandler.TryStartMentalState(MentalStateDefOf.PanicFlee);
                 }
             }
         }
@@ -43,14 +39,10 @@ namespace GiddyUp.Harmony
             //If the owner of an NPC mount is downed, let the animal flee
             if (pawn.RaceProps.Humanlike && pawn.Faction != null && !pawn.Faction.IsPlayer)
             {
-                ExtendedDataStorage dataStorage = Setup._extendedDataStorage;
-                if (dataStorage != null)
+                ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
+                if (pawnData != null && pawnData.owning != null && !pawnData.owning.Dead && pawnData.owning.Spawned)
                 {
-                    ExtendedPawnData pawnData = dataStorage.GetExtendedDataFor(pawn.thingIDNumber);
-                    if (pawnData != null && pawnData.owning != null && !pawnData.owning.Dead && pawnData.owning.Spawned)
-                    {
-                        pawnData.owning.mindState.mentalStateHandler.TryStartMentalState(MentalStateDefOf.PanicFlee);
-                    }
+                    pawnData.owning.mindState.mentalStateHandler.TryStartMentalState(MentalStateDefOf.PanicFlee);
                 }
             }
         }
