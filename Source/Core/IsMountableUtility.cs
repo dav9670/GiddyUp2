@@ -1,11 +1,9 @@
-﻿using GiddyUp.Jobs;
-using RimWorld;
+﻿using RimWorld;
 using System.Linq;
 using Verse;
-using GiddyUp.Storage;
 using Settings = GiddyUp.ModSettings_GiddyUp;
 
-namespace GiddyUp.Utilities
+namespace GiddyUp
 {
     public static class IsMountableUtility
     {

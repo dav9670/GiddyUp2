@@ -1,7 +1,6 @@
 ﻿using HarmonyLib;
 using RimWorld;
 using Verse;
-using GiddyUp.Storage;
 
 namespace GiddyUp.Harmony
 {

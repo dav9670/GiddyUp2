@@ -177,7 +177,7 @@ Two patch operations per animal are needed for vanilla animals to ensure compati
 			<li Class="PatchOperationAdd">
 				<xpath>Defs/StatDef[defName="ArmorRating_Sharp" or defName="ArmorRating_Blunt"]/parts</xpath>
 				<value>
-					<li Class="GiddyUp.Stats.StatPart_Armor">
+					<li Class="GiddyUp.StatPart_Armor">
 						<priority>999</priority>
 					</li>
 				</value>
@@ -185,18 +185,18 @@ Two patch operations per animal are needed for vanilla animals to ensure compati
 			<li Class="PatchOperationAdd">
 				<xpath>Defs/StatDef[defName="MoveSpeed"]/parts</xpath>
 				<value>
-					<li Class="GiddyUp.Stats.StatPart_Riding"/>
+					<li Class="GiddyUp.StatPart_Riding"/>
 				</value>
 			</li>
 			<li Class="PatchOperationAdd">
 				<xpath>Defs/DesignationCategoryDef[defName="Zone"]/specialDesignatorClasses</xpath>
 				<value>
-					<li>GiddyUpRideAndRoll.Zones.Designator_GU_DropAnimal_Expand</li>
-					<li>GiddyUpRideAndRoll.Zones.Designator_GU_DropAnimal_Clear</li>
-					<li>GiddyUpRideAndRoll.Zones.Designator_GU_NoMount_Expand</li>
-					<li>GiddyUpRideAndRoll.Zones.Designator_GU_NoMount_Clear</li>
-					<li>GiddyUpCaravan.Zones.Designator_GU_DropAnimal_NPC_Expand</li>
-					<li>GiddyUpCaravan.Zones.Designator_GU_DropAnimal_NPC_Clear</li>
+					<li>GiddyUpRideAndRoll.Designator_GU_DropAnimal_Expand</li>
+					<li>GiddyUpRideAndRoll.Designator_GU_DropAnimal_Clear</li>
+					<li>GiddyUpRideAndRoll.Designator_GU_NoMount_Expand</li>
+					<li>GiddyUpRideAndRoll.Designator_GU_NoMount_Clear</li>
+					<li>GiddyUpCaravan.Designator_GU_DropAnimal_NPC_Expand</li>
+					<li>GiddyUpCaravan.Designator_GU_DropAnimal_NPC_Clear</li>
 				</value>
 			</li>
 			<li Class="PatchOperationAdd">

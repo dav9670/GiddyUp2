@@ -2,7 +2,7 @@
 using Verse;
 using Verse.AI;
 
-namespace GiddyUp.Utilities
+namespace GiddyUp
 {
     public static class DistanceUtility
     {

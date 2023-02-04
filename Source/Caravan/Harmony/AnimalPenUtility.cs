@@ -1,7 +1,7 @@
 ﻿using HarmonyLib;
 using RimWorld.Planet;
 using Verse;
-using GiddyUp.Storage;
+using GiddyUp;
 
 namespace GiddyUpCaravan.Harmony
 {

@@ -1,4 +1,4 @@
-﻿using GiddyUp.Storage;
+﻿using GiddyUp;
 using HarmonyLib;
 //using Multiplayer.API;
 using RimWorld.Planet;
@@ -48,7 +48,7 @@ namespace GiddyUpCaravan.Harmony
                         Job jobAnimal = new Job(GiddyUp.ResourceBank.JobDefOf.Mounted, pawn);
                         jobAnimal.count = 1;
                         animal.jobs.TryTakeOrderedJob(jobAnimal);
-                        GiddyUp.Utilities.TextureUtility.SetDrawOffset(pawnData);
+                        GiddyUp.TextureUtility.SetDrawOffset(pawnData);
                     }
                 }
             }

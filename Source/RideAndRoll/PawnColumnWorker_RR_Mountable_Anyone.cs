@@ -1,10 +1,9 @@
-﻿using GiddyUp.Utilities;
+﻿using GiddyUp;
 using RimWorld;
 using Verse;
-using GiddyUp.Storage;
 //using Multiplayer.API;
 
-namespace GiddyUpRideAndRoll.PawnColumns
+namespace GiddyUpRideAndRoll
 {
     class PawnColumnWorker_RR_Mountable_Anyone : PawnColumnWorker_Checkbox
     {

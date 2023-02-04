@@ -1,7 +1,7 @@
-﻿using GiddyUp.Storage;
+﻿using GiddyUp;
 using Verse;
 
-namespace GiddyUpCaravan.Utilities
+namespace GiddyUpCaravan
 {
     static class CaravanUtility
     {

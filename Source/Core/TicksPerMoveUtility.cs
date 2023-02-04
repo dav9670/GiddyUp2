@@ -1,8 +1,7 @@
 ﻿using RimWorld;
-using UnityEngine;
 using Verse;
 
-namespace GiddyUp.Utilities
+namespace GiddyUp
 {
     public class TicksPerMoveUtility
     {

@@ -2,7 +2,7 @@
 using UnityEngine;
 using Verse;
 
-namespace GiddyUp.Zones
+namespace GiddyUp
 {
     public class Area_GU : Area
     {
@@ -28,13 +28,6 @@ namespace GiddyUp.Zones
                 return color;
             }
         }
-        public override bool Mutable
-        {
-            get
-            {
-                return false;
-            }
-        }
         public override int ListPriority
         {
             get
@@ -45,10 +38,6 @@ namespace GiddyUp.Zones
         public override string GetUniqueLoadID()
         {
             return label; //only one such area, so label is sufficient. 
-        }
-        public override bool AssignableAsAllowed()
-        {
-            return false;
         }
         public override void ExposeData()
         {

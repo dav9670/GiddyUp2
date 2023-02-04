@@ -4,7 +4,7 @@ using HarmonyLib;
 using RimWorld;
 using UnityEngine;
 using Verse;
-using GiddyUp.Utilities;
+using GiddyUp;
 
 namespace BattleMounts.Harmony
 {

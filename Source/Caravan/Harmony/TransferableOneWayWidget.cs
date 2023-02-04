@@ -1,5 +1,4 @@
-﻿using GiddyUp.Storage;
-using GiddyUp.Utilities;
+﻿using GiddyUp;
 using HarmonyLib;
 using RimWorld;
 using System;
@@ -164,6 +163,11 @@ namespace GiddyUpCaravan.Harmony
 
                         if (pawnData.caravanMount != null)
                         {
+                            continue;
+                        }
+                        if (pawn.IsWorkTypeDisabledByAge(WorkTypeDefOf.Handling, out int age))
+                        {
+                            list.Add(new FloatMenuOption(pawn.Name.ToStringShort + " (" + "GU_Car_TooYoung".Translate() + ")", null, MenuOptionPriority.Default, null, null, 0f, null, null));
                             continue;
                         }
                         list.Add(new FloatMenuOption(pawn.Name.ToStringShort, delegate

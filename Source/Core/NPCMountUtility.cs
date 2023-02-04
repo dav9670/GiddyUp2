@@ -1,4 +1,3 @@
-using GiddyUp.Storage;
 using RimWorld;
 using RimWorld.Planet;
 using System;
@@ -9,7 +8,7 @@ using Verse;
 using Verse.AI;
 using Settings = GiddyUp.ModSettings_GiddyUp;
 
-namespace GiddyUp.Utilities
+namespace GiddyUp
 {
     public class NPCMountUtility
     {

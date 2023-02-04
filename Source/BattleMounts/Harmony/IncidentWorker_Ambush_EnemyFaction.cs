@@ -1,11 +1,10 @@
-﻿using Battlemounts.Utilities;
-using HarmonyLib;
+﻿using HarmonyLib;
 using RimWorld;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace Battlemounts.Harmony
+namespace BattleMounts.Harmony
 {
     [HarmonyPatch(typeof(IncidentWorker_Ambush), nameof(IncidentWorker_Ambush.DoExecute))]
     static class IncidentWorker_Ambush_DoExecute

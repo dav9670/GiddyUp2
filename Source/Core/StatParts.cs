@@ -1,12 +1,11 @@
 ﻿using GiddyUp.Jobs;
-using GiddyUp.Storage;
 using RimWorld;
 using System.Text;
 using UnityEngine;
 using Verse;
 using Settings = GiddyUp.ModSettings_GiddyUp;
 
-namespace GiddyUp.Stats
+namespace GiddyUp
 {
     public class StatPart_Riding : StatPart
     {
@@ -48,7 +47,6 @@ namespace GiddyUp.Stats
             }
             return sb.ToString();
         }
-
         public override void TransformValue(StatRequest req, ref float val)
         {
             if(req.Thing is Pawn pawn)
@@ -68,7 +66,6 @@ namespace GiddyUp.Stats
                 }
             }
         }
-
         public static float GetRidingSpeed(float baseValue, Pawn animal, Pawn_SkillTracker skills)
         {
             float adjustedLevel = 0;
@@ -86,6 +83,35 @@ namespace GiddyUp.Stats
                 baseValue *= customSpeedModifier;
             }
             return baseValue;
+        }
+    }
+
+    class StatPart_Armor : StatPart
+    {
+        public override string ExplanationPart(StatRequest req)
+        {
+            StringBuilder sb = new StringBuilder();
+            if (req.Thing is Pawn pawn && pawn.jobs != null && pawn.jobs.curDriver is JobDriver_Mounted)
+            {
+                var modExt = pawn.def.GetModExtension<CustomStatsPatch>();
+                if (modExt != null && modExt.armorModifier != 1.0f)
+                {
+                    sb.AppendLine("GUC_GiddyUp".Translate());
+                    sb.AppendLine("    " + "GUC_StatPart_MountTypeMultiplier".Translate() + ": " + (modExt.armorModifier).ToStringByStyle(ToStringStyle.PercentZero, ToStringNumberSense.Factor));
+                }  
+            }
+            return sb.ToString();
+        }
+        public override void TransformValue(StatRequest req, ref float val)
+        {
+            if (req.Thing is Pawn pawn && pawn.jobs != null && pawn.jobs.curDriver is JobDriver_Mounted)
+            {
+                var modExt = pawn.def.GetModExtension<CustomStatsPatch>();
+                if (modExt != null && modExt.armorModifier != 1.0f)
+                {
+                    val *= modExt.armorModifier;
+                }
+            }
         }
     }
 }

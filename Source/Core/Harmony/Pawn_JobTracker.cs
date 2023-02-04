@@ -1,10 +1,9 @@
 ﻿using GiddyUp.Jobs;
-using GiddyUp.Storage;
+using GiddyUp;
 using HarmonyLib;
 using RimWorld;
 using Verse;
 using Verse.AI;
-using GiddyUp.Utilities;
 using GiddyUpRideAndRoll;
 using System.Linq;
 using Verse.AI.Group;
@@ -149,7 +148,7 @@ namespace GiddyUp.Harmony
 					bool firstTargetInForbiddenArea = false;
 					bool secondTargetInForbiddenArea = false;
 					Map map = pawn.Map;
-					Zones.Area_GU.GetGUAreasFast(map, out Area areaNoMount, out Area areaDropAnimal);
+					Area_GU.GetGUAreasFast(map, out Area areaNoMount, out Area areaDropAnimal);
 
 					//This notes that the first destination is in a no-ride zone
 					IntVec3[] areaDropCache = new IntVec3[0];
@@ -222,7 +221,7 @@ namespace GiddyUp.Harmony
 
 						distanceRiding *= 1.05f; //Unassurance compensation due to their being more variables and moving parts, data may become stale by the time the pawn arrives
 					   
-						var animalMountedSpeed = Stats.StatPart_Riding.GetRidingSpeed(animal.GetStatValue(StatDefOf.MoveSpeed), animal, pawn.skills);
+						var animalMountedSpeed = StatPart_Riding.GetRidingSpeed(animal.GetStatValue(StatDefOf.MoveSpeed), animal, pawn.skills);
 
 						float timeNeededForThisMount = (distancePawnToAnimal / pawnWalkSpeed) + (distanceRiding / animalMountedSpeed);
 						#endregion
@@ -248,9 +247,9 @@ namespace GiddyUp.Harmony
 						"Normal walking time: " + ((int)timeNormalWalking).ToString() + "\n" + 
 						"Distance to animal: " + ((int)pawn.Position.DistanceTo(closestAnimal.Position)).ToString() + "\n" + 
 						"Ride distance: " + ((int)distanceBestRiding).ToString()  + "\n" + 
-						"Ride speed: " + ((int)Stats.StatPart_Riding.GetRidingSpeed(closestAnimal.GetStatValue(StatDefOf.MoveSpeed), closestAnimal, pawn.skills)).ToString() + "\n" +
+						"Ride speed: " + ((int)StatPart_Riding.GetRidingSpeed(closestAnimal.GetStatValue(StatDefOf.MoveSpeed), closestAnimal, pawn.skills)).ToString() + "\n" +
 						"Ride time: " + ((int)((pawn.Position.DistanceTo(closestAnimal.Position) / pawnWalkSpeed) + 
-							(distanceBestRiding / Stats.StatPart_Riding.GetRidingSpeed(closestAnimal.GetStatValue(StatDefOf.MoveSpeed), closestAnimal, pawn.skills)))).ToString()
+							(distanceBestRiding / StatPart_Riding.GetRidingSpeed(closestAnimal.GetStatValue(StatDefOf.MoveSpeed), closestAnimal, pawn.skills)))).ToString()
 						);
 					}
 
@@ -268,7 +267,7 @@ namespace GiddyUp.Harmony
 				}
 				bool AnimalNotAvailable(Pawn animal, Pawn rider)
 				{
-					if ((animal.Dead || animal.Downed || animal.IsBurning() || animal.InMentalState || !animal.Spawned) || //animal in bad state, should return before checking other things
+					if ((animal.Dead || animal.Downed || animal.HasAttachment(ThingDefOf.Fire) || animal.InMentalState || !animal.Spawned) || //animal in bad state, should return before checking other things
 						(animal.IsForbidden(rider)) || 
 						(animal.Faction == null || !animal.factionInt.def.isPlayer) || //animal has wrong faction
 						(animal.health != null && animal.health.summaryHealth.SummaryHealthPercent < 1) || //animal wounded
@@ -344,7 +343,7 @@ namespace GiddyUp.Harmony
 						pawnData.mount == null && 
 						!pawnData.owning.Downed &&
 						pawnData.owning.Spawned && 
-						!pawn.IsBurning() &&
+						!pawn.HasAttachment(ThingDefOf.Fire) &&
 						!pawn.Downed)
 					{
 						MountAnimal(jobTracker, pawn, pawnData, ref __result);

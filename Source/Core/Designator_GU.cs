@@ -1,10 +1,9 @@
-﻿using HarmonyLib;
-using RimWorld;
+﻿using RimWorld;
 using System.Collections.Generic;
 using UnityEngine;
 using Verse;
 
-namespace GiddyUp.Zones
+namespace GiddyUp
 {
     //Is used in other Giddy-up mods as a base for simple areas that can be requested in the areamanager using their label
     public class Designator_GU : Designator

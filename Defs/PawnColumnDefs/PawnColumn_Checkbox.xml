@@ -1,7 +1,7 @@
 <Defs>
 	<PawnColumnDef>
 		<defName>MountableByAnyone</defName>
-		<workerClass>GiddyUpRideAndRoll.PawnColumns.PawnColumnWorker_RR_Mountable_Anyone</workerClass>
+		<workerClass>GiddyUpRideAndRoll.PawnColumnWorker_RR_Mountable_Anyone</workerClass>
 		<sortable>true</sortable>
 		<headerIcon>UI/GU_RR_All_Allowed</headerIcon>
 		<headerTip>Can be automatically mounted by any pawn.</headerTip>

@@ -3,10 +3,9 @@ using System;
 using System.Collections.Generic;
 using Verse;
 using Verse.AI;
-using GiddyUp.Storage;
 //using Multiplayer.API;
 
-namespace GiddyUp.Utilities
+namespace GiddyUp
 {
     public static class GUC_FloatMenuUtility
     {
@@ -83,7 +82,7 @@ namespace GiddyUp.Utilities
         }
 
         //[SyncMethod]
-        static void ResetPawnData(Storage.ExtendedPawnData pawnData)
+        static void ResetPawnData(ExtendedPawnData pawnData)
         {
             pawnData.Reset();
         }

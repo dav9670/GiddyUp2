@@ -1,8 +1,9 @@
-﻿using GiddyUpRideAndRoll.Zones;
-using GiddyUpCaravan.Zones;
-using GiddyUp.Utilities;
+﻿using GiddyUpRideAndRoll;
+using GiddyUpCaravan;
+using GiddyUp.Jobs;
 using RimWorld;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using Verse;
 using UnityEngine;
@@ -24,7 +25,15 @@ namespace GiddyUp
             BuildAnimalBiomeCache();
             if (!rideAndRollEnabled) RemoveRideAndRoll();
             if (!caravansEnabled) RemoveCaravans();
-            
+
+            var modExt = ResourceBank.JobDefOf.Mounted.GetModExtension<AllowedJobDefs>();
+            if (modExt != null)
+            {
+                JobDriver_Mounted.allowedJobs = modExt.allowedJobDefs.ToHashSet();
+            }
+            else JobDriver_Mounted.allowedJobs = new HashSet<JobDef>();
+
+            if (noMountedHunting) JobDriver_Mounted.allowedJobs.Add(JobDefOf.Hunt);
         }
         public static void BuildCache(bool reset = false)
         {
@@ -277,7 +286,7 @@ namespace GiddyUp
                 //========Scroll area=========
                 mountableFilterRect.y += 60f;
                 mountableFilterRect.yMax -= 60f;
-                Rect mountableFilterInnerRect = new Rect(0f, 0f, mountableFilterRect.width - 30f, (DrawUtility.lineNumber + 2) * 22f);
+                Rect mountableFilterInnerRect = new Rect(0f, 0f, mountableFilterRect.width - 30f, (OptionsDrawUtility.lineNumber + 2) * 22f);
                 Widgets.BeginScrollView(mountableFilterRect, ref scrollPos, mountableFilterInnerRect , true);
                     options.Begin(mountableFilterInnerRect);
                     options.DrawList(inRect);
@@ -294,6 +303,8 @@ namespace GiddyUp
             try
             {
                 RebuildInversions();
+                if (noMountedHunting) JobDriver_Mounted.allowedJobs.Add(JobDefOf.Hunt);
+                else JobDriver_Mounted.allowedJobs.Remove(JobDefOf.Hunt);
             }
             catch (System.Exception ex)
             {

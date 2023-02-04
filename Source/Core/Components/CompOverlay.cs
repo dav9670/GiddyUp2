@@ -1,4 +1,4 @@
-﻿using GiddyUp.Utilities;
+﻿using GiddyUp;
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;

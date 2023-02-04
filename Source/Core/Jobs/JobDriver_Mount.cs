@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
 using Verse;
 using Verse.AI;
-using GiddyUp.Utilities;
 using RimWorld;
-using GiddyUp.Storage;
 using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUp.Jobs

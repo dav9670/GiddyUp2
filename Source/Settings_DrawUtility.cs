@@ -1,15 +1,13 @@
 using Verse;
 using UnityEngine;
-using System.Collections.Generic;
 using Verse.Sound;
 using RimWorld;
-using System;
 using static GiddyUp.ModSettings_GiddyUp;
 using static GiddyUp.Setup;
  
 namespace GiddyUp
 {
-    public static class DrawUtility
+    public static class OptionsDrawUtility
 	{
 		public static int lineNumber, cellPosition;
 		public const int lineHeight = 22; //Text.LineHeight + options.verticalSpacing;

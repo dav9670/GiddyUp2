@@ -1,5 +1,4 @@
-﻿using GiddyUp.Storage;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Verse.AI;
 
 namespace GiddyUp.Jobs

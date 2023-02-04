@@ -1,4 +1,4 @@
-﻿using GiddyUp.Utilities;
+﻿using GiddyUp;
 using HarmonyLib;
 using RimWorld;
 using Verse;

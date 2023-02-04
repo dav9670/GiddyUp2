@@ -4,7 +4,7 @@ using RimWorld.Planet;
 using Verse;
 using Settings = GiddyUp.ModSettings_GiddyUp;
 
-namespace GiddyUp.Storage
+namespace GiddyUp
 {
     public class ExtendedDataStorage : WorldComponent, IExposable
     {
@@ -22,7 +22,7 @@ namespace GiddyUp.Storage
             //Remove alert
             if (!Settings.rideAndRollEnabled)
             {
-                try { Find.Alerts.AllAlerts.RemoveAll(x => x.GetType() == typeof(GiddyUpRideAndRoll.Alerts.Alert_NoDropAnimal)); }
+                try { Find.Alerts.AllAlerts.RemoveAll(x => x.GetType() == typeof(GiddyUpRideAndRoll.Alert_NoDropAnimal)); }
                 catch (System.Exception) { Log.Warning("[Giddy-up] Failed to remove Alert_NoDropAnimal instance."); }
             }
 

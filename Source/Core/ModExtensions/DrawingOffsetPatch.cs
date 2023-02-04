@@ -1,5 +1,4 @@
-﻿using GiddyUp.Utilities;
-using UnityEngine;
+﻿using UnityEngine;
 using Verse;
 
 namespace GiddyUp
@@ -25,8 +24,5 @@ namespace GiddyUp
             eastOffset = TextureUtility.ExtractVector3(eastOffsetCSV);
             westOffset = TextureUtility.ExtractVector3(westOffsetCSV);
         }
-
-
-
     }
 }

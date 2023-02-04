@@ -11,6 +11,53 @@
 		<driverClass>GiddyUp.Jobs.JobDriver_Mounted</driverClass>
 		<reportString>Mounted</reportString>
 		<casualInterruptible>false</casualInterruptible>
+		<!-- When a pawn checks to see if they should dismount, one condition is to check if their current job is allowed while mounted. This is the whitelist -->
+		<modExtensions>
+			<li Class="GiddyUp.AllowedJobDefs">
+				<allowedJobDefs>
+					<li>Arrest</li> 
+					<li>AttackMelee</li> 
+					<li>AttackStatic</li> 
+					<li>Capture</li> 
+					<li>DropEquipment</li> 
+					<li>EscortPrisonerToBed</li> 
+					<li>ExtinguishSelf</li> 
+					<li>Flee</li> 
+					<li>FleeAndCower</li> 
+					<li>Goto</li> 
+					<li>GotoSafeTemperature</li> 
+					<li>GotoWander</li> 
+					<li>HaulToCell</li> 
+					<li>HaulToContainer</li>
+					<li MayRequire="mehni.pickupandhaul">HaulToInventory</li>
+					<li MayRequire="mehni.pickupandhaul">UnloadYourHauledInventory</li>
+					<li>Ignite</li> 
+					<li>Insult</li> 
+					<li>Kidnap</li> 
+					<li>Open</li> 
+					<li>RemoveApparel</li> 
+					<li>Rescue</li> 
+					<li>ReturnedCaravan_PenAnimals</li>
+					<li>RopeToPen</li> 
+					<li>RopeRoamerToUnenclosedPen</li>
+					<li>TakeInventory</li> 
+					<li>TakeWoundedPrisonerToBed</li> 
+					<li>Tame</li>
+					<li>TradeWithPawn</li> 
+					<li>UnloadInventory</li> 
+					<li>UnloadYourInventory</li> 
+					<li>UseArtifact</li> 
+					<li>UseVerbOnThing</li> 
+					<li>Vomit</li> 
+					<li>Wait</li> 
+					<li>Wait_Combat</li> 
+					<li>Wait_MaintainPosture</li> 
+					<li>Wait_SafeTemperature</li> 
+					<li>Wait_Wander</li> 
+					<li>Wear</li> 
+				</allowedJobDefs>
+			</li>
+		</modExtensions>
 	</JobDef>
 	<JobDef>
 		<defName>Dismount</defName>

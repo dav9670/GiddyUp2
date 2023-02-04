@@ -1,11 +1,11 @@
-﻿using GiddyUp.Utilities;
+﻿using GiddyUp;
 using RimWorld;
 using System.Collections.Generic;
 using Verse;
 //using Multiplayer.API;
 using Setting = GiddyUp.ModSettings_GiddyUp;
 
-namespace Battlemounts.Utilities
+namespace BattleMounts
 {
     class EnemyMountUtility
     {

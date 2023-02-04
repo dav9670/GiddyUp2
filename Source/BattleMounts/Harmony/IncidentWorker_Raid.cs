@@ -1,14 +1,12 @@
-﻿using GiddyUp.Utilities;
+﻿using GiddyUp;
 using HarmonyLib;
 using RimWorld;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
 using Verse;
 using Settings = GiddyUp.ModSettings_GiddyUp;
 
-namespace Battlemounts.Harmony
+namespace BattleMounts.Harmony
 {
     [HarmonyPatch(typeof(IncidentWorker_Raid), nameof(IncidentWorker_Raid.TryGenerateRaidInfo))]
     static class Patch_TryGenerateRaidInfo

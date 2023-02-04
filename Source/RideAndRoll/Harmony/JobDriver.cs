@@ -1,5 +1,4 @@
-﻿using GiddyUp.Storage;
-using GiddyUp.Utilities;
+﻿using GiddyUp;
 using HarmonyLib;
 using RimWorld;
 using System.Collections.Generic;
@@ -32,7 +31,7 @@ namespace GiddyUpRideAndRoll.Harmony
 			List<Toil> toils = __instance.toils;
 			ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
 
-			GiddyUp.Zones.Area_GU.GetGUAreasFast(map, out Area areaNoMount, out Area areaDropAnimal);
+			GiddyUp.Area_GU.GetGUAreasFast(map, out Area areaNoMount, out Area areaDropAnimal);
 			if (areaNoMount == null) return;
 			bool startedPark = false;
 			IntVec3 originalLoc = new IntVec3();

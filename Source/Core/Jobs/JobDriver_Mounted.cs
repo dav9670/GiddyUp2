@@ -1,5 +1,4 @@
-﻿using GiddyUp.Storage;
-using RimWorld;
+﻿using RimWorld;
 using RimWorld.Planet;
 using System.Collections.Generic;
 using GiddyUpRideAndRoll;
@@ -11,50 +10,11 @@ namespace GiddyUp.Jobs
 {
     public class JobDriver_Mounted : JobDriver
     {
+        public static HashSet<JobDef> allowedJobs;
         public Pawn Rider { get { return job.targetA.Thing as Pawn; } }
         ExtendedPawnData riderData;
         public bool interrupted = false;
         bool isFinished = false;
-        static HashSet<JobDef> allowedJobs = new HashSet<JobDef>() {
-            JobDefOf.Arrest, 
-            JobDefOf.AttackMelee, 
-            JobDefOf.AttackStatic, 
-            JobDefOf.Capture, 
-            JobDefOf.DropEquipment, 
-            JobDefOf.EscortPrisonerToBed, 
-            JobDefOf.ExtinguishSelf, 
-            JobDefOf.Flee, 
-            JobDefOf.FleeAndCower, 
-            JobDefOf.Goto, 
-            JobDefOf.GotoSafeTemperature, 
-            JobDefOf.GotoWander, 
-            JobDefOf.HaulToCell, 
-            JobDefOf.HaulToContainer, 
-            JobDefOf.Ignite, 
-            JobDefOf.Insult, 
-            JobDefOf.Kidnap, 
-            JobDefOf.Open, 
-            JobDefOf.RemoveApparel, 
-            JobDefOf.Rescue, 
-            JobDefOf.TakeWoundedPrisonerToBed, 
-            JobDefOf.TradeWithPawn, 
-            JobDefOf.UnloadInventory, 
-            JobDefOf.UseArtifact, 
-            JobDefOf.UseVerbOnThing, 
-            JobDefOf.Vomit, 
-            JobDefOf.Wait, 
-            JobDefOf.Wait_Combat, 
-            JobDefOf.Wait_MaintainPosture, 
-            JobDefOf.Wait_SafeTemperature, 
-            JobDefOf.Wait_Wander, 
-            JobDefOf.Wear, 
-            JobDefOf.TakeInventory, 
-            JobDefOf.UnloadYourInventory, 
-            JobDefOf.RopeToPen, 
-            JobDefOf.ReturnedCaravan_PenAnimals, 
-            JobDefOf.RopeRoamerToUnenclosedPen, 
-            JobDefOf.Tame
-            };
 
         public override IEnumerable<Toil> MakeNewToils()
         {
@@ -69,19 +29,17 @@ namespace GiddyUp.Jobs
         //This method is often responsible for why pawns dismount
         bool ShouldCancelJob(ExtendedPawnData riderData)
         {
-            if (interrupted) return true;
-            if (riderData == null || riderData.mount == null) return true;
+            if (interrupted || riderData == null || riderData.mount == null) return true;
 
             Pawn rider = Rider;
             var riderIsDead = rider.Dead;
             
-            if (rider.Downed || riderIsDead || pawn.Downed || pawn.Dead || pawn.IsBurning() || rider.IsBurning() || rider.GetPosture() != PawnPosture.Standing)
+            if (rider.Downed || riderIsDead || pawn.Downed || pawn.Dead || 
+                pawn.HasAttachment(ThingDefOf.Fire) || rider.HasAttachment(ThingDefOf.Fire) || rider.GetPosture() != PawnPosture.Standing ||
+                pawn.InMentalState || (rider.InMentalState && rider.MentalState.def != MentalStateDefOf.PanicFlee)
+            )
             {
                 return true; //Down or dead?
-            }
-            if (pawn.InMentalState || (rider.InMentalState && rider.MentalState.def != MentalStateDefOf.PanicFlee))
-            {
-                return true; //In mental state?
             }
             if (!rider.Spawned)
             {
@@ -98,42 +56,29 @@ namespace GiddyUp.Jobs
                 }
                 else return true;
             }
-            bool riderIsDrafted = rider.Drafted;
 
-            if (!riderIsDrafted && rider.IsColonist) //TODO refactor this as a postfix in Giddy-up Caravan. 
-            {
-                if((rider.mindState != null && rider.mindState.duty != null && 
-                    (rider.mindState.duty.def == DutyDefOf.TravelOrWait || 
-                    rider.mindState.duty.def == DutyDefOf.TravelOrLeave || 
-                    rider.mindState.duty.def == DutyDefOf.PrepareCaravan_GatherAnimals || 
-                    rider.mindState.duty.def == DutyDefOf.PrepareCaravan_GatherDownedPawns)))
-                {
-                    if(riderData.caravanMount == pawn) return false;
-                    return true; //if forming caravan, stay mounted.
-                }
-                else if(riderData.owning == pawn) return false;
-                if (Settings.caravansEnabled)
-                {
-                    if (rider.CurJob != null && !allowedJobs.Contains(rider.CurJob.def)) return false;
-                    else if (rider.Position.CloseToEdge(rider.Map, 10)) return false; //Caravan just entered map and has not picked a job yet on this tick.
-                }
-                else return true;
-            }
-            if (riderData.mount == null) return true;
+            if (rider.Drafted || !pawn.factionInt.def.isPlayer) return false;
             
-            if (Settings.rideAndRollEnabled)
+            var riderJobDef = rider.CurJob?.def;
+            
+            if (Settings.caravansEnabled)
             {
-                if (pawn.factionInt.def.isPlayer && !riderIsDrafted && rider.CurJob != null && !allowedJobs.Contains(rider.CurJob.def))
+                var riderMindstateDef = rider.mindState?.duty?.def;
+                if(riderMindstateDef == DutyDefOf.TravelOrWait || 
+                    riderMindstateDef == DutyDefOf.TravelOrLeave || 
+                    riderMindstateDef == DutyDefOf.PrepareCaravan_GatherAnimals || 
+                    riderMindstateDef == DutyDefOf.PrepareCaravan_GatherDownedPawns)
                 {
-                    var jobDef = rider.CurJob.def;
-                    
-                    if(jobDef == JobDefOf.EnterTransporter) return true;
-
-                    if(jobDef == JobDefOf.Hunt && Settings.noMountedHunting) return true;
-                    else if (!rider.pather.Moving) return true;
-
-                    if(!riderIsDrafted && Utitlities.HungryOrTired(pawn.needs)) return true;
+                    return riderData.caravanMount != pawn;
                 }
+                
+                if (rider.Position.CloseToEdge(rider.Map, 10)) return false; //Caravan just entered map and has not picked a job yet on this tick.
+            }
+
+            //If the job is not on the whitelist...
+            if (Settings.rideAndRollEnabled && riderJobDef != null && !allowedJobs.Contains(riderJobDef))
+            {
+                return true;
             }
             return false;
         }
