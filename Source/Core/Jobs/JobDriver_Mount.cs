@@ -76,7 +76,7 @@ namespace GiddyUp.Jobs
                 if (flag)
                 {
                     pawnData.Mount = mount;
-                    TextureUtility.SetDrawOffset(pawnData);
+                    pawnData.drawOffset = TextureUtility.FetchCache(pawnData.mount);
                 }
 
                 if (Settings.rideAndRollEnabled)

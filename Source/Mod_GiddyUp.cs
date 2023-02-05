@@ -34,6 +34,7 @@ namespace GiddyUp
             else JobDriver_Mounted.allowedJobs = new HashSet<JobDef>();
 
             if (noMountedHunting) JobDriver_Mounted.allowedJobs.Add(JobDefOf.Hunt);
+            BuildOffsetCache();
         }
         public static void BuildCache(bool reset = false)
         {
@@ -79,6 +80,38 @@ namespace GiddyUp
             }
             workingList.SortBy(x => x.label);
             allAnimals = workingList.ToArray();
+        }
+        public static void BuildOffsetCache(bool reset = false)
+        {
+            bool newEntries = false;
+            if (offsetCache == null || reset) offsetCache = new Dictionary<string, float>();
+            var list = DefDatabase<PawnKindDef>.AllDefsListForReading;
+            var length = list.Count;
+            for (int i = 0; i < length; i++)
+            {
+                var pawnKindDef = list[i];
+                if (pawnKindDef.race == null) continue;
+                if (mountableCache.Contains(pawnKindDef.race.shortHash))
+                {
+                    var lifeStages = pawnKindDef.lifeStages;
+                    var lifeIndexes = lifeStages?.Count;
+                    AllowedLifeStagesPatch customLifeStages;
+                    if (lifeIndexes > 0) customLifeStages = pawnKindDef.GetModExtension<AllowedLifeStagesPatch>();
+                    else customLifeStages = null;
+
+                    for (int lifeIndex = 0; lifeIndex < lifeIndexes; lifeIndex++)
+                    {
+                        if (lifeIndex != lifeIndexes -1 && (customLifeStages == null || !customLifeStages.IsAllowedAge(lifeIndex))) continue;
+                        var key = TextureUtility.FormatKey(pawnKindDef, lifeIndex);
+                        if (!reset && offsetCache.ContainsKey(key)) continue;
+                        var offset = TextureUtility.SetDrawOffset(lifeStages[lifeIndex]);
+                        offsetCache.Add(key, offset);
+                        newEntries = true;
+                    }
+                }
+            }
+
+            if (newEntries && !reset) LoadedModManager.GetMod<Mod_GiddyUp>().WriteSettings();
         }
         static void BuildAnimalBiomeCache()
         {
@@ -255,6 +288,13 @@ namespace GiddyUp
 
                 options.Label("GUC_HandlingAccuracyImpact_Title".Translate("0", "2", "0.5", handlingAccuracyImpact.ToString()), -1f, "GUC_HandlingAccuracyImpact_Description".Translate());
                 handlingAccuracyImpact = options.Slider((float)Math.Round(handlingAccuracyImpact, 1), 0f, 2f);
+
+                options.Gap();
+                
+                if (options.ButtonText("GU_Reset_Cache".Translate()))
+                {
+                    offsetCache = null;
+                }
                 
                 //Record positioning before closing out the lister...
                 Rect mountableFilterRect = inRect.ContractedBy(15f);
@@ -305,6 +345,8 @@ namespace GiddyUp
                 RebuildInversions();
                 if (noMountedHunting) JobDriver_Mounted.allowedJobs.Add(JobDefOf.Hunt);
                 else JobDriver_Mounted.allowedJobs.Remove(JobDefOf.Hunt);
+
+                if (offsetCache == null) Setup.BuildOffsetCache(true);
             }
             catch (System.Exception ex)
             {
@@ -326,8 +368,6 @@ namespace GiddyUp
             Scribe_Values.Look(ref inBiomeWeight, "inBiomeWeight", 70);
             Scribe_Values.Look(ref outBiomeWeight, "outBiomeWeight", 15);
             Scribe_Values.Look(ref nonWildWeight, "nonWildWeight", 15);
-            //Scribe_Values.Look(ref completeCaravanBonus, "completeCaravanBonus", 60);
-            //Scribe_Values.Look(ref incompleteCaravanBonusCap, "incompleteCaravanBonusCap", 25);
             Scribe_Values.Look(ref visitorMountChance, "visitorMountChance", 20);
             Scribe_Values.Look(ref visitorMountChanceTribal, "visitorMountChanceTribal", 40);
             Scribe_Values.Look(ref tabsHandler, "tabsHandler");
@@ -337,6 +377,7 @@ namespace GiddyUp
             Scribe_Values.Look(ref noMountedHunting, "noMountedHunting");
             Scribe_Collections.Look(ref invertMountingRules, "invertMountingRules", LookMode.Value);
             Scribe_Collections.Look(ref invertDrawRules, "invertDrawRules", LookMode.Value);
+            Scribe_Collections.Look(ref offsetCache, "offsetCache", LookMode.Value);
 			
 			base.ExposeData();
 		}
@@ -387,5 +428,6 @@ namespace GiddyUp
         public static Vector2 scrollPos;
         public static SelectedTab selectedTab = SelectedTab.bodySize;
         public enum SelectedTab { bodySize, drawBehavior, core, rnr, battlemounts, caravans };
+        public static Dictionary<string, float> offsetCache;
 	}
 }

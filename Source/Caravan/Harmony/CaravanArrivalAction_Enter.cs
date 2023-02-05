@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Reflection.Emit;
 using Verse;
 using Verse.AI;
+using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUpCaravan.Harmony
 {
@@ -49,7 +50,7 @@ namespace GiddyUpCaravan.Harmony
                         Job jobAnimal = new Job(GiddyUp.ResourceBank.JobDefOf.Mounted, pawn);
                         jobAnimal.count = 1;
                         animal.jobs.TryTakeOrderedJob(jobAnimal);
-                        GiddyUp.TextureUtility.SetDrawOffset(pawnData);
+                        pawnData.drawOffset = GiddyUp.TextureUtility.FetchCache(pawnData.mount);
                     }
                 }
             }

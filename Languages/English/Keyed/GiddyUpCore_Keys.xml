@@ -47,4 +47,6 @@
 	
 	<GU_Enable_Caravans>Enable Caravans module</GU_Enable_Caravans>
 	<GU_Enable_Caravans_Description>Disabling this module will remove functionality related to pawns (both colonists and friendlies) riding animals when they exit and enter the map. Changing this setting requires a restart.</GU_Enable_Caravans_Description>
+	
+	<GU_Reset_Cache>Reset offset cache</GU_Reset_Cache>
 </LanguageData>

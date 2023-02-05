@@ -1,15 +1,34 @@
 ﻿using HarmonyLib;
 using UnityEngine;
 using Verse;
+using System.Collections.Generic;
+using System.Reflection.Emit;
 
 namespace GiddyUp.Harmony
 {
     //This just moves their label down so it's below the mounted animal
     [HarmonyPatch(typeof(PawnUIOverlay), nameof(PawnUIOverlay.DrawPawnGUIOverlay))]
     
-    class PawnUIOverlay_DrawPawnGUIOverlay
+    class Patch_DrawPawnGUIOverlay
     {
-        static bool Prefix(PawnUIOverlay __instance)
+        static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+        {
+            var label = generator.DefineLabel();
+            foreach (var code in instructions)
+            {
+                if (code.opcode == OpCodes.Ret)
+                {
+                    code.labels.Add(label);
+                    break;
+                }
+            }
+            yield return new CodeInstruction(OpCodes.Ldarg_0);
+            yield return new CodeInstruction(OpCodes.Call, typeof(Patch_DrawPawnGUIOverlay).GetMethod(nameof(Patch_DrawPawnGUIOverlay.OffsetLabel)));
+            yield return new CodeInstruction(OpCodes.Brfalse_S, label);
+
+            foreach (var code in instructions) yield return code;
+        }
+        public static bool OffsetLabel(PawnUIOverlay __instance)
         {
             if (!ExtendedDataStorage.isMounted.Contains(__instance.pawn.thingIDNumber)) return true;
             var data =  ExtendedDataStorage.GUComp[__instance.pawn.thingIDNumber];

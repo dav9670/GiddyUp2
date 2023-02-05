@@ -1,27 +1,38 @@
-﻿using System;
+﻿using RimWorld;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Verse;
+using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUp
 {
     public class TextureUtility
     {
-        public static void SetDrawOffset(ExtendedPawnData pawnData)
+        public static string FormatKey(Def def, int age)
         {
-            if (pawnData.mount == null) return;
-            PawnKindLifeStage curKindLifeStage = pawnData.mount.ageTracker.CurKindLifeStage;
-            Texture2D t = TextureUtility.GetReadableTexture(curKindLifeStage.bodyGraphicData.Graphic.MatEast.mainTexture as Texture2D);
+            return def.defName +"/"+age.ToString();
+        }
+        public static float FetchCache(Pawn animal)
+        {
+            var age = animal.ageTracker?.CurLifeStageIndex ?? 0;
+            Settings.offsetCache.TryGetValue(FormatKey(animal.def, age), out float offset);
+            return offset;
+        }
+        public static float SetDrawOffset(PawnKindLifeStage age)
+        {
+            Texture2D unreadableTexture = age.bodyGraphicData.Graphic.MatEast.mainTexture as Texture2D;
+            Texture2D t = TextureUtility.GetReadableTexture(unreadableTexture);
             int backHeight = TextureUtility.GetBackHeight(t);
             float backHeightRelative = (float)backHeight / (float)t.height;
 
-            float textureHeight = curKindLifeStage.bodyGraphicData.drawSize.y;
+            float textureHeight = age.bodyGraphicData.drawSize.y;
             //If animal texture does not fit in a tile, take this into account
             float extraOffset = textureHeight > 1f ? (textureHeight - 1f) / 2f : 0;
             //Small extra offset, you don't want to draw pawn exactly on back
             extraOffset += (float)textureHeight * backHeightRelative / 20f;
-            pawnData.drawOffset = (textureHeight * backHeightRelative - extraOffset);
+            return (textureHeight * backHeightRelative - extraOffset);
         }
         public static Vector3 ExtractVector3(String extractFrom)
         {

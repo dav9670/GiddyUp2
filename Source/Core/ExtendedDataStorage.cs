@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using RimWorld.Planet;
 using Verse;
+using UnityEngine;
 using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUp
@@ -52,9 +53,6 @@ namespace GiddyUp
                 _store.RemoveAll(x => workingList.Contains(x.Key));
             }
         }
-
-        // Return the associate extended data for a given Pawn, creating a new association
-        // if required.
         public ExtendedPawnData this[int pawnID]
         {
             get
@@ -70,12 +68,5 @@ namespace GiddyUp
                 return newExtendedData;
             }
         }
-
-        /*
-        public void DeleteExtendedDataFor(Pawn pawn)
-        {
-            _store.Remove(pawn.thingIDNumber);
-        }
-        */
     }
 }
