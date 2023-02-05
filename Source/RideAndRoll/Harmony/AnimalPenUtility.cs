@@ -19,7 +19,7 @@ namespace GiddyUpRideAndRoll.Harmony
         }
         static bool NeedsToBeManagedByRopeModified(Pawn animal)
         {
-            if (IsMountableUtility.IsCurrentlyMounted(animal)) return true;
+            if (ExtendedDataStorage.GUComp[animal.thingIDNumber].reservedBy != null) return false;
             else return AnimalPenUtility.NeedsToBeManagedByRope(animal);
         }
     }

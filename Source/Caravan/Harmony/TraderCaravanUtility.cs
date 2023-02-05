@@ -19,7 +19,7 @@ namespace GiddyUpCaravan.Harmony
             {
                 ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[p.thingIDNumber];
 
-                if (pawnData.ownedBy != null)
+                if (pawnData.reservedBy != null)
                 {
                     __result = TraderCaravanRole.Guard;
                 }

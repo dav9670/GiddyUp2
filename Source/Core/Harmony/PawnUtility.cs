@@ -13,8 +13,7 @@ namespace GiddyUp.Harmony
             {
                 var pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
                 var motherData = ExtendedDataStorage.GUComp[mother.thingIDNumber];
-                pawnData.mountableByAnyone = motherData.mountableByAnyone;
-                pawnData.mountableByMaster = motherData.mountableByMaster;
+                pawnData.automount = motherData.automount;
             }
         }
     }

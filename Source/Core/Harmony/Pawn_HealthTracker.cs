@@ -22,9 +22,9 @@ namespace GiddyUp.Harmony
             if (pawn.RaceProps.Humanlike && pawn.Faction != null && !pawn.Faction.IsPlayer)
             {
                 ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
-                if (pawnData != null && pawnData.owning != null && !pawnData.owning.Dead && pawnData.owning.Spawned && pawnData.owning.RaceProps.Animal)
+                if (pawnData != null && pawnData.reservedMount != null && !pawnData.reservedMount.Dead && pawnData.reservedMount.Spawned && pawnData.reservedMount.RaceProps.Animal)
                 {
-                    pawnData.owning.mindState.mentalStateHandler.TryStartMentalState(MentalStateDefOf.PanicFlee);
+                    pawnData.reservedMount.mindState.mentalStateHandler.TryStartMentalState(MentalStateDefOf.PanicFlee);
                 }
             }
         }
@@ -40,9 +40,9 @@ namespace GiddyUp.Harmony
             if (pawn.RaceProps.Humanlike && pawn.Faction != null && !pawn.Faction.IsPlayer)
             {
                 ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
-                if (pawnData != null && pawnData.owning != null && !pawnData.owning.Dead && pawnData.owning.Spawned)
+                if (pawnData != null && pawnData.reservedMount != null && !pawnData.reservedMount.Dead && pawnData.reservedMount.Spawned)
                 {
-                    pawnData.owning.mindState.mentalStateHandler.TryStartMentalState(MentalStateDefOf.PanicFlee);
+                    pawnData.reservedMount.mindState.mentalStateHandler.TryStartMentalState(MentalStateDefOf.PanicFlee);
                 }
             }
         }

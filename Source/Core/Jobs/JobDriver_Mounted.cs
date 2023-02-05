@@ -69,7 +69,7 @@ namespace GiddyUp.Jobs
                     riderMindstateDef == DutyDefOf.PrepareCaravan_GatherAnimals || 
                     riderMindstateDef == DutyDefOf.PrepareCaravan_GatherDownedPawns)
                 {
-                    return riderData.caravanMount != pawn;
+                    return riderData.reservedMount != pawn;
                 }
                 
                 if (rider.Position.CloseToEdge(rider.Map, 10)) return false; //Caravan just entered map and has not picked a job yet on this tick.
@@ -160,9 +160,9 @@ namespace GiddyUp.Jobs
                 bool isRoped = pawn.roping != null && pawn.roping.IsRoped;
                 if(!isRoped && !rider.Drafted && pawn.factionInt.def.isPlayer)
                 {
-                    if (pawnData.ownedBy != null && !interrupted && rider.GetCaravan() == null)
+                    if (pawnData.reservedBy != null && !interrupted && rider.GetCaravan() == null)
                     {
-                        pawn.jobs.jobQueue.EnqueueFirst(new Job(GiddyUp.ResourceBank.JobDefOf.WaitForRider, pawnData.ownedBy)
+                        pawn.jobs.jobQueue.EnqueueFirst(new Job(GiddyUp.ResourceBank.JobDefOf.WaitForRider, pawnData.reservedBy)
                         {
                             expiryInterval = 10000,
                             checkOverrideOnExpire = true,
@@ -177,18 +177,24 @@ namespace GiddyUp.Jobs
         void TryAttackEnemy(Pawn rider)
         {
             Thing targetThing = null;
+            bool confirmedHostile = false;
             
+            //The mount has something targetted but not the rider, so pass the target
             if (rider.TargetCurrentlyAimingAt != null)
             {
                 targetThing = rider.TargetCurrentlyAimingAt.Thing;
             }
+            //The rider is already trying to attack something
             else if (rider.CurJob?.def == JobDefOf.AttackMelee && rider.CurJob.targetA.Thing.HostileTo(rider))
             {
                 targetThing = rider.CurJob.targetA.Thing;
+                confirmedHostile = true;
             }
-            if (targetThing != null && targetThing.HostileTo(rider))
+
+            if (targetThing != null && (confirmedHostile || targetThing.HostileTo(rider)))
             {
-                if (pawn.meleeVerbs == null || pawn.meleeVerbs.TryGetMeleeVerb(targetThing) == null || !pawn.meleeVerbs.TryGetMeleeVerb(targetThing).CanHitTarget(targetThing))
+                var verb = pawn.meleeVerbs?.TryGetMeleeVerb(targetThing);
+                if (verb == null || !verb.CanHitTarget(targetThing))
                 {
                     pawn.TryStartAttack(targetThing); //Try start ranged attack if possible
                 }

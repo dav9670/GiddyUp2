@@ -91,12 +91,12 @@ namespace GiddyUpRideAndRoll.Jobs
         void UnsetOwnership()
         {
             ExtendedPawnData animalData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
-            if (animalData.ownedBy != null)
+            if (animalData.reservedBy != null)
             {
-                ExtendedPawnData riderData = ExtendedDataStorage.GUComp[animalData.ownedBy.thingIDNumber];
-                riderData.owning = null;
+                ExtendedPawnData riderData = ExtendedDataStorage.GUComp[animalData.reservedBy.thingIDNumber];
+                riderData.reservedMount = null;
             }
-            animalData.ownedBy = null;
+            animalData.reservedBy = null;
         }
         void WalkRandomNearby()
         {

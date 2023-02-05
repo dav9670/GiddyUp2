@@ -82,8 +82,8 @@ namespace GiddyUp.Jobs
 
                 if (Settings.rideAndRollEnabled)
                 {
-                    pawnData.owning = mount;
-                    animalData.ownedBy = this.pawn;
+                    pawnData.reservedMount = mount;
+                    animalData.reservedBy = this.pawn;
                 }
             }
         }

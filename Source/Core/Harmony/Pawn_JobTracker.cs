@@ -47,7 +47,7 @@ namespace GiddyUp.Harmony
 				{
 
 					ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
-					var hostileMount = pawnData.owning;
+					var hostileMount = pawnData.reservedMount;
 					if (hostileMount == null || hostileMount.Faction != pawn.Faction || 
 						pawnData.mount != null || hostileMount.Downed || hostileMount.Dead || 
 						!hostileMount.Spawned || !hostileMount.HasAttachment(ThingDefOf.Fire))
@@ -108,11 +108,6 @@ namespace GiddyUp.Harmony
 					secondTarget = DistanceUtility.GetFirstTarget(thinkResultJob, TargetIndex.B);
 				}
 				if (!firstTarget.IsValid) return;
-				if (pawnData.wasRidingToJob)
-				{
-					pawnData.wasRidingToJob = false;
-					return;
-				}
 
 				if(pawn.mindState != null && pawn.mindState.duty != null && (pawn.mindState.duty.def == DutyDefOf.TravelOrWait || pawn.mindState.duty.def == DutyDefOf.TravelOrLeave))
 				{
@@ -174,8 +169,8 @@ namespace GiddyUp.Harmony
 						) continue;
 					
 						ExtendedPawnData animalData = ExtendedDataStorage.GUComp[animal.thingIDNumber];
-						if(animalData.ownedBy != null) continue; //Already in use
-						if (!animalData.mountableByAnyone) continue; //Disallowed
+						if(animalData.reservedBy != null) continue; //Already in use
+						if (!animalData.automount) continue; //Disallowed
 
 
 						//TODO: Cache the dropoff calculations somehow
@@ -259,7 +254,6 @@ namespace GiddyUp.Harmony
 				ThinkResult InsertMountingJobs(ThinkResult __result, Pawn closestAnimal, JobQueue jobQueue, ExtendedPawnData pawData)
 				{
 					Job oldJob = __result.Job;
-					pawData.targetJob = oldJob;
 					Job mountJob = new Job(ResourceBank.JobDefOf.Mount, closestAnimal);
 
 					jobQueue.EnqueueFirst(oldJob);
@@ -338,11 +332,11 @@ namespace GiddyUp.Harmony
 
 				if (lord.CurLordToil is LordToil_ExitMapAndEscortCarriers || lord.CurLordToil is LordToil_Travel || lord.CurLordToil is LordToil_ExitMap || lord.CurLordToil is LordToil_ExitMapTraderFighting)
 				{
-					if (pawnData.owning != null &&
-						pawnData.owning.Faction == pawn.Faction &&
+					if (pawnData.reservedMount != null &&
+						pawnData.reservedMount.Faction == pawn.Faction &&
 						pawnData.mount == null && 
-						!pawnData.owning.Downed &&
-						pawnData.owning.Spawned && 
+						!pawnData.reservedMount.Downed &&
+						pawnData.reservedMount.Spawned && 
 						!pawn.HasAttachment(ThingDefOf.Fire) &&
 						!pawn.Downed)
 					{
@@ -360,7 +354,7 @@ namespace GiddyUp.Harmony
 				void MountAnimal(Pawn_JobTracker __instance, Pawn pawn, ExtendedPawnData pawnData, ref ThinkResult __result)
 				{
 					Job oldJob = __result.Job;
-					Job mountJob = new Job(ResourceBank.JobDefOf.Mount, pawnData.owning);
+					Job mountJob = new Job(ResourceBank.JobDefOf.Mount, pawnData.reservedMount);
 					mountJob.count = 1;
 					__result = new ThinkResult(mountJob, __result.SourceNode, __result.Tag, false);
 					__instance.jobQueue.EnqueueFirst(oldJob);

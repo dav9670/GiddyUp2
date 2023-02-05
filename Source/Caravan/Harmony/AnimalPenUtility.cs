@@ -1,5 +1,4 @@
 ﻿using HarmonyLib;
-using RimWorld.Planet;
 using Verse;
 using GiddyUp;
 
@@ -14,10 +13,7 @@ namespace GiddyUpCaravan.Harmony
         }
         static bool Postfix(bool __result, Pawn pawn)
         {
-            if (__result && pawn.IsFormingCaravan())
-            {
-                return ExtendedDataStorage.GUComp[pawn.thingIDNumber].caravanRider == null;
-            }
+            if (__result) return ExtendedDataStorage.GUComp[pawn.thingIDNumber].reservedBy == null;
             return __result;
         }
     }

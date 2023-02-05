@@ -133,10 +133,10 @@ namespace GiddyUp
             Job jobAnimal = new Job(ResourceBank.JobDefOf.Mounted, pawn);
             jobAnimal.count = 1;
             animal.jobs.TryTakeOrderedJob(jobAnimal);
-            animalData.ownedBy = pawn;
+            animalData.reservedBy = pawn;
             animal.playerSettings = new Pawn_PlayerSettings(animal);
             animal.training.Train(TrainableDefOf.Obedience, pawn);
-            pawnData.owning = animal;
+            pawnData.reservedMount = animal;
         }
         static PawnKindDef DeterminePawnKind(Map map, Predicate<PawnKindDef> isAnimal, float inBiomeWeightNormalized, float outBiomeWeightNormalized, int rndInt, int pawnHandlingLevel, List<string> factionFarmAnimalRestrictions, List<string> factionWildAnimalRestrictions, IncidentParms parms)
         {

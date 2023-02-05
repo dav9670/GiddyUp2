@@ -62,11 +62,11 @@ namespace GiddyUpRideAndRoll.Harmony
 					{
 						pawnData.Mount = null;
 						toil.actor.pather.StartPath(originalLoc, PathEndMode.OnCell);
-						if (pawnData.owning != null)
+						if (pawnData.reservedMount != null)
 						{
-							ExtendedPawnData animalData = ExtendedDataStorage.GUComp[pawnData.owning.thingIDNumber];
-							animalData.ownedBy = null;
-							pawnData.owning = null;
+							ExtendedPawnData animalData = ExtendedDataStorage.GUComp[pawnData.reservedMount.thingIDNumber];
+							animalData.reservedBy = null;
+							pawnData.reservedMount = null;
 						}
 					}
 				});

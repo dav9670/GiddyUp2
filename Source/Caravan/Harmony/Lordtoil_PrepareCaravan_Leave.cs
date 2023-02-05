@@ -19,10 +19,9 @@ namespace GiddyUpCaravan.Harmony
             AddMissingPawnsToLord(__instance);
             foreach (Pawn pawn in __instance.lord.ownedPawns)
             {
-                ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
-                if (pawnData.caravanMount != null)
+                Pawn animal = ExtendedDataStorage.GUComp[pawn.thingIDNumber].reservedMount;
+                if (animal != null)
                 {
-                    Pawn animal = pawnData.caravanMount;
                     Job jobRider = new Job(GiddyUp.ResourceBank.JobDefOf.Mount, animal);
                     jobRider.count = 1;
                     pawn.jobs.TryTakeOrderedJob(jobRider);
@@ -41,11 +40,11 @@ namespace GiddyUpCaravan.Harmony
             List<Pawn> shouldAddOwnedPawns = new List<Pawn>();
             foreach (Pawn pawn in __instance.lord.ownedPawns)
             {
-                ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
-                bool caravanContainsMount = __instance.lord.ownedPawns.Contains(pawnData.caravanMount);
-                if (pawnData.caravanMount != null && !caravanContainsMount)
+                Pawn reservedMount = ExtendedDataStorage.GUComp[pawn.thingIDNumber].reservedMount;
+                if (reservedMount == null) continue;
+                if (!__instance.lord.ownedPawns.Contains(reservedMount))
                 {
-                    shouldAddOwnedPawns.Add(pawnData.caravanMount);
+                    shouldAddOwnedPawns.Add(reservedMount);
                 }
             }
             var exitSpot = __instance.exitSpot;
