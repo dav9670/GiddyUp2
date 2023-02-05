@@ -10,14 +10,10 @@ namespace GiddyUp
     {
         public static void SetDrawOffset(ExtendedPawnData pawnData)
         {
-            if (pawnData.mount == null)
-            {
-                return;
-            }
+            if (pawnData.mount == null) return;
             PawnKindLifeStage curKindLifeStage = pawnData.mount.ageTracker.CurKindLifeStage;
-            Texture2D unreadableTexture = curKindLifeStage.bodyGraphicData.Graphic.MatEast.mainTexture as Texture2D;
-            Texture2D t = TextureUtility.GetReadableTexture(unreadableTexture);
-            int backHeight = TextureUtility.getBackHeight(t);
+            Texture2D t = TextureUtility.GetReadableTexture(curKindLifeStage.bodyGraphicData.Graphic.MatEast.mainTexture as Texture2D);
+            int backHeight = TextureUtility.GetBackHeight(t);
             float backHeightRelative = (float)backHeight / (float)t.height;
 
             float textureHeight = curKindLifeStage.bodyGraphicData.drawSize.y;
@@ -50,48 +46,7 @@ namespace GiddyUp
             }
             return result;
         }
-
-        /*
-        * Attempt of automatic long neck or horns detection that could be used to decide if pawns should be
-        * drawn in front or behind the mount in frontal view. 
-        * While it does often detect necks and horns, it doesn't really serve its purpose as necks and
-        * horns that are long when viewed from the side, are often not in front of the pawn in frontal view. 
-        * Might still prove usable for non-vanilla animals
-        */
-
-        public static bool HasLongNeckOrHorns(Texture2D t, int backHeight, int fraction)
-        {
-            int bodyPixels = 0;
-            int checkFrom = backHeight + 10;
-            int middle = t.width / 2;
-
-            if (checkFrom >= t.height)
-            {
-                return false;
-            }
-
-            int totalPixelsChecked = (t.height - checkFrom) * middle;
-            int minPixelsForNeckOrHorns = totalPixelsChecked / fraction;
-
-            for (int i = checkFrom; i < t.height; i++)
-            {
-                for (int j = middle; j < t.width; j++)
-                {
-                    Color c = t.GetPixel(j, i);
-                    if (c.a > 0)
-                    {
-                        bodyPixels++;
-                        if (bodyPixels > minPixelsForNeckOrHorns)
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            return false;
-        }
-        static int getBackHeight(Texture2D t)
+        static int GetBackHeight(Texture2D t)
         {
 
             int middle = t.width / 2;

@@ -1,9 +1,9 @@
 ﻿using GiddyUp;
 using HarmonyLib;
 using RimWorld;
-using System.Collections.Generic;
 using Verse;
 using Verse.AI;
+using System.Linq;
 
 namespace GiddyUpCaravan.Harmony
 {
@@ -37,21 +37,15 @@ namespace GiddyUpCaravan.Harmony
         //For compatibility with other mods (Save our ship 2), add any missing mounts to the lord. 
         static void AddMissingPawnsToLord(LordToil_PrepareCaravan_Leave __instance)
         {
-            List<Pawn> shouldAddOwnedPawns = new List<Pawn>();
-            foreach (Pawn pawn in __instance.lord.ownedPawns)
+            foreach (Pawn pawn in __instance.lord.ownedPawns.ToList())
             {
                 Pawn reservedMount = ExtendedDataStorage.GUComp[pawn.thingIDNumber].reservedMount;
                 if (reservedMount == null) continue;
                 if (!__instance.lord.ownedPawns.Contains(reservedMount))
                 {
-                    shouldAddOwnedPawns.Add(reservedMount);
+                    __instance.lord.ownedPawns.Add(pawn);
+                    pawn.mindState.duty = new PawnDuty(DutyDefOf.TravelOrWait, __instance.exitSpot);    
                 }
-            }
-            var exitSpot = __instance.exitSpot;
-            foreach (Pawn pawn in shouldAddOwnedPawns)
-            {
-                __instance.lord.ownedPawns.Add(pawn);
-                pawn.mindState.duty = new PawnDuty(DutyDefOf.TravelOrWait, exitSpot);
             }
         }
     }

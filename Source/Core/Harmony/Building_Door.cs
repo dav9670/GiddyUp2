@@ -1,4 +1,6 @@
-﻿using HarmonyLib;
+﻿//I'm not sure what the logic is behind this patch. Disabling for now.
+/*
+using HarmonyLib;
 using RimWorld;
 using System.Collections.Generic;
 using Verse;
@@ -31,3 +33,4 @@ namespace GiddyUp.Harmony
         }
     }
 }
+*/

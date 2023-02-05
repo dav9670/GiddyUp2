@@ -2,14 +2,14 @@
 using Verse;
 using GiddyUp;
 
-namespace GiddyUpCaravan.Harmony
+namespace GiddyUpCaravan
 {
     [HarmonyPatch(typeof(AnimalPenUtility), nameof(AnimalPenUtility.NeedsToBeManagedByRope))]
-    class AnimalPenUtility_NeedsToBeManagedByRope
+    class Patch_NeedsToBeManagedByRope
     {
         static bool Prepare()
         {
-            return GiddyUp.ModSettings_GiddyUp.caravansEnabled;
+            return GiddyUp.ModSettings_GiddyUp.caravansEnabled || GiddyUp.ModSettings_GiddyUp.rideAndRollEnabled;
         }
         static bool Postfix(bool __result, Pawn pawn)
         {

@@ -76,12 +76,6 @@ namespace GiddyUp
         }
 
         //[SyncMethod]
-        static void UpdatePawnDrafted(Pawn pawn, bool draftedStatus)
-        {
-            pawn.drafter.Drafted = draftedStatus;
-        }
-
-        //[SyncMethod]
         static void ResetPawnData(ExtendedPawnData pawnData)
         {
             pawnData.Reset();

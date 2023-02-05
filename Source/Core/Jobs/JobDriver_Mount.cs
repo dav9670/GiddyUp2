@@ -21,7 +21,6 @@ namespace GiddyUp.Jobs
             this.FailOnDowned(TargetIndex.A);
 
             yield return LetMountParticipate();
-            //yield return Toils_General.Wait(1);//wait one tick to ensure animal is waiting to get mounted before proceding. 
             yield return Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.Touch);
             if(this.pawn.interactions != null)
             {
@@ -58,7 +57,7 @@ namespace GiddyUp.Jobs
                 }
             };
             toil.defaultCompleteMode = ToilCompleteMode.Delay;
-            toil.defaultDuration = 150;
+            toil.defaultDuration = 150; //TODO tie into handling skill bonus
             toil.AddFinishAction(delegate
             {
                 FinishAction();

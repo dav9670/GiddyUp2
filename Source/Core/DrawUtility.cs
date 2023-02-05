@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*
+using System;
 using UnityEngine;
 using Verse;
 
@@ -94,7 +95,7 @@ namespace GiddyUp
             sliderPortion = sliderPortion.ContractedBy(2f);
 
             if (def_isPercentage)
-                Widgets.Label(labelPortion, (Mathf.Round(slider * 100f)).ToString("F0") + "%");
+                Widgets.Label(labelPortion, (Math.Round(slider * 100f)).ToString("F0") + "%");
             else
                 Widgets.Label(labelPortion, slider.ToString("F2"));
 
@@ -109,3 +110,4 @@ namespace GiddyUp
         }
     }
 }
+*/

@@ -9,10 +9,6 @@ namespace GiddyUp
     {
         public enum Reason{NotFullyGrown, NotInModOptions, CanMount, IsRoped, NeedsTraining};
 
-        public static bool IsMountable(Pawn pawn)
-        {
-            return IsMountable(pawn, out Reason reason);
-        }
         public static bool IsCurrentlyMounted(Pawn animal)
         {
             if(animal.CurJob == null || animal.CurJob.def != ResourceBank.JobDefOf.Mounted)
@@ -22,6 +18,10 @@ namespace GiddyUp
             var rider = animal.jobs.curDriver.job.targetA.Thing;
             return ExtendedDataStorage.isMounted.Contains(rider.thingIDNumber);
         }
+        public static bool IsMountable(Pawn pawn)
+        {
+            return IsMountable(pawn, out Reason reason);
+        }
         public static bool IsMountable(Pawn animal, out Reason reason)
         {
             reason = Reason.CanMount;
@@ -30,10 +30,10 @@ namespace GiddyUp
                 reason = Reason.NotInModOptions;
                 return false;
             }
-            if (animal.ageTracker.CurLifeStageIndex != animal.RaceProps.lifeStageAges.Count - 1)
+            if (!animal.ageTracker.Adult)
             {
                 var customLifeStages = animal.def.GetModExtension<AllowedLifeStagesPatch>();
-                if (customLifeStages == null || !customLifeStages.GetAllowedLifeStagesAsList().Contains(animal.ageTracker.CurLifeStageIndex))
+                if (customLifeStages == null || !customLifeStages.IsAllowedAge(animal.ageTracker.CurLifeStageIndex))
                 {
                     reason = Reason.NotFullyGrown;
                     return false;

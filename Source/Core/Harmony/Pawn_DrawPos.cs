@@ -1,7 +1,7 @@
-﻿using GiddyUp;
-using HarmonyLib;
+﻿using HarmonyLib;
 using UnityEngine;
 using Verse;
+using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUp.Harmony
 {
@@ -24,9 +24,16 @@ namespace GiddyUp.Harmony
             {
                 offset.z = offset.z + pawnData.drawOffset;
             }
+            //Apply custom offsets
+            var rotation = ___pawn.rotationInt;
             var modX = pawnData.mount.def.GetModExtension<DrawingOffsetPatch>();
-            if (modX != null) offset += AddCustomOffsets(___pawn.rotationInt, modX);
-            offset.y += 0.1f;
+            if (modX != null) offset += AddCustomOffsets(rotation, modX);
+            
+            if (rotation == Rot4.South && Settings.drawRulesCache.Contains(pawnData.mount.def.shortHash))
+            {
+                offset.y -= 0.1f;
+            }
+            else offset.y += 0.1f;
 
             __result = offset;
         }

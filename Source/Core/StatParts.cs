@@ -1,5 +1,6 @@
 ﻿using GiddyUp.Jobs;
 using RimWorld;
+using System;
 using System.Text;
 using UnityEngine;
 using Verse;
@@ -19,22 +20,22 @@ namespace GiddyUp
                 {
                     ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
                     float mountSpeed = pawnData.mount.GetStatValue(StatDefOf.MoveSpeed);
-                    sb.AppendLine("GUC_GiddyUp".Translate());
+                    sb.AppendLine("GUC_StatPart_Mounted".Translate());
                     sb.AppendLine("    " + "GUC_StatPart_MountMoveSpeed".Translate() + ": " + mountSpeed.ToStringByStyle(ToStringStyle.FloatTwo));
                 }
 
                 if(pawn.jobs != null && pawn.jobs.curDriver is JobDriver_Mounted jobDriver)
                 {
-                    sb.AppendLine("Giddy up!");
+                    sb.AppendLine("GUC_StatPart_Mounted".Translate());
                     float adjustedLevel = 0;
                     if (jobDriver.Rider.skills != null)
                     {
                         var skill = jobDriver.Rider.skills.GetSkill(SkillDefOf.Animals);
-                        adjustedLevel = skill.levelInt - Mathf.RoundToInt(pawn.GetStatValue(StatDefOf.MinimumHandlingSkill, true));
+                        adjustedLevel = skill.levelInt - (int)Math.Round(pawn.GetStatValue(StatDefOf.MinimumHandlingSkill, true));
                         float animalHandlingOffset = 1f + (adjustedLevel * ModSettings_GiddyUp.handlingMovementImpact) / 100f;
                         sb.AppendLine("    " + "GUC_StatPart_HandlingMultiplier".Translate() + ": " + animalHandlingOffset.ToStringByStyle(ToStringStyle.PercentOne, ToStringNumberSense.Factor));
                         sb.AppendLine("        " + "GUC_StatPart_HandlingSkill".Translate() + ": " + skill.levelInt);
-                        sb.AppendLine("        " + "GUC_StatPart_SkillReq".Translate() + ": " + Mathf.RoundToInt(pawn.GetStatValue(StatDefOf.MinimumHandlingSkill, true)));
+                        sb.AppendLine("        " + "GUC_StatPart_SkillReq".Translate() + ": " + (int)Math.Round(pawn.GetStatValue(StatDefOf.MinimumHandlingSkill, true)));
                         sb.AppendLine("        " + "GUC_StatPart_LevelsAbove".Translate() + ": " + adjustedLevel);
                         sb.AppendLine("        " + "GUC_StatPart_HandlingMovementImpact".Translate() + ": " + (ModSettings_GiddyUp.handlingMovementImpact / 100f).ToStringByStyle(ToStringStyle.PercentOne));
                     }
@@ -72,7 +73,7 @@ namespace GiddyUp
             if (skills != null)
             {
                 var skill = skills.GetSkill(SkillDefOf.Animals);
-                adjustedLevel = skill.levelInt - Mathf.RoundToInt(animal.GetStatValue(StatDefOf.MinimumHandlingSkill, true));
+                adjustedLevel = skill.levelInt - (int)Math.Round(animal.GetStatValue(StatDefOf.MinimumHandlingSkill, true));
             }
             float animalHandlingOffset = 1f + (adjustedLevel * Settings.handlingMovementImpact) / 100f;
             baseValue *= animalHandlingOffset;
@@ -96,7 +97,7 @@ namespace GiddyUp
                 var modExt = pawn.def.GetModExtension<CustomStatsPatch>();
                 if (modExt != null && modExt.armorModifier != 1.0f)
                 {
-                    sb.AppendLine("GUC_GiddyUp".Translate());
+                    sb.AppendLine("GUC_StatPart_Mounted".Translate());
                     sb.AppendLine("    " + "GUC_StatPart_MountTypeMultiplier".Translate() + ": " + (modExt.armorModifier).ToStringByStyle(ToStringStyle.PercentZero, ToStringNumberSense.Factor));
                 }  
             }
