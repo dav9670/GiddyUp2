@@ -8,6 +8,7 @@ using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUpCaravan.Harmony
 {
+    [HarmonyPatch]
     static class Patch_IncidentWorkers
     {
         static bool Prepare()

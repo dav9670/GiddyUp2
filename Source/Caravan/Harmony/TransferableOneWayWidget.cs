@@ -42,7 +42,7 @@ namespace GiddyUpCaravan.Harmony
         }
         public static float AddMountSelector(TransferableOneWayWidget widget, float num, Rect rect, TransferableOneWay trad)
         {
-            float buttonWidth = 150f;
+            float buttonWidth = 75f;
 
             if (trad.AnyThing is not Pawn pawn) return num; //not an animal, return; 
             
@@ -66,7 +66,7 @@ namespace GiddyUpCaravan.Harmony
             }
             else return num;
 
-            return num - buttonWidth;
+            return num - (buttonWidth - 25f);
         }
         static void SetSelectedForCaravan(Pawn pawn, TransferableOneWay trad)
         {
@@ -106,7 +106,7 @@ namespace GiddyUpCaravan.Harmony
 
             if (!animalData.selectedForCaravan)
             {
-                buttonText = "GU_Car_AnimalNotSelected".Translate();
+                buttonText = "";
                 canMount = false;
             }
 
@@ -115,12 +115,12 @@ namespace GiddyUpCaravan.Harmony
             {
                 if (reason == IsMountableUtility.Reason.NotFullyGrown)
                 {
-                    buttonText = "GU_Car_NotFullyGrown".Translate();
+                    buttonText = "";
                     canMount = false;
                 }
                 if (reason == IsMountableUtility.Reason.NotInModOptions)
                 {
-                    buttonText = "GU_Car_NotInModOptions".Translate();
+                    buttonText = "";
                     canMount = false;
                 }
             }
@@ -163,7 +163,7 @@ namespace GiddyUpCaravan.Harmony
                         {
                             {
                                 SelectMountRider(animalData, pawnData, animal, pawn);
-                                trad.CountToTransfer = -1; //Setting this to -1 will make sure total weight is calculated again. it's set back to 1 shortly after
+                                trad.CountToTransfer = 1; //Setting this to -1 will make sure total weight is calculated again. it's set back to 1 shortly after
                             }
                         }, MenuOptionPriority.High, null, null, 0f, null, null));
                     }
@@ -172,7 +172,7 @@ namespace GiddyUpCaravan.Harmony
                 {
                     {
                         ClearMountRider(animalData);
-                        trad.CountToTransfer = -1; //Setting this to -1 will make sure total weight is calculated again. it's set back to 1 shortly after
+                        trad.CountToTransfer = 1; //Setting this to -1 will make sure total weight is calculated again. it's set back to 1 shortly after
                     }
                 }, MenuOptionPriority.Low, null, null, 0f, null, null));
                 Find.WindowStack.Add(new FloatMenu(list));
@@ -203,43 +203,6 @@ namespace GiddyUpCaravan.Harmony
             animalData.reservedMount = null;
 
             animalData.selectedForCaravan = true;
-        }
-    }
-
-    //This code makes sure total pack weight is refreshed after a rider is set for an animal. 
-    //CountToTransfer with -1 is used as a flag here, indicating that weight should be recalculated. Unfortunately I couldn't come up with a cleaner way to do this without completely disabling caching. 
-    [HarmonyPatch(typeof(TransferableOneWayWidget), nameof(TransferableOneWayWidget.FillMainRect))]
-    static class TransferableOneWayWidget_FillMainRect
-    {
-        static bool Prepare()
-        {
-            return GiddyUp.ModSettings_GiddyUp.caravansEnabled;
-        }
-        static void Postfix(TransferableOneWayWidget __instance, ref bool anythingChanged)
-        {
-            if (__instance.sections.Count < 4) return;
-
-            List<TransferableOneWay> cachedTransferables = __instance.sections[3].cachedTransferables;
-            if (cachedTransferables != null)
-            {
-                foreach (TransferableOneWay tow in cachedTransferables)
-                {
-                    Pawn towPawn = tow.AnyThing as Pawn;
-                    if (towPawn == null)
-                    {
-                        continue;
-                    }
-                    if (tow.CountToTransfer == -1)
-                    {
-                        ExtendedPawnData PawnData = ExtendedDataStorage.GUComp[towPawn.thingIDNumber];
-                        if (PawnData.selectedForCaravan == true)
-                        {
-                            anythingChanged = true;
-                            tow.CountToTransfer = 1;
-                        }
-                    }
-                }
-            }
         }
     }
 }

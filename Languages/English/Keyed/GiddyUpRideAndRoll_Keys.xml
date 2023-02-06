@@ -9,22 +9,22 @@
 	<GU_RR_MinAutoMountDistanceFromAnimal_Title>Maximum distance from animal (Min: {0} Max: {1} Default: {2} Current: {3})</GU_RR_MinAutoMountDistanceFromAnimal_Title>
 	<GU_RR_MinAutoMountDistanceFromAnimal_Description>If the distance between a pawn and a mount is less than this threshold, they will consider riding it.</GU_RR_MinAutoMountDistanceFromAnimal_Description>
 	
-	<GU_RR_Designator_GU_DropAnimal_Expand_Label>Place mount drop spot</GU_RR_Designator_GU_DropAnimal_Expand_Label> <!--Should be short-->
-	<GU_RR_Designator_GU_DropAnimal_Expand_Description>When trying to enter a "forbid riding" area while pawns are mounted, they will drop off the the animal they are riding at the nearest colony drop spot.</GU_RR_Designator_GU_DropAnimal_Expand_Description>
+	<GU_RR_Designator_GU_DropAnimal_Expand_Label>Place mount spot</GU_RR_Designator_GU_DropAnimal_Expand_Label> <!--Should be short-->
+	<GU_RR_Designator_GU_DropAnimal_Expand_Description>Pawns will use mount spots when riding an animal that does not need to be penned. If it does, they will just go to a nearby pen instead.</GU_RR_Designator_GU_DropAnimal_Expand_Description>
 	
-	<GU_RR_Designator_GU_DropAnimal_Clear_Label>Clear mount drop spot</GU_RR_Designator_GU_DropAnimal_Clear_Label> <!--Should be short-->
-	<GU_RR_Designator_GU_DropAnimal_Clear_Description>Clears mount drop spots. Drag to delete multiple drop spots at once.</GU_RR_Designator_GU_DropAnimal_Clear_Description>
+	<GU_RR_Designator_GU_DropAnimal_Clear_Label>Clear mount spot</GU_RR_Designator_GU_DropAnimal_Clear_Label> <!--Should be short-->
+	<GU_RR_Designator_GU_DropAnimal_Clear_Description>Clears mount drop spots.</GU_RR_Designator_GU_DropAnimal_Clear_Description>
 	
 	<GU_RR_Designator_GU_NoMount_Clear_Label>Clear forbid riding area</GU_RR_Designator_GU_NoMount_Clear_Label> <!--Should be short-->
 	<GU_RR_Designator_GU_NoMount_Clear_Description>Clears the forbid riding area.</GU_RR_Designator_GU_NoMount_Clear_Description>
 	
 	<GU_RR_Designator_GU_NoMount_Expand_Label>Expand forbid riding area </GU_RR_Designator_GU_NoMount_Expand_Label>
-	<GU_RR_Designator_GU_NoMount_Expand_Description>Before trying to enter a "forbid riding" area on an animal, pawns will drop off their mount at the nearest mount drop spot. This will only happen when their destination is inside the forbidden area. IMPORTANT NOTE: This area only has effect when mount drop spots have been designated!</GU_RR_Designator_GU_NoMount_Expand_Description>
+	<GU_RR_Designator_GU_NoMount_Expand_Description>Pawns will avoid riding their mounts in a forbidden riding area. If their destination lies within one, they will use a nearby mount spot if the animal does not need to be penned. If it does, they will seek a pen instead.</GU_RR_Designator_GU_NoMount_Expand_Description>
 	
-	<GU_RR_NoDropAnimal_Label>No mount drop spots (Giddy-up!)</GU_RR_NoDropAnimal_Label>
-	<GU_RR_NoDropAnimal_Description>A forbid riding area has been designated but no mount drop spots exist. This way the forbid riding area has no effect. Check out mount drop spots in the Zone/Area menu.</GU_RR_NoDropAnimal_Description>
+	<GU_RR_NoDropAnimal_Label>No mount spots</GU_RR_NoDropAnimal_Label>
+	<GU_RR_NoDropAnimal_Description>A forbid riding area has been designated but no mount spots exist.</GU_RR_NoDropAnimal_Description>
 	
-	<GU_RR_NotReachable_DropAnimal_Message>Colonist could not reach Giddy-up! Drop off point. Make sure all drop off points are reachable</GU_RR_NotReachable_DropAnimal_Message>
+	<GU_RR_NotReachable_DropAnimal_Message>Colonist could not reach mount spot at {0}.</GU_RR_NotReachable_DropAnimal_Message>
 	
 	<GU_RR_Gizmo_LeaveRider_Label>Leave rider</GU_RR_Gizmo_LeaveRider_Label>
 	<GU_RR_Gizmo_LeaveRider_Description>Order the animal to stop waiting for the rider.</GU_RR_Gizmo_LeaveRider_Description>

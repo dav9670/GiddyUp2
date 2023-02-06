@@ -2,25 +2,25 @@
 <LanguageData>	
 	<GU_Car_NotReachable_DropAnimal_NPC_Message> Visitor could not reach NPC Drop off point. Make sure all NPC drop off points are reachable.</GU_Car_NotReachable_DropAnimal_NPC_Message>
 	
-	<GU_Car_visitorMountChance_Title>Friendly NPC mount chance (Min: {0}% Max: {1}% Default: {2}% Current: {3}%)</GU_Car_visitorMountChance_Title>
+	<GU_Car_visitorMountChance_Title>Visitors mount chance (Min: {0}% Max: {1}% Default: {2}% Current: {3}%)</GU_Car_visitorMountChance_Title>
 	<GU_Car_visitorMountChance_Description>Chance that visiting friendly NPC pawns ride an animal</GU_Car_visitorMountChance_Description>
 	
-	<GU_Car_visitorMountChanceTribal_Title>Friendly tribal NPC mount chance (Min: {0}% Max: {1}% Default: {2}% Current: {3}%)</GU_Car_visitorMountChanceTribal_Title>
+	<GU_Car_visitorMountChanceTribal_Title>Tribal visitors mount chance (Min: {0}% Max: {1}% Default: {2}% Current: {3}%)</GU_Car_visitorMountChanceTribal_Title>
 	<GU_Car_visitorMountChanceTribal_Description>Chance that visiting friendly tribal NPC pawns ride an animal</GU_Car_visitorMountChanceTribal_Description>
 	
-	<GU_Car_Designator_GU_DropAnimal_NPC_Clear_Label>Clear NPC mount spot</GU_Car_Designator_GU_DropAnimal_NPC_Clear_Label>
-	<GU_Car_Designator_GU_DropAnimal_NPC_Clear_Description>Clear designated NPC mount spots</GU_Car_Designator_GU_DropAnimal_NPC_Clear_Description>
+	<GU_Car_Designator_GU_DropAnimal_NPC_Clear_Label>Clear visitor mount spot</GU_Car_Designator_GU_DropAnimal_NPC_Clear_Label>
+	<GU_Car_Designator_GU_DropAnimal_NPC_Clear_Description>Clear designated guest mount spots</GU_Car_Designator_GU_DropAnimal_NPC_Clear_Description>
 	
-	<GU_Car_Designator_GU_DropAnimal_NPC_Expand_Label>Place NPC mount spot</GU_Car_Designator_GU_DropAnimal_NPC_Expand_Label>
-	<GU_Car_Designator_GU_DropAnimal_NPC_Expand_Description>Place drop off spots for NPC mounts. When traders or visitors arrive, they will temporarily leave their mounts at the NPC mount spot closest to the place they gather. Mounts will stay near the drop off point until their rider returns. </GU_Car_Designator_GU_DropAnimal_NPC_Expand_Description>
+	<GU_Car_Designator_GU_DropAnimal_NPC_Expand_Label>Place visitor mount spot</GU_Car_Designator_GU_DropAnimal_NPC_Expand_Label>
+	<GU_Car_Designator_GU_DropAnimal_NPC_Expand_Description>Place drop off spots for guest mounts. When traders or visitors arrive, they will temporarily leave their mounts at the mount spot closest to the place they gather. Mounts will stay near the drop off point until their rider returns. </GU_Car_Designator_GU_DropAnimal_NPC_Expand_Description>
 	
 	<!-- note for translators: The following items need to be really short to fit -->
 	<GU_Car_No_Rider>No rider</GU_Car_No_Rider>
 	<GU_Car_Set_Rider>Set rider</GU_Car_Set_Rider>
-	<GU_Car_NotInModOptions>Mount forbidden</GU_Car_NotInModOptions>
-	<GU_Car_NotFullyGrown>Not fully grown</GU_Car_NotFullyGrown>
-	<GU_Car_NeedsObedience>Needs obedience</GU_Car_NeedsObedience>
-	<GU_Car_AnimalNotSelected>Not selected</GU_Car_AnimalNotSelected>
+	<GU_Car_NotInModOptions> </GU_Car_NotInModOptions>
+	<GU_Car_NotFullyGrown> </GU_Car_NotFullyGrown>
+	<GU_Car_NeedsObedience> </GU_Car_NeedsObedience>
+	<GU_Car_AnimalNotSelected> </GU_Car_AnimalNotSelected>
 	<GU_Car_TooYoung>Too young</GU_Car_TooYoung>
 	<GU_Car_PawnNotSelected>not selected</GU_Car_PawnNotSelected>
 </LanguageData>

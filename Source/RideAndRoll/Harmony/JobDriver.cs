@@ -98,7 +98,7 @@ namespace GiddyUpRideAndRoll.Harmony
 			}
 			else
 			{
-				Messages.Message("GU_RR_NotReachable_DropAnimal_Message".Translate(), new RimWorld.Planet.GlobalTargetInfo(parkLoc, actor.Map), MessageTypeDefOf.NegativeEvent);
+				Messages.Message("GU_RR_NotReachable_DropAnimal_Message".Translate(parkLoc.ToString()), new RimWorld.Planet.GlobalTargetInfo(parkLoc, actor.Map), MessageTypeDefOf.NegativeEvent);
 			}
 			return succeeded;
 		}
