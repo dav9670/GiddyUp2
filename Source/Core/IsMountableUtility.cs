@@ -11,7 +11,7 @@ namespace GiddyUp
 
         public static bool IsCurrentlyMounted(Pawn animal)
         {
-            if(animal.CurJob == null || animal.CurJob.def != ResourceBank.JobDefOf.Mounted)
+            if (animal.CurJob == null || animal.CurJob.def != ResourceBank.JobDefOf.Mounted)
             {
                 return false;
             }
@@ -32,7 +32,7 @@ namespace GiddyUp
             }
             if (!animal.ageTracker.Adult)
             {
-                var customLifeStages = animal.def.GetModExtension<AllowedLifeStagesPatch>();
+                var customLifeStages = animal.def.GetModExtension<AllowedLifeStages>();
                 if (customLifeStages == null || !customLifeStages.IsAllowedAge(animal.ageTracker.CurLifeStageIndex))
                 {
                     reason = Reason.NotFullyGrown;

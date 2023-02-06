@@ -49,7 +49,7 @@ namespace GiddyUp.Jobs
                     pawn.ExitMap(false, CellRect.WholeMap(base.Map).GetClosestEdge(this.pawn.Position));
                     return true; //No longer spawned?
                 }
-                else if(riderIsColonist && rider.GetCaravan() != null)
+                else if (riderIsColonist && rider.GetCaravan() != null)
                 {
                     pawn.ExitMap(true, CellRect.WholeMap(base.Map).GetClosestEdge(this.pawn.Position));
                     return true; //Left map?
@@ -64,7 +64,7 @@ namespace GiddyUp.Jobs
             if (Settings.caravansEnabled)
             {
                 var riderMindstateDef = rider.mindState?.duty?.def;
-                if(riderMindstateDef == DutyDefOf.TravelOrWait || 
+                if (riderMindstateDef == DutyDefOf.TravelOrWait || 
                     riderMindstateDef == DutyDefOf.TravelOrLeave || 
                     riderMindstateDef == DutyDefOf.PrepareCaravan_GatherAnimals || 
                     riderMindstateDef == DutyDefOf.PrepareCaravan_GatherDownedPawns)
@@ -158,7 +158,7 @@ namespace GiddyUp.Jobs
             {
                 ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
                 bool isRoped = pawn.roping != null && pawn.roping.IsRoped;
-                if(!isRoped && !rider.Drafted && pawn.factionInt.def.isPlayer)
+                if (!isRoped && !rider.Drafted && pawn.factionInt.def.isPlayer)
                 {
                     if (pawnData.reservedBy != null && !interrupted && rider.GetCaravan() == null)
                     {

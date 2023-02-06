@@ -9,7 +9,7 @@ namespace GiddyUp.Harmony
     {
         static void Postfix(Pawn pawn, Thing motherOrEgg)
         {
-            if(motherOrEgg is Pawn mother)
+            if (motherOrEgg is Pawn mother)
             {
                 var pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
                 var motherData = ExtendedDataStorage.GUComp[mother.thingIDNumber];

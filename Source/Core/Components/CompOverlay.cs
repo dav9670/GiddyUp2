@@ -23,7 +23,7 @@ namespace GiddyUp
 			if (graphicData == null) return;
 
 			//support multi texture animals
-            if(overlay.allVariants != null)
+            if (overlay.allVariants != null)
             {
                 string graphicPath = pawn.Drawer?.renderer?.graphics?.nakedGraphic?.path;
 				if (graphicPath.NullOrEmpty()) return;

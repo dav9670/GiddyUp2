@@ -109,7 +109,7 @@ namespace GiddyUp.Harmony
 				}
 				if (!firstTarget.IsValid) return;
 
-				if(pawn.mindState != null && pawn.mindState.duty != null && (pawn.mindState.duty.def == DutyDefOf.TravelOrWait || pawn.mindState.duty.def == DutyDefOf.TravelOrLeave))
+				if (pawn.mindState != null && pawn.mindState.duty != null && (pawn.mindState.duty.def == DutyDefOf.TravelOrWait || pawn.mindState.duty.def == DutyDefOf.TravelOrLeave))
 				{
 					return;
 				}
@@ -169,7 +169,7 @@ namespace GiddyUp.Harmony
 						) continue;
 					
 						ExtendedPawnData animalData = ExtendedDataStorage.GUComp[animal.thingIDNumber];
-						if(animalData.reservedBy != null) continue; //Already in use
+						if (animalData.reservedBy != null) continue; //Already in use
 						if (!animalData.automount) continue; //Disallowed
 
 
@@ -313,19 +313,19 @@ namespace GiddyUp.Harmony
 					return;
 				}
 				if (pawn.IsPrisoner) return;
-				if(__result.Job == null) return; //shouldn't happen, but may happen with mods.
+				if (__result.Job == null) return; //shouldn't happen, but may happen with mods.
 
 				LocalTargetInfo target = DistanceUtility.GetFirstTarget(__result.Job, TargetIndex.A);
 				if (!target.IsValid) return;
 
 				ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
-				if(__result.Job.def == ResourceBank.JobDefOf.Dismount || __result.Job.def == ResourceBank.JobDefOf.Mount)
+				if (__result.Job.def == ResourceBank.JobDefOf.Dismount || __result.Job.def == ResourceBank.JobDefOf.Mount)
 				{
 					return;
 				}
 
 				QueuedJob qJob = pawn.jobs.jobQueue.FirstOrFallback(null);
-				if(qJob != null && (qJob.job.def == ResourceBank.JobDefOf.Dismount || qJob.job.def == ResourceBank.JobDefOf.Mount))
+				if (qJob != null && (qJob.job.def == ResourceBank.JobDefOf.Dismount || qJob.job.def == ResourceBank.JobDefOf.Mount))
 				{
 					return;
 				}
@@ -343,7 +343,7 @@ namespace GiddyUp.Harmony
 						MountAnimal(jobTracker, pawn, pawnData, ref __result);
 					}
 				}
-				else if(lord.CurLordToil.GetType() == typeof(LordToil_DefendTraderCaravan) || lord.CurLordToil is LordToil_DefendPoint) //first option is internal class, hence this way of accessing. 
+				else if (lord.CurLordToil.GetType() == typeof(LordToil_DefendTraderCaravan) || lord.CurLordToil is LordToil_DefendPoint) //first option is internal class, hence this way of accessing. 
 				{
 					if (pawnData.mount != null)
 					{
@@ -364,7 +364,7 @@ namespace GiddyUp.Harmony
 					Area areaFound = pawn.Map.areaManager.GetLabeled(ResourceBank.DropAnimal_NPC_LABEL);
 					IntVec3 targetLoc = pawn.Position;
 
-					if(areaFound != null && areaFound.ActiveCells.Count() > 0)
+					if (areaFound != null && areaFound.ActiveCells.Count() > 0)
 					{
 						targetLoc = DistanceUtility.GetClosestAreaLoc(pawn, areaFound);
 					}
@@ -375,12 +375,8 @@ namespace GiddyUp.Harmony
 						__instance.jobQueue.EnqueueFirst(dismountJob);
 						__instance.jobQueue.EnqueueFirst(new Job(JobDefOf.Goto, targetLoc));
 						PawnDuty animalDuty = pawnData.mount.mindState.duty;
-						//if(pawnData.mount.GetLord().CurLordToil is LordToil)
 
-						if(animalDuty != null)
-						{
-							animalDuty.focus = new LocalTargetInfo(targetLoc);
-						}
+						if (animalDuty != null) animalDuty.focus = new LocalTargetInfo(targetLoc);
 					}
 					else
 					{

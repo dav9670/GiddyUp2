@@ -22,7 +22,7 @@ namespace GiddyUp.Harmony
                 Thing thing = thingList[i];
 
                 if (thing.def.category == ThingCategory.Item) return true;
-                else if(thing.def.category == ThingCategory.Pawn) //ignore mounted animals when determining whether door is blocked
+                else if (thing.def.category == ThingCategory.Pawn) //ignore mounted animals when determining whether door is blocked
                 {
                     Pawn pawn = thing as Pawn;
                     //dont return, blocking things can still be found

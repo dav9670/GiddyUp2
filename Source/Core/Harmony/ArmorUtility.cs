@@ -1,17 +1,15 @@
-﻿using GiddyUp;
-using HarmonyLib;
-using Verse;
+﻿using Verse;
 
 namespace GiddyUp.Harmony
 {
-    [HarmonyPatch(typeof(ArmorUtility), nameof(ArmorUtility.ApplyArmor))]
-    class ArmorUtility_ApplyArmor
+    //[HarmonyPatch(typeof(ArmorUtility), nameof(ArmorUtility.ApplyArmor))] //Manually patched if needed
+    class Patch_ApplyArmor
     {
-        static void Postfix(ref float armorRating, ref float damAmount, ref bool metalArmor, Pawn pawn)
+        public static void Postfix(ref float armorRating, ref float damAmount, ref bool metalArmor, Pawn pawn)
         {
             if (IsMountableUtility.IsCurrentlyMounted(pawn))
             {
-                var modExt = pawn.def.GetModExtension<CustomStatsPatch>();
+                var modExt = pawn.def.GetModExtension<CustomStats>();
                 if (modExt != null)
                 {
                     armorRating *= modExt.armorModifier;

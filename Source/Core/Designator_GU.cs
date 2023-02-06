@@ -51,7 +51,7 @@ namespace GiddyUp
         public override void SelectedUpdate()
         {
             GenUI.RenderMouseoverBracket();
-            if(selectedArea != null)
+            if (selectedArea != null)
             {
                 selectedArea.MarkForDraw();
             }

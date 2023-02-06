@@ -79,7 +79,7 @@ namespace GiddyUpCaravan.Harmony
                 if (reservedMount != null) UnsetDataForRider(pawnData);
                 if (pawnData.reservedBy != null) UnsetDataForMount(pawnData);
             }
-            if(reservedMount != null && (reservedMount.Dead || reservedMount.Downed)) UnsetDataForRider(pawnData);
+            if (reservedMount != null && (reservedMount.Dead || reservedMount.Downed)) UnsetDataForRider(pawnData);
 
             if (trad.CountToTransfer > 0) pawnData.selectedForCaravan = true;
         }

@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<!-- These patches set the exceptions of the mod settings. The same patching method can be used for other mods that add animals and want default options for them. 
-Two patch operations per animal are needed for vanilla animals to ensure compatibility with mods that add comps. Note that this is probably not needed for patches of other mods that add animals-->
 <Patch>
 	<Operation Class="PatchOperationSequence">
 		<success>Always</success>
@@ -28,6 +26,41 @@ Two patch operations per animal are needed for vanilla animals to ensure compati
 					<comps />
 				</value>
 			</li>
+			<li Class="PatchOperationAddModExtension">
+				<success>Always</success>
+				<xpath>Defs/ThingDef[defName="AEXP_Alligator" or 
+					defName="AEXP_Anaconda" or 
+					defName="Boomalope" or 
+					defName="Cow" or 
+					defName="AEXP_Crocodile" or 
+					defName="Elk" or 
+					defName="BiomesIslands_Gigantaconda" or 
+					defName="AEXP_Giraffe" or 
+					defName="AEXP_Gorilla" or 
+					defName="AEXP_GreatDane" or 
+					defName="AEXP_Hippopotamus" or 
+					defName="VFEI_Insectoid_Queen" or 
+					defName="AEXP_Kangaroo" or 
+					defName="VFEI_Insectoid_Megapede" or 
+					defName="AEXP_Moose" or 
+					defName="BiomesIslands_OmegaDodo" or 
+					defName="Pig" or 
+					defName="VFEI_Insectoid_RoyalMegaspider" or 
+					defName="Toxalope" or 
+					defName="VFEI_VatGrownGigascorpion" or 
+					defName="VFEI_VatGrownGigawig" or 
+					defName="VFEI_VatGrownMegacricket" or 
+					defName="VFEI_VatGrownMegapede" or 
+					defName="VFEI_VatGrownMilkbeetle" or 
+					defName="VFEI_VatGrownPrincess" or 
+					defName="VFEI_VatGrownTitanbeetle" or 
+					defName="VFEI_VatGrownWargling" or 
+					defName="VFEI_VatGrownWorkerAnt" or 
+					defName="AEXP_Walrus"]</xpath>
+				<value>
+					<li Class="GiddyUp.NotMountable" />
+				</value>
+			</li>
 			<li Class="PatchOperationAdd">
 				<xpath>Defs/ThingDef[defName="Ostrich"]/comps</xpath>
 				<value>
@@ -39,7 +72,6 @@ Two patch operations per animal are needed for vanilla animals to ensure compati
 								<drawSize>1.8</drawSize>
 								<drawRotated>false</drawRotated>
 							</graphicDataDefault>
-							<offsetDefault>(0,0,0,0)</offsetDefault>
 						</overlayFront>
 					</li>
 				</value>
@@ -55,7 +87,6 @@ Two patch operations per animal are needed for vanilla animals to ensure compati
 								<drawSize>1.6</drawSize>
 								<drawRotated>false</drawRotated>
 							</graphicDataDefault>
-							<offsetDefault>(0,0,0,0)</offsetDefault>
 						</overlayFront>
 						
 					</li>
@@ -72,7 +103,6 @@ Two patch operations per animal are needed for vanilla animals to ensure compati
 								<drawSize>4.38</drawSize>
 								<drawRotated>false</drawRotated>
 							</graphicDataDefault>
-							<offsetDefault>(0,0,0,0)</offsetDefault>
 						</overlayFront>
 						<overlaySide>
 							<graphicDataDefault>
@@ -81,7 +111,6 @@ Two patch operations per animal are needed for vanilla animals to ensure compati
 								<drawSize>4.38</drawSize>
 								<drawRotated>false</drawRotated>
 							</graphicDataDefault>
-							<offsetDefault>(0,0,0,0)</offsetDefault>
 						</overlaySide>
 					</li>
 				</value>
@@ -103,7 +132,6 @@ Two patch operations per animal are needed for vanilla animals to ensure compati
 								<drawSize>1.7</drawSize>
 								<drawRotated>false</drawRotated>
 							</graphicDataFemale>
-							<offsetDefault>(0,0,0,0)</offsetDefault>
 						</overlayFront>
 						<overlaySide>
 							<graphicDataMale>
@@ -118,7 +146,6 @@ Two patch operations per animal are needed for vanilla animals to ensure compati
 								<drawSize>1.7</drawSize>
 								<drawRotated>false</drawRotated>
 							</graphicDataFemale>
-							<offsetDefault>(0,0,0,0)</offsetDefault>
 						</overlaySide>
 					</li>
 				</value>
@@ -135,8 +162,6 @@ Two patch operations per animal are needed for vanilla animals to ensure compati
 								<drawSize>2.18</drawSize>
 								<drawRotated>false</drawRotated>
 							</graphicDataDefault>
-							
-							<offsetDefault>(0,0,0,0)</offsetDefault>
 						</overlayFront>
 					</li>
 				</value>
@@ -153,25 +178,14 @@ Two patch operations per animal are needed for vanilla animals to ensure compati
 								<drawSize>2.12</drawSize>
 								<drawRotated>false</drawRotated>
 							</graphicDataDefault>
-							<offsetDefault>(0,0,0,0)</offsetDefault>
 						</overlayFront>
-					</li>
-				</value>
-			</li>
-			<li Class="PatchOperationAddModExtension">
-				<xpath>Defs/ThingDef[defName="LabradorRetriever"]</xpath>
-				<value>
-					<li Class="GiddyUp.DrawOverride">
-						<isException>true</isException>
 					</li>
 				</value>
 			</li>
 			<li Class="PatchOperationAddModExtension">
 				<xpath>Defs/ThingDef[defName="Alpaca" or defName="Elk" or defName="Thrumbo"]</xpath>
 				<value>
-					<li Class="GiddyUp.DrawOverride">
-						<drawFront>true</drawFront>
-					</li>
+					<li Class="GiddyUp.DrawInFront" />
 				</value>
 			</li>
 			<li Class="PatchOperationAdd">
@@ -218,7 +232,6 @@ Two patch operations per animal are needed for vanilla animals to ensure compati
 								<li><texPath>Things/Pawn/Horse5_overlay_south</texPath></li>						
 								<li><texPath>Things/Pawn/Horse6_overlay_south</texPath></li>
 							</allVariants>
-							<offsetDefault>(0,0,0,0)</offsetDefault>
 						</overlayFront>
 					</li>
 				</value>

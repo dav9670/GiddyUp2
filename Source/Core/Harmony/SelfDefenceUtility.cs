@@ -9,7 +9,7 @@ namespace GiddyUp.Harmony
     {
         static bool Prefix(Pawn pawn, ref bool __result)
         {
-            if(pawn.CurJob != null && pawn.CurJob.def == ResourceBank.JobDefOf.Mounted)
+            if (pawn.CurJob != null && pawn.CurJob.def == ResourceBank.JobDefOf.Mounted)
             {
                 __result = false;
                 return false;

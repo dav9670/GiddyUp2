@@ -23,7 +23,7 @@ namespace GiddyUp.Harmony
                 return __result;
             }
             float adjustedLevel = 5;
-            if(pawn.skills != null)
+            if (pawn.skills != null)
             {
                 adjustedLevel = pawn.skills.GetSkill(SkillDefOf.Animals).levelInt - (int)Math.Round(mount.GetStatValue(StatDefOf.MinimumHandlingSkill, true));
             }

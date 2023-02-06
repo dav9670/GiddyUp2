@@ -64,7 +64,7 @@ namespace GiddyUp
 
                 if (clicked)
                 {
-                    if(selected != tab)
+                    if (selected != tab)
                     {
                         selected = tab;
                     }

@@ -12,10 +12,9 @@ namespace BattleMounts
         //[SyncMethod]
         public static void MountAnimals(ref List<Pawn> list, IncidentParms parms)
         {
-            if (list.Count == 0 
-                || !(parms.raidArrivalMode == null 
-                || parms.raidArrivalMode == PawnsArrivalModeDefOf.EdgeWalkIn)
-                || (parms.raidStrategy != null && parms.raidStrategy.workerClass == typeof(RaidStrategyWorker_Siege)))
+            //Only allow raids tha are edge walk ins, except sieges
+            if (list.Count == 0 || !(parms.raidArrivalMode == null || parms.raidArrivalMode == PawnsArrivalModeDefOf.EdgeWalkIn) ||
+                (parms.raidStrategy != null && parms.raidStrategy.workerClass == typeof(RaidStrategyWorker_Siege)))
             {
                 return;
             }
@@ -23,7 +22,7 @@ namespace BattleMounts
             
             foreach(Pawn pawn in list)
             {
-                if(pawn.equipment == null)
+                if (pawn.equipment == null)
                 {
                     pawn.equipment = new Pawn_EquipmentTracker(pawn);
                 }

@@ -1,11 +1,10 @@
-﻿using System.Linq;
-using Verse;
+﻿using Verse;
 
 namespace GiddyUp
 {
-    class AllowedLifeStagesPatch : DefModExtension
+    //For ThingDef (races)
+    class AllowedLifeStages : DefModExtension
     {
-        //Can be used in xml patches to allow other life stages than the final one. 
         string allowedLifeStagesCSV = "";
 
         public bool IsAllowedAge(int currentAgeIndex)

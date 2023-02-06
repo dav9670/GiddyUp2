@@ -22,7 +22,7 @@ namespace GiddyUp.Jobs
 
             yield return LetMountParticipate();
             yield return Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.Touch);
-            if(this.pawn.interactions != null)
+            if (this.pawn.interactions != null)
             {
                 yield return Toils_Interpersonal.WaitToBeAbleToInteract(this.pawn);
             }
@@ -51,7 +51,7 @@ namespace GiddyUp.Jobs
             toil.initAction = delegate
             {
                 Pawn actor = toil.GetActor();
-                if(actor.interactions != null)
+                if (actor.interactions != null)
                 {
                     actor.interactions.TryInteractWith(Mount, InteractionDefOf.AnimalChat);
                 }

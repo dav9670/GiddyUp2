@@ -62,32 +62,23 @@ namespace GiddyUp.Harmony
             }
             //Apply custom offsets
             var rotation = pawn.rotationInt;
-            var modX = pawnData.mount.def.GetModExtension<DrawingOffsetPatch>();
+            var modX = pawnData.mount.def.GetModExtension<DrawingOffset>();
             if (modX != null) offset += AddCustomOffsets(rotation, modX);
             
             if (rotation == Rot4.South && Settings.drawRulesCache.Contains(pawnData.mount.def.shortHash))
             {
-                offset.y -= 0.1f;
+                offset.y -= 0.01f;
             }
-            else offset.y += 0.1f;
+            else offset.y += 0.01f;
 
             return offset;
         }
 
-        static Vector3 AddCustomOffsets(Rot4 rotation, DrawingOffsetPatch customOffsets)
+        static Vector3 AddCustomOffsets(Rot4 rotation, DrawingOffset customOffsets)
         {
-            if (rotation == Rot4.North)
-            {
-                return customOffsets.northOffset;
-            }
-            if (rotation == Rot4.South)
-            {
-                return customOffsets.southOffset;
-            }
-            if (rotation == Rot4.East)
-            {
-                return customOffsets.eastOffset;
-            }
+            if (rotation == Rot4.North) return customOffsets.northOffset;
+            if (rotation == Rot4.South) return customOffsets.southOffset;
+            if (rotation == Rot4.East) return customOffsets.eastOffset;
             return customOffsets.westOffset;
         }
     }

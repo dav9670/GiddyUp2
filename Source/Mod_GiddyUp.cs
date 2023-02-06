@@ -19,7 +19,8 @@ namespace GiddyUp
 
 		static Setup()
 		{
-			new HarmonyLib.Harmony("GiddyUp").PatchAll();
+			var harmony = new HarmonyLib.Harmony("GiddyUp");
+			harmony.PatchAll();
 
 			BuildCache();
 			BuildAnimalBiomeCache();
@@ -34,9 +35,9 @@ namespace GiddyUp
 			else JobDriver_Mounted.allowedJobs = new HashSet<JobDef>();
 
 			if (noMountedHunting) JobDriver_Mounted.allowedJobs.Add(JobDefOf.Hunt);
-			BuildOffsetCache();
+			ProcessPawnKinds(false, harmony);
 		}
-		public static void BuildCache(bool reset = false)
+		public static void BuildCache()
 		{
 			//Setup collections
 			List<ThingDef> workingList = new List<ThingDef>();
@@ -56,6 +57,7 @@ namespace GiddyUp
 					workingList.Add(def);
 
 					bool setting = def.race.baseBodySize > defaultSizeThreshold;
+					setting = def.HasModExtension<NotMountable>() ? false : setting;
 					if (invertMountingRules.Contains(def.defName)) setting = !setting; //Player customization says to invert rule.
 					
 					if (setting)
@@ -68,17 +70,8 @@ namespace GiddyUp
 					}
 					else mountableCache.Remove(def.shortHash);
 
-					//Handle the mod extension
-					if (!reset)
-					{
-						var modX = def.GetModExtension<DrawingOffsetPatch>();
-						if (modX != null) modX.Init();
-					}
-
 					//Handle the draw front/behind draw instruction cache
-					setting = false;
-					var modExt = def.GetModExtension<DrawOverride>();
-					if (modExt != null) setting = modExt.drawFront;
+					setting = def.HasModExtension<DrawInFront>();
 					if (invertDrawRules.Contains(def.defName)) setting = !setting;
 					
 					if (setting) drawRulesCache.Add(def.shortHash);
@@ -88,9 +81,10 @@ namespace GiddyUp
 			workingList.SortBy(x => x.label);
 			allAnimals = workingList.ToArray();
 		}
-		public static void BuildOffsetCache(bool reset = false)
+		public static void ProcessPawnKinds(bool reset = false, HarmonyLib.Harmony harmony = null)
 		{
 			bool newEntries = false;
+			bool usingCustomStats = false;
 			if (offsetCache == null || reset) offsetCache = new Dictionary<string, float>();
 			var list = DefDatabase<PawnKindDef>.AllDefsListForReading;
 			var length = list.Count;
@@ -98,12 +92,13 @@ namespace GiddyUp
 			{
 				var pawnKindDef = list[i];
 				if (pawnKindDef.race == null) continue;
+				if (pawnKindDef.HasModExtension<CustomStats>()) usingCustomStats = true;
 				if (mountableCache.Contains(pawnKindDef.race.shortHash))
 				{
 					var lifeStages = pawnKindDef.lifeStages;
 					var lifeIndexes = lifeStages?.Count;
-					AllowedLifeStagesPatch customLifeStages;
-					if (lifeIndexes > 0) customLifeStages = pawnKindDef.GetModExtension<AllowedLifeStagesPatch>();
+					AllowedLifeStages customLifeStages;
+					if (lifeIndexes > 0) customLifeStages = pawnKindDef.GetModExtension<AllowedLifeStages>();
 					else customLifeStages = null;
 
 					for (int lifeIndex = 0; lifeIndex < lifeIndexes; lifeIndex++)
@@ -119,6 +114,12 @@ namespace GiddyUp
 			}
 
 			if (newEntries && !reset) LoadedModManager.GetMod<Mod_GiddyUp>().WriteSettings();
+		
+			if (usingCustomStats)
+			{
+				harmony.Patch(HarmonyLib.AccessTools.Method(typeof(ArmorUtility), nameof(ArmorUtility.ApplyArmor) ), 
+						postfix: new HarmonyLib.HarmonyMethod(typeof(Harmony.Patch_ApplyArmor), nameof(Harmony.Patch_ApplyArmor.Postfix)));
+			} 
 		}
 		static void BuildAnimalBiomeCache()
 		{
@@ -322,7 +323,7 @@ namespace GiddyUp
 				options.Begin(new Rect (mountableFilterRect.x + 10, mountableFilterRect.y + 10, mountableFilterRect.width - 10f, mountableFilterRect.height - 10f));
 					if (selectedTab == SelectedTab.bodySize)
 					{
-						options.Label("GUC_BodySizeFilter_Title".Translate("0", "5", "1.1", bodySizeFilter.ToString()), -1f, "GUC_BodySizeFilter_Description".Translate());
+						options.Label("GUC_BodySizeFilter_Title".Translate("0", "5", "1.2", bodySizeFilter.ToString()), -1f, "GUC_BodySizeFilter_Description".Translate());
 						bodySizeFilter = options.Slider((float)Math.Round(bodySizeFilter, 1), 0f, 5f);
 					}
 					else
@@ -353,7 +354,7 @@ namespace GiddyUp
 				if (noMountedHunting) JobDriver_Mounted.allowedJobs.Add(JobDefOf.Hunt);
 				else JobDriver_Mounted.allowedJobs.Remove(JobDefOf.Hunt);
 
-				if (offsetCache == null) Setup.BuildOffsetCache(true);
+				if (offsetCache == null) Setup.ProcessPawnKinds(true);
 			}
 			catch (System.Exception ex)
 			{
@@ -399,7 +400,11 @@ namespace GiddyUp
 			{
 				var hash = animalDef.shortHash;
 				//Search for abnormalities, meaning the player wants to invert the rules
-				if (animalDef.race.baseBodySize <= Setup.defaultSizeThreshold)
+				if (animalDef.HasModExtension<NotMountable>())
+				{
+					if (mountableCache.Contains(hash)) invertMountingRules.Add(animalDef.defName);
+				}
+				else if (animalDef.race.baseBodySize <= Setup.defaultSizeThreshold)
 				{
 					if (mountableCache.Contains(hash)) invertMountingRules.Add(animalDef.defName);
 				}
@@ -410,14 +415,14 @@ namespace GiddyUp
 
 				//And now draw rules
 				bool drawFront = false;
-				var modExt = animalDef.GetModExtension<DrawOverride>();
-				if (modExt != null) drawFront = modExt.drawFront;
+				var modExt = animalDef.GetModExtension<DrawInFront>();
+				if (modExt != null) drawFront = true;
 				
 				if (drawFront && !drawRulesCache.Contains(hash)) invertDrawRules.Add(animalDef.defName);
 				else if (!drawFront && drawRulesCache.Contains(hash)) invertDrawRules.Add(animalDef.defName);
-			} 
+			}
 		}
-		
+
 		public static float handlingMovementImpact = 2.5f, bodySizeFilter = 1.2f, handlingAccuracyImpact = 0.5f;
 		public static int accuracyPenalty = 10,
 			minAutoMountDistance = 200,

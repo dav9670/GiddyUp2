@@ -16,7 +16,7 @@ namespace GiddyUpRideAndRoll.Jobs
         public Pawn Followee {
             get
             {
-                if(TargetA.Thing is Pawn pawn){
+                if (TargetA.Thing is Pawn pawn){
 
                     return pawn;
                 }
