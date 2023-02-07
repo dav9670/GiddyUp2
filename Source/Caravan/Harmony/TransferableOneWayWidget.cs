@@ -86,11 +86,11 @@ namespace GiddyUpCaravan.Harmony
         static void UnsetDataForRider(ExtendedPawnData pawnData)
         {
             ExtendedDataStorage.GUComp[pawnData.reservedMount.thingIDNumber].reservedBy = null;
-            pawnData.reservedMount = null;
+            pawnData.ReserveMount = null;
         }
         static void UnsetDataForMount(ExtendedPawnData pawnData)
         {
-            ExtendedDataStorage.GUComp[pawnData.reservedBy.thingIDNumber].reservedMount = null;
+            ExtendedDataStorage.GUComp[pawnData.reservedBy.thingIDNumber].ReserveMount = null;
             pawnData.reservedBy = null;
         }
         static void HandleAnimal(float num, Rect buttonRect, Pawn animal, List<Pawn> pawns, TransferableOneWay trad)
@@ -111,18 +111,10 @@ namespace GiddyUpCaravan.Harmony
             }
 
             bool isMountable = animal.IsMountable(out IsMountableUtility.Reason reason, null);
-            if (!isMountable)
+            if (!isMountable && (reason == IsMountableUtility.Reason.NotInModOptions || reason == IsMountableUtility.Reason.NotFullyGrown))
             {
-                if (reason == IsMountableUtility.Reason.NotFullyGrown)
-                {
-                    buttonText = "";
-                    canMount = false;
-                }
-                if (reason == IsMountableUtility.Reason.NotInModOptions)
-                {
-                    buttonText = "";
-                    canMount = false;
-                }
+                buttonText = "";
+                canMount = false;
             }
 
             if (animalData.reservedBy != null)
@@ -184,7 +176,7 @@ namespace GiddyUpCaravan.Harmony
             if (animalData.reservedBy != null)
             {
                 ExtendedPawnData riderData = ExtendedDataStorage.GUComp[animalData.reservedBy.thingIDNumber];
-                riderData.reservedMount = null;
+                riderData.ReserveMount = null;
             }
 
             pawnData.reservedMount = animal;
@@ -198,9 +190,9 @@ namespace GiddyUpCaravan.Harmony
             if (animalData.reservedBy != null)
             {
                 ExtendedPawnData riderData = ExtendedDataStorage.GUComp[animalData.reservedBy.thingIDNumber];
-                riderData.reservedMount = null;
+                riderData.ReserveMount = null;
             }
-            animalData.reservedMount = null;
+            animalData.ReserveMount = null;
 
             animalData.selectedForCaravan = true;
         }

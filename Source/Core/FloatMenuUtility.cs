@@ -21,9 +21,7 @@ namespace GiddyUp
                 {
                     Action action = delegate
                     {
-                        Job jobRider = new Job(ResourceBank.JobDefOf.Mount, animal);
-                        jobRider.count = 1;
-                        pawn.jobs.TryTakeOrderedJob(jobRider);
+                        MountUtility.GiveMountJob(pawn, animal, MountUtility.GiveJobMethod.Try);
                     };
                     opts.Add(new FloatMenuOption("GUC_Mount".Translate() + " " + animal.Name, action, MenuOptionPriority.Low));
                 }

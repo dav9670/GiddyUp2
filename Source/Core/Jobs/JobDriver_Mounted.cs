@@ -158,19 +158,16 @@ namespace GiddyUp.Jobs
             {
                 ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
                 bool isRoped = pawn.roping != null && pawn.roping.IsRoped;
-                if (!isRoped && !rider.Drafted && pawn.factionInt.def.isPlayer)
+                if (!isRoped && !rider.Drafted && pawn.factionInt.def.isPlayer && pawnData.reservedBy != null && !interrupted && rider.GetCaravan() == null)
                 {
-                    if (pawnData.reservedBy != null && !interrupted && rider.GetCaravan() == null)
+                    pawn.jobs.jobQueue.EnqueueFirst(new Job(GiddyUp.ResourceBank.JobDefOf.WaitForRider, pawnData.reservedBy)
                     {
-                        pawn.jobs.jobQueue.EnqueueFirst(new Job(GiddyUp.ResourceBank.JobDefOf.WaitForRider, pawnData.reservedBy)
-                        {
-                            expiryInterval = 10000,
-                            checkOverrideOnExpire = true,
-                            followRadius = 8,
-                            locomotionUrgency = LocomotionUrgency.Walk
-                        }
-                        ); //follow the rider for a while to give it an opportunity to take a ride back.  
+                        expiryInterval = 10000,
+                        checkOverrideOnExpire = true,
+                        followRadius = 8,
+                        locomotionUrgency = LocomotionUrgency.Walk
                     }
+                    ); //follow the rider for a while to give it an opportunity to take a ride back.  
                 }
             }
         }

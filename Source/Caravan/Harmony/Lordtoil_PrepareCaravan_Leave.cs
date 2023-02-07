@@ -22,14 +22,7 @@ namespace GiddyUpCaravan.Harmony
                 Pawn animal = ExtendedDataStorage.GUComp[pawn.thingIDNumber].reservedMount;
                 if (animal != null)
                 {
-                    Job jobRider = new Job(GiddyUp.ResourceBank.JobDefOf.Mount, animal);
-                    jobRider.count = 1;
-                    pawn.jobs.TryTakeOrderedJob(jobRider);
-                    animal.jobs.StopAll();
-                    animal.pather.StopDead();
-                    Job jobAnimal = new Job(GiddyUp.ResourceBank.JobDefOf.Mounted, pawn);
-                    jobAnimal.count = 1;
-                    animal.jobs.TryTakeOrderedJob(jobAnimal);
+                    MountUtility.GiveMountJob(pawn, animal, MountUtility.GiveJobMethod.Try);
                 }
             }
         }

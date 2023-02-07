@@ -58,6 +58,7 @@ namespace GiddyUpRideAndRoll.Harmony
 							startedPark = TryParkAnimalDropSpot(areaDropAnimal, ref parkLoc, toil.actor);
 						}
 					}
+					//Pawn has taken animal to dropoff point, remove association
 					if (startedPark && toil.actor.pather.nextCell == parkLoc)
 					{
 						pawnData.Mount = null;
@@ -66,7 +67,7 @@ namespace GiddyUpRideAndRoll.Harmony
 						{
 							ExtendedPawnData animalData = ExtendedDataStorage.GUComp[pawnData.reservedMount.thingIDNumber];
 							animalData.reservedBy = null;
-							pawnData.reservedMount = null;
+							pawnData.ReserveMount = null;
 						}
 					}
 				});

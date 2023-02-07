@@ -130,7 +130,7 @@ namespace GiddyUp
 				var biomeDef = biomeDefs[i];
 				foreach(PawnKindDef animalKind in biomeDef.AllWildAnimals)
 				{
-					NPCMountUtility.animalsWithBiome.Add(animalKind);
+					MountUtility.animalsWithBiome.Add(animalKind);
 				}
 			}
 			
@@ -139,7 +139,7 @@ namespace GiddyUp
 			for (int i = 0; i < length; i++)
 			{
 				var def = pawnKindDefs[i];
-				if (def.RaceProps.Animal && !NPCMountUtility.animalsWithBiome.Contains(def)) NPCMountUtility.animalsWithoutBiome.Add(def);
+				if (def.RaceProps.Animal && !MountUtility.animalsWithBiome.Contains(def)) MountUtility.animalsWithoutBiome.Add(def);
 			}
 		}
 		static void RemoveRideAndRoll()

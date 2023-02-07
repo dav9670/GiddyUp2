@@ -37,9 +37,7 @@ namespace GiddyUp.Jobs
             {
                 Mount.jobs.StopAll();
                 Mount.pather.StopDead();
-                Job jobAnimal = new Job(ResourceBank.JobDefOf.Mounted, pawn);
-                jobAnimal.count = 1;
-                Mount.jobs.TryTakeOrderedJob(jobAnimal);
+                Mount.jobs.TryTakeOrderedJob(new Job(ResourceBank.JobDefOf.Mounted, pawn) { count = 1});
                 ReadyForNextToil();
             };
             return toil;

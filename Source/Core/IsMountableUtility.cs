@@ -1,8 +1,8 @@
 ﻿using RimWorld;
-using System.Linq;
 using Verse;
 using Verse.AI;
 using Verse.AI.Group;
+using System.Collections.Generic;
 using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUp
@@ -11,9 +11,9 @@ namespace GiddyUp
 	{
 		public enum Reason{NotFullyGrown, NotInModOptions, CanMount, IsRoped, NeedsTraining, IsBusy, IsPoorCondition, WrongFaction, NotAnimal, IsReserved};
 
-		static JobDef[] busyJobs = new JobDef[] {ResourceBank.JobDefOf.Mounted, JobDefOf.LayEgg, JobDefOf.Nuzzle, JobDefOf.Lovin, JobDefOf.Wait_Downed};
+		static HashSet<JobDef> busyJobs = new HashSet<JobDef>() {ResourceBank.JobDefOf.Mounted, JobDefOf.LayEgg, JobDefOf.Nuzzle, JobDefOf.Lovin, JobDefOf.Vomit, JobDefOf.Wait_Downed};
 
-		public static bool IsMounted(this Pawn animal)
+		public static bool IsAnimalMounted(this Pawn animal)
 		{
 			if (animal.CurJob == null || animal.CurJob.def != ResourceBank.JobDefOf.Mounted)
 			{
@@ -36,7 +36,7 @@ namespace GiddyUp
 				return false;
 			}
 			//Check faction
-			if (checkFaction && animal.Faction == null || !animal.factionInt.def.isPlayer)
+			if (checkFaction && animal.factionInt != rider.factionInt)
 			{
 				reason = Reason.WrongFaction;
 				return false;
@@ -50,8 +50,7 @@ namespace GiddyUp
 			//Check animal's jobs to see if busy
 			if (checkState)
 			{
-				var animalCurJob = animal.CurJob?.def;
-				if (busyJobs.Contains(animalCurJob))
+				if (busyJobs.Contains(animal.CurJob?.def))
 				{
 					reason = Reason.IsBusy;
 					return false;
@@ -71,9 +70,10 @@ namespace GiddyUp
 						reason = Reason.IsBusy;
 						return false;
 					}
+					//TODO maybe add some logic to check if involved with a ritual
 				}
 				//Check health
-				if ((animal.Dead || animal.Downed || animal.InMentalState || !animal.Spawned) || 
+				if (animal.Dead || animal.Downed || animal.InMentalState || !animal.Spawned || 
 					(animal.health != null && animal.health.summaryHealth.SummaryHealthPercent < 1) ||
 					animal.health.HasHediffsNeedingTend() || 
 					animal.HasAttachment(ThingDefOf.Fire) || 

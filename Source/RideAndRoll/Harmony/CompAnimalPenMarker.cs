@@ -16,7 +16,7 @@ namespace GiddyUpRideAndRoll.Harmony
         {
             if (!__result)
             {
-                return animal.IsMounted();
+                return animal.IsAnimalMounted();
             }
             return __result;
         }

@@ -6,11 +6,12 @@ namespace GiddyUp
 {
     public static class DistanceUtility
     {
-        public static IntVec3 GetFirstTarget(Job job, TargetIndex index)
+        public static IntVec3 GetFirstTarget(this Job job, TargetIndex index)
         {
-            if (!job.GetTargetQueue(index).NullOrEmpty<LocalTargetInfo>())
+            var queue = job.GetTargetQueue(index);
+            if (queue.Count != 0)
             {
-                return job.GetTargetQueue(index)[0].Cell;
+                return queue[0].Cell;
             }
             return job.GetTarget(index).Cell;
         }

@@ -1,6 +1,5 @@
 ﻿using Verse;
-using Verse.AI;
-using UnityEngine;
+using Settings = GiddyUp.ModSettings_GiddyUp;
 
 //Note: Currently this class contains information specific for other mods (caravanMount, caravanRider, etc), which is of course not ideal for a core framework. Ideally it should be completely generic. However I have yet to come up with an
 // way to do this properly without introducing a lot of extra work. So for now I'll just keep it as it is. 
@@ -22,18 +21,26 @@ namespace GiddyUp
 		{
 			this.ID = ID;
 		}
+		public Pawn ReserveMount
+		{
+			 set
+			 {
+				if (Settings.logging) Log.Message("[Giddy-Up] pawn " + ID.ToString() + " no longer reserved to  " + reservedMount?.thingIDNumber.ToString() ?? "NULL");
+				reservedMount = value; 
+			 }
+		}
 		public Pawn Mount
 		{
 			 set
 			 {
 				if (value == null) 
 				{
-					//if (Prefs.DevMode) Log.Message("[Giddy-Up] pawn " + ID.ToString() + " no longer now mounted upon " + mount?.thingIDNumber.ToString() ?? "NULL");
+					if (Settings.logging) Log.Message("[Giddy-Up] pawn " + ID.ToString() + " no longer mounted upon " + mount?.thingIDNumber.ToString() ?? "NULL");
 					ExtendedDataStorage.isMounted.Remove(ID);
 				}
 				else
 				{
-					//if (Prefs.DevMode) Log.Message("[Giddy-Up] pawn " + ID.ToString() + " is now mounted upon " + value.thingIDNumber.ToString());
+					if (Settings.logging) Log.Message("[Giddy-Up] pawn " + ID.ToString() + " is now mounted upon " + value.thingIDNumber.ToString());
 					ExtendedDataStorage.isMounted.Add(ID);
 					//Break ropes if there are any
 					if (value.roping?.IsRoped ?? false) value.roping.BreakAllRopes();

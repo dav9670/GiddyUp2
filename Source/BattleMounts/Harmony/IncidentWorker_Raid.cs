@@ -33,7 +33,7 @@ namespace BattleMounts.Harmony
             {
                 return;
             }
-            NPCMountUtility.GenerateMounts(ref pawns, parms, Settings.inBiomeWeight, Settings.outBiomeWeight, Settings.nonWildWeight, Settings.enemyMountChance, Settings.enemyMountChanceTribal);
+            MountUtility.GenerateMounts(ref pawns, parms, Settings.inBiomeWeight, Settings.outBiomeWeight, Settings.nonWildWeight, Settings.enemyMountChance, Settings.enemyMountChanceTribal);
 
             foreach (Pawn pawn in pawns)
             {
