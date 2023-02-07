@@ -33,7 +33,7 @@ namespace GiddyUp.Harmony
             if (!ExtendedDataStorage.isMounted.Contains(__instance.pawn.thingIDNumber)) return true;
             var data =  ExtendedDataStorage.GUComp[__instance.pawn.thingIDNumber];
            
-            Vector2 pos = GenMapUI.LabelDrawPosFor(__instance.pawn, -(data.drawOffset + 0.6f));
+            Vector2 pos = GenMapUI.LabelDrawPosFor(__instance.pawn, -(data.drawOffset + 0.75f));
             GenMapUI.DrawPawnLabel(__instance.pawn, pos, 1f, 9999f, null, GameFont.Tiny, true, true);
             return false; 
         }

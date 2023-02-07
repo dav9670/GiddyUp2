@@ -3,72 +3,47 @@ using System;
 using System.Collections.Generic;
 using Verse;
 using Verse.AI;
+using static GiddyUp.IsMountableUtility;
+using Settings = GiddyUp.ModSettings_GiddyUp;
 //using Multiplayer.API;
 
 namespace GiddyUp
 {
     public static class GUC_FloatMenuUtility
     {
-        public static void AddMountingOptions(Pawn target, Pawn pawn, List<FloatMenuOption> opts)
+        public static void AddMountingOptions(Pawn animal, Pawn pawn, List<FloatMenuOption> opts)
         {
-            var pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
-
-            if (target.Faction != null && !target.factionInt.def.isPlayer) return;
             if (pawn.IsWorkTypeDisabledByAge(WorkTypeDefOf.Handling, out int ageNeeded)) return;
-
+            var pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
             if (pawnData.mount == null)
             {
-                bool canMount = false;
-                if (target.RaceProps.Animal)
+                if (animal.IsMountable(out Reason reason, pawn, true, true))
                 {
-                    var animalCurJob = target.CurJob?.def;
-                    if (animalCurJob != null && (target.InMentalState ||
-                        animalCurJob == JobDefOf.LayEgg ||
-                        animalCurJob == JobDefOf.Nuzzle ||
-                        animalCurJob == JobDefOf.Lovin ||
-                        animalCurJob == JobDefOf.Wait_Downed ||
-                        animalCurJob == ResourceBank.JobDefOf.Mounted ||
-                        target.HasAttachment(ThingDefOf.Fire)
-                        ))
+                    Action action = delegate
                     {
-                        opts.Add(new FloatMenuOption("GUC_AnimalBusy".Translate(), null, MenuOptionPriority.Low));
-                        return;
-                    }
-                    canMount = IsMountableUtility.IsMountable(target, out IsMountableUtility.Reason reason);
-
-                    if (canMount)
+                        Job jobRider = new Job(ResourceBank.JobDefOf.Mount, animal);
+                        jobRider.count = 1;
+                        pawn.jobs.TryTakeOrderedJob(jobRider);
+                    };
+                    opts.Add(new FloatMenuOption("GUC_Mount".Translate() + " " + animal.Name, action, MenuOptionPriority.Low));
+                }
+                else
+                {
+                    if (Settings.logging) Log.Message("[Giddy-up] " + pawn.Name.ToString() + " could not mount " + animal.thingIDNumber.ToString() + " because: " + reason.ToString());
+                    switch (reason)
                     {
-                        Action action = delegate
-                        {
-                            Job jobRider = new Job(ResourceBank.JobDefOf.Mount, target);
-                            jobRider.count = 1;
-                            pawn.jobs.TryTakeOrderedJob(jobRider);
-                        };
-                        opts.Add(new FloatMenuOption("GUC_Mount".Translate() + " " + target.Name, action, MenuOptionPriority.Low));
-                    }
-                    else
-                    {
-                        if (reason == IsMountableUtility.Reason.NotInModOptions)
-                        {
-                            opts.Add(new FloatMenuOption("GUC_NotInModOptions".Translate(), null, MenuOptionPriority.Low));
-                        }
-                        else if (reason == IsMountableUtility.Reason.NotFullyGrown)
-                        {
-                            opts.Add(new FloatMenuOption("GUC_NotFullyGrown".Translate(), null, MenuOptionPriority.Low));
-                        }
-                        else if (reason == IsMountableUtility.Reason.NeedsTraining)
-                        {
-                            opts.Add(new FloatMenuOption("GUC_NeedsObedience".Translate(), null, MenuOptionPriority.Low));
-                        }
-                        else if (reason == IsMountableUtility.Reason.IsRoped)
-                        {
-                            opts.Add(new FloatMenuOption("GUC_IsRoped".Translate(), null, MenuOptionPriority.Low));
-                        }
-                        return;
+                        case Reason.NotAnimal: return;
+                        case Reason.WrongFaction: return;
+                        case Reason.IsBusy: opts.Add(new FloatMenuOption("GUC_AnimalBusy".Translate(), null, MenuOptionPriority.Low)); break;
+                        case Reason.NotInModOptions: opts.Add(new FloatMenuOption("GUC_NotInModOptions".Translate(), null, MenuOptionPriority.Low)); break;
+                        case Reason.NotFullyGrown: opts.Add(new FloatMenuOption("GUC_NotFullyGrown".Translate(), null, MenuOptionPriority.Low)); break;
+                        case Reason.NeedsTraining: opts.Add(new FloatMenuOption("GUC_NeedsObedience".Translate(), null, MenuOptionPriority.Low)); break;
+                        case Reason.IsRoped: opts.Add(new FloatMenuOption("GUC_IsRoped".Translate(), null, MenuOptionPriority.Low)); break;
+                        default: return;
                     }
                 }
             }
-            else if (target == pawnData.mount)
+            else if (animal == pawnData.mount)
             {
                 Action action = delegate { ResetPawnData(pawnData); };
                 opts.Add(new FloatMenuOption("GUC_Dismount".Translate(), action, MenuOptionPriority.High));

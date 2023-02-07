@@ -103,13 +103,13 @@ namespace GiddyUp
                 if (pawnKindDef == null) return false;
                 Pawn animal = PawnGenerator.GeneratePawn(pawnKindDef, parms.faction);
                 GenSpawn.Spawn(animal, pawn.Position, map, parms.spawnRotation);
-                ConfigureSpawnedAnimal(pawn, ref animal);
+                NPCMountAnimal(pawn, ref animal);
                 animals.Add(animal);
             }
             list.AddRange(animals);
             return true;
         }
-        static void ConfigureSpawnedAnimal(Pawn pawn, ref Pawn animal)
+        static void NPCMountAnimal(Pawn pawn, ref Pawn animal)
         {
             ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
             ExtendedPawnData animalData = ExtendedDataStorage.GUComp[animal.thingIDNumber];

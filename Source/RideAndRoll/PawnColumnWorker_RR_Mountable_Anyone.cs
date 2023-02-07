@@ -9,7 +9,7 @@ namespace GiddyUpRideAndRoll
     {
         public override bool HasCheckbox(Pawn pawn)
         {
-            return IsMountableUtility.IsMountable(pawn);
+            return pawn.IsEverMountable();
         }
         public override bool GetValue(Pawn pawn)
         {

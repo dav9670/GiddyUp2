@@ -19,7 +19,7 @@ namespace BattleMounts.Harmony
         {
             foreach (LocalTargetInfo current in GenUI.TargetsAt(clickPos, TargetingParameters.ForAttackHostile(), true))
             {
-                if (current.Thing is Pawn target && target.RaceProps.Animal) GUC_FloatMenuUtility.AddMountingOptions(target, pawn, opts);
+                if (current.Thing is Pawn target) GUC_FloatMenuUtility.AddMountingOptions(target, pawn, opts);
             }
         }
     }

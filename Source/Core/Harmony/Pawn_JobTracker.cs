@@ -164,12 +164,9 @@ namespace GiddyUp.Harmony
 					{
 						Pawn animal = list[i];
 
-						if ((!animal.RaceProps.Animal || !IsMountableUtility.IsMountable(animal) || animal.CurJob == null || animal.CurJob.def == ResourceBank.JobDefOf.Mounted) || 
-							(AnimalNotAvailable(animal, pawn) || !pawn.CanReserve(animal))
-						) continue;
+						if (!animal.IsMountable(out IsMountableUtility.Reason reason, pawn, true, true)) continue;
 					
 						ExtendedPawnData animalData = ExtendedDataStorage.GUComp[animal.thingIDNumber];
-						if (animalData.reservedBy != null) continue; //Already in use
 						if (!animalData.automount) continue; //Disallowed
 
 
@@ -258,41 +255,6 @@ namespace GiddyUp.Harmony
 
 					jobQueue.EnqueueFirst(oldJob);
 					return new ThinkResult(mountJob, __result.SourceNode, __result.Tag, false);
-				}
-				bool AnimalNotAvailable(Pawn animal, Pawn rider)
-				{
-					if ((animal.Dead || animal.Downed || animal.HasAttachment(ThingDefOf.Fire) || animal.InMentalState || !animal.Spawned) || //animal in bad state, should return before checking other things
-						(animal.IsForbidden(rider)) || 
-						(animal.Faction == null || !animal.factionInt.def.isPlayer) || //animal has wrong faction
-						(animal.health != null && animal.health.summaryHealth.SummaryHealthPercent < 1) || //animal wounded
-						animal.health.HasHediffsNeedingTend() || 
-						Utitlities.HungryOrTired(animal.needs)
-					)
-					{
-						return true;
-					}
-
-					var animalLord = animal.GetLord();
-					if (animalLord != null)
-					{
-						if (animalLord.LordJob != null && animalLord.LordJob is LordJob_FormAndSendCaravan)
-						{
-							return true; //animal forming caravan
-						}
-					}
-					var animalJob = animal.CurJob;
-					if (animalJob != null)
-					{
-						var jobDef = animalJob.def;
-						if ((jobDef == JobDefOf.LayDown && animal.needs?.rest != null && animal.needs.rest.CurLevelPercentage < 0.5f) || //only allow resting animals if they have enough energy
-							(jobDef == JobDefOf.Lovin || jobDef == JobDefOf.Ingest || jobDef == ResourceBank.JobDefOf.Mounted) //animal occupied
-						)
-						{
-							return true; 
-						}
-					}
-
-					return false;
 				}
 			}
 			void CaravanPostFix(Pawn_JobTracker jobTracker, ref ThinkResult __result, Pawn pawn)

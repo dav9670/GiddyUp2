@@ -26,7 +26,7 @@ namespace GiddyUp.Harmony
         {
             if (__instance is not Pawn pawn) return;
 
-            if (!__instance.Destroyed && pawn.jobs != null && pawn.jobs.curDriver is JobDriver_Mounted jobDriver)
+            if (pawn.jobs != null && pawn.jobs.curDriver is JobDriver_Mounted jobDriver)
             {
                 __instance.rotationInt = jobDriver.Rider.Rotation;
             }

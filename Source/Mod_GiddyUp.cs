@@ -98,7 +98,7 @@ namespace GiddyUp
 					var lifeStages = pawnKindDef.lifeStages;
 					var lifeIndexes = lifeStages?.Count;
 					AllowedLifeStages customLifeStages;
-					if (lifeIndexes > 0) customLifeStages = pawnKindDef.GetModExtension<AllowedLifeStages>();
+					if (lifeIndexes > 0) customLifeStages = pawnKindDef.race.GetModExtension<AllowedLifeStages>();
 					else customLifeStages = null;
 
 					for (int lifeIndex = 0; lifeIndex < lifeIndexes; lifeIndex++)
@@ -370,7 +370,7 @@ namespace GiddyUp
 			Scribe_Values.Look(ref handlingMovementImpact, "handlingMovementImpact", 2.5f);
 			Scribe_Values.Look(ref handlingAccuracyImpact, "handlingAccuracyImpact", 0.5f);
 			Scribe_Values.Look(ref accuracyPenalty, "accuracyPenalty", 10);
-			Scribe_Values.Look(ref minAutoMountDistance, "minAutoMountDistanceNew", 200);
+			Scribe_Values.Look(ref minAutoMountDistance, "minAutoMountDistanceNew", 120);
 			Scribe_Values.Look(ref enemyMountChance, "enemyMountChance", 20);
 			Scribe_Values.Look(ref enemyMountChanceTribal, "enemyMountChanceTribal", 40);
 			Scribe_Values.Look(ref inBiomeWeight, "inBiomeWeight", 70);
@@ -425,7 +425,7 @@ namespace GiddyUp
 
 		public static float handlingMovementImpact = 2.5f, bodySizeFilter = 1.2f, handlingAccuracyImpact = 0.5f;
 		public static int accuracyPenalty = 10,
-			minAutoMountDistance = 200,
+			minAutoMountDistance = 120,
 			enemyMountChance = 20, 
 			enemyMountChanceTribal = 40, 
 			inBiomeWeight = 70, 

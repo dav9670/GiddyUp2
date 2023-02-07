@@ -25,7 +25,7 @@ namespace GiddyUpRideAndRoll
                 foreach (Map map in Find.Maps)
                 {
                     GiddyUp.Area_GU.GetGUAreasFast(map, out Area areaNoMount, out Area areaDropAnimal);
-                    var unropablePlayerAnimals = map.mapPawns.SpawnedColonyAnimals.Any(animal => animal.factionInt.def.isPlayer && !AnimalPenUtility.NeedsToBeManagedByRope(animal));
+                    var unropablePlayerAnimals = map.mapPawns.SpawnedColonyAnimals.Any(animal => !AnimalPenUtility.NeedsToBeManagedByRope(animal));
 
                     if (unropablePlayerAnimals && areaNoMount != null && areaNoMount.innerGrid.TrueCount != 0 && (areaDropAnimal == null || areaDropAnimal.innerGrid.TrueCount == 0))
                     {

@@ -15,7 +15,7 @@ namespace GiddyUpCaravan.Harmony
         static bool Postfix(bool __result, Thing a, Thing b)
         {
             if (__result && a.def.category == ThingCategory.Pawn && b.def.category == ThingCategory.Pawn &&
-                (IsMountableUtility.IsMountable(a as Pawn) || IsMountableUtility.IsMountable(b as Pawn)) )
+                (IsMountableUtility.IsEverMountable(a as Pawn) || IsMountableUtility.IsEverMountable(b as Pawn)) )
             {
                 return false;
             }

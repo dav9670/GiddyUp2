@@ -35,6 +35,8 @@ namespace GiddyUp
 				{
 					//if (Prefs.DevMode) Log.Message("[Giddy-Up] pawn " + ID.ToString() + " is now mounted upon " + value.thingIDNumber.ToString());
 					ExtendedDataStorage.isMounted.Add(ID);
+					//Break ropes if there are any
+					if (value.roping?.IsRoped ?? false) value.roping.BreakAllRopes();
 				}
 				mount = value; 
 			 }

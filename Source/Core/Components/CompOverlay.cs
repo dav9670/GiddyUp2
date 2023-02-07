@@ -1,5 +1,4 @@
-﻿using GiddyUp;
-using System.Linq;
+﻿using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using Verse;
@@ -71,7 +70,7 @@ namespace GiddyUp
 		}
 		public override void PostDraw()
 		{
-			if (valid && IsMountableUtility.IsCurrentlyMounted(pawn) && graphicCache.TryGetValue(pawn.Rotation, out (GraphicData, Vector3, Vector3, Vector3) cache))
+			if (valid && pawn.IsMounted() && graphicCache.TryGetValue(pawn.Rotation, out (GraphicData, Vector3, Vector3, Vector3) cache))
 			{	
 				Vector3 drawPos = parent.DrawPos;
 				Vector3 offset = (pawn.gender == Gender.Female) ? cache.Item2 : cache.Item3;

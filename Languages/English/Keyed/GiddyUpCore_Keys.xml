@@ -22,11 +22,11 @@
 	<GUC_BodySizeFilter_Title>Filter by body size (Min: {0} Max: {1} Default: {2} Current: {3})</GUC_BodySizeFilter_Title>
 	<GUC_BodySizeFilter_Description>Filter mountable animals by body size</GUC_BodySizeFilter_Description>
 		
-	<GUC_NotInModOptions>Cannot mount, animal not allowed in mod options</GUC_NotInModOptions>
-	<GUC_AnimalBusy>Cannot mount, animal busy</GUC_AnimalBusy>
-	<GUC_NotFullyGrown>Cannot mount, animal not fully grown</GUC_NotFullyGrown>
-	<GUC_NeedsObedience>Cannot mount, animal needs to be tamed</GUC_NeedsObedience>
-	<GUC_IsRoped>Cannot mount, animal is roped</GUC_IsRoped>
+	<GUC_NotInModOptions>Not a mountable species</GUC_NotInModOptions>
+	<GUC_AnimalBusy>Animal busy</GUC_AnimalBusy>
+	<GUC_NotFullyGrown>Animal immature</GUC_NotFullyGrown>
+	<GUC_NeedsObedience>Animal requires taming</GUC_NeedsObedience>
+	<GUC_IsRoped>Animal is roped</GUC_IsRoped>
 	<GUC_Mount>Mount</GUC_Mount>
 	<GUC_Dismount>Dismount</GUC_Dismount>
 	

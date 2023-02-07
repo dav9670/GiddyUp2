@@ -5,7 +5,7 @@ using Verse;
 namespace GiddyUp.Harmony
 {
     [HarmonyPatch(typeof(PawnUtility), nameof(PawnUtility.TrySpawnHatchedOrBornPawn))]
-    class PawnUtility_TrySpawnHatchedOrBornPawn
+    class Patch_TrySpawnHatchedOrBornPawn
     {
         static void Postfix(Pawn pawn, Thing motherOrEgg)
         {
