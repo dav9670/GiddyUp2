@@ -1,9 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
 
-  <Mount.reportString>乘騎動物</Mount.reportString>
-  <Mounted.reportString>被人乘騎</Mounted.reportString>
-  <Dismount.reportString>從坐騎上下來中</Dismount.reportString>
+  <Mount.reportString>上鞍</Mount.reportString>
+  <Mounted.reportString>上鞍</Mounted.reportString>
+  <Dismount.reportString>下鞍</Dismount.reportString>
+  <WaitForRider.reportString>等待騎手</WaitForRider.reportString>
 
 
 </LanguageData>

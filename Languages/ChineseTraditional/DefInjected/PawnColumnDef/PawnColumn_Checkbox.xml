@@ -1,8 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
 
-  <MountableByAnyone.headerTip>非主人可以騎著工作</MountableByAnyone.headerTip>
-  <MountableByMaster.headerTip>主人可以工作</MountableByMaster.headerTip>
+  <MountableByAnyone.headerTip>自由騎乘。如果取消，僅主人騎乘</MountableByAnyone.headerTip>
 
 
 </LanguageData>

@@ -1,11 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
 
-  <GUC_Animal_Handling.label>騎乘戰鬥 馴獸技能影響</GUC_Animal_Handling.label>
-  <GUC_Animal_Handling.helpText>乘騎動物時馴獸技能會影響騎乘效果，若低於馴獸所需的等級，每低一級會降低2%的移動速度和0.5%的射擊精度。如果高於所需的等級，每級會獲得等量的增益，這些數值可以在mod選項中設置。</GUC_Animal_Handling.helpText>
+  <GUC_Animal_Handling.label>Giddy-up: 動物技能</GUC_Animal_Handling.label>
+  <GUC_Animal_Handling.helpText>殖民者的動物技能會影響使用坐騎的效率。技能高或低於最低馴獸要求時，每等將增益/減益2%移動速度和0.5%射擊精度。可以在模組設置中調整數值。</GUC_Animal_Handling.helpText>
 
+  <BM_Mounting.label>Giddy-up!:如何騎乘</BM_Mounting.label>
+  <BM_Mounting.helpText>要騎乘動物進行戰鬥，選擇【徵招】的殖民者，並右鍵一隻已馴服的動物，然後點擊“騎乘”。 </BM_Mounting.helpText>
 
-  <!--<Mount_BattleMount.reportString>乘騎動物</Mount_BattleMount.reportString>-->
-  <!--<Mounted_BattleMount.reportString>被人騎乘</Mounted_BattleMount.reportString>-->
+  <BM_Enemy_Mounting.label>Giddy-up!:敵方騎手</BM_Enemy_Mounting.label>
+  <BM_Enemy_Mounting.helpText>敵人也會騎乘動物。使用坐騎的機率，以及從哪裡獲得坐騎（來自當前殖民地生態的野生動物，隨機任何生態的野生動物，或非野生動物）可以在模組選項中配置。擁有高等馴獸的敵方有更大的機會使用稀有坐騎</BM_Enemy_Mounting.helpText>
+
 
 </LanguageData>
