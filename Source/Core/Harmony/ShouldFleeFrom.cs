@@ -10,7 +10,7 @@ namespace GiddyUp.Harmony
     {
         static bool Prefix(Pawn pawn, ref bool __result)
         {
-            if (pawn.IsAnimalMounted())
+            if (pawn.IsMountedAnimal())
             {
                 __result = false;
                 return false;

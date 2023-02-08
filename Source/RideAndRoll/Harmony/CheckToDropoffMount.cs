@@ -10,7 +10,7 @@ namespace GiddyUpRideAndRoll.Harmony
 	//When a job is put together it is made of up many components - toils. This patch will inject a pre-instruction to each toil
 	//component to see if their destination cell does not allow animals, and to find a suitable place to dismoun
 	[HarmonyPatch(typeof(JobDriver), nameof(JobDriver.SetupToils))]
-	class JobDriver_SetupToils
+	class Patch_CheckToDropoffMount
 	{
 		static bool Prepare()
 		{
@@ -20,23 +20,19 @@ namespace GiddyUpRideAndRoll.Harmony
 		{
 			Pawn pawn = __instance.pawn;
 			Map map = pawn.Map;
-			if (map == null || 
-				pawn.Faction != Current.gameInt.worldInt.factionManager.ofPlayer || 
-				pawn.Drafted || 
-				!ExtendedDataStorage.isMounted.Contains(__instance.pawn.thingIDNumber)) 
+			//TODO maybe move the JobDefOf.PrepareCaravan_CollectAnimals part to a blacklist hashset
+			if (map == null || pawn.Faction != Current.gameInt.worldInt.factionManager.ofPlayer || pawn.Drafted || !ExtendedDataStorage.isMounted.Contains(__instance.pawn.thingIDNumber) || 
+				!GiddyUp.Area_GU.GetGUAreasFast(map, out Area areaNoMount, out Area areaDropAnimal)) 
 			{
 				return;
 			}
 
-			List<Toil> toils = __instance.toils;
-			ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
-
-			GiddyUp.Area_GU.GetGUAreasFast(map, out Area areaNoMount, out Area areaDropAnimal);
-			if (areaNoMount == null) return;
-			bool startedPark = false;
+			bool isMovingToDismount = false;
 			IntVec3 originalLoc = new IntVec3();
 			IntVec3 parkLoc = new IntVec3();
+			ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
 			
+			List<Toil> toils = __instance.toils;
 			var length = toils.Count;
 			for (int i = 0; i < length; i++)
 			{
@@ -45,44 +41,43 @@ namespace GiddyUpRideAndRoll.Harmony
 				//checkedToil makes sure the ActiveCells.Contains is only called once, preventing performance impact. 
 				toil.AddPreTickAction(delegate
 				{
-					if (!startedPark && pawnData.mount != null && pawn.IsHashIntervalTick(60) && pawn.CurJobDef != JobDefOf.RopeToPen && 
-						areaNoMount.innerGrid[map.cellIndices.CellToIndex(toil.actor.pather.Destination.Cell)])
+					var pather = toil.actor.pather;
+					if (!isMovingToDismount && pawnData.mount != null && pawn.IsHashIntervalTick(60) && areaNoMount.innerGrid[map.cellIndices.CellToIndex(pather.Destination.Cell)] &&
+						(pawn.roping == null || !pawn.roping.IsRopingOthers))
 					{
-						originalLoc = toil.actor.pather.Destination.Cell;
-						if (AnimalPenUtility.NeedsToBeManagedByRope(pawnData.mount) || areaDropAnimal == null)
-						{
-							startedPark = TryParkAnimalPen(__instance.pawn, pawnData.mount, ref parkLoc, toil.actor);
-						}
-						else
-						{
-							startedPark = TryParkAnimalDropSpot(areaDropAnimal, ref parkLoc, toil.actor);
-						}
+						originalLoc = pather.Destination.Cell;
+						if (areaDropAnimal == null) isMovingToDismount = TryParkAnimalPen(pawn, pawnData.mount, ref parkLoc);
+						else isMovingToDismount = TryParkAnimalDropSpot(areaDropAnimal, ref parkLoc, pawn);
 					}
 					//Pawn has taken animal to dropoff point, remove association
-					if (startedPark && toil.actor.pather.nextCell == parkLoc)
+					if (isMovingToDismount && pather.nextCell == parkLoc && pawnData.mount != null)
 					{
-						pawnData.Mount = null;
-						toil.actor.pather.StartPath(originalLoc, PathEndMode.OnCell);
-						if (pawnData.reservedMount != null)
+						var animal = pawnData.mount;
+						pawnData.Reset(); //TODO unify dismounting
+						pawnData.ReserveMount = null;
+						ExtendedDataStorage.GUComp[animal.thingIDNumber].reservedBy = null;
+
+						//Check if the animal should be hitched
+						if (AnimalPenUtility.NeedsToBeManagedByRope(animal))
 						{
-							ExtendedPawnData animalData = ExtendedDataStorage.GUComp[pawnData.reservedMount.thingIDNumber];
-							animalData.reservedBy = null;
-							pawnData.ReserveMount = null;
+							if (animal.roping == null) animal.roping = new Pawn_RopeTracker(pawn); //Not needed, but changes to modded animals could maybe cause issues
+							animal.roping.RopeToSpot(parkLoc);
 						}
+						pather.StartPath(originalLoc, PathEndMode.OnCell);
 					}
 				});
 			}
 		}
-		static bool TryParkAnimalPen(Pawn roper, Pawn mount, ref IntVec3 parkLoc, Pawn actor, bool simulateOnly = false)
+		static bool TryParkAnimalPen(Pawn roper, Pawn mount, ref IntVec3 parkLoc, bool simulateOnly = false)
 		{
 			var pen = AnimalPenUtility.GetPenAnimalShouldBeTakenTo(roper, mount, out string failReason, true, true, false, true);
 			if (pen != null)
 			{
 				parkLoc = AnimalPenUtility.FindPlaceInPenToStand(pen, roper);
 
-				if (actor.Map.reachability.CanReach(actor.Position, parkLoc, PathEndMode.OnCell, TraverseParms.For(TraverseMode.PassDoors, Danger.Deadly, false)))
+				if (roper.Map.reachability.CanReach(roper.Position, parkLoc, PathEndMode.OnCell, TraverseParms.For(TraverseMode.PassDoors, Danger.Deadly, false)))
 				{
-					if (!simulateOnly) actor.pather.StartPath(parkLoc, PathEndMode.OnCell);
+					if (!simulateOnly) roper.pather.StartPath(parkLoc, PathEndMode.OnCell);
 					return true;
 				}
 			}

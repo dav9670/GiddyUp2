@@ -12,28 +12,63 @@ namespace GiddyUp
 {
 	public class MountUtility
 	{
-		public static HashSet<PawnKindDef> animalsWithBiome = new HashSet<PawnKindDef>(), animalsWithoutBiome = new HashSet<PawnKindDef>();
-		public enum GiveJobMethod { Queue, Try };
+		public static HashSet<PawnKindDef> allWildAnimals = new HashSet<PawnKindDef>(), allDomesticAnimals = new HashSet<PawnKindDef>();
+		public enum GiveJobMethod { Inject, Try, Instant, Think };
+		enum ListToUse { Local, Foreign, Domestic };
 		
-		//Centralized funnel for all the various mounting calls. Thinkresult return injection used if it's to happen immediately, otherwise it's queued
-		public static ThinkResult? GiveMountJob(Pawn rider, Pawn animal, GiveJobMethod giveJobMethod = GiveJobMethod.Queue, ThinkResult? thinkResult = null, Job currentJob = null)
+		//Centralized funnel for all the various mounting calls
+		public static ThinkResult? GiveMountJob(Pawn rider, Pawn animal, GiveJobMethod giveJobMethod = GiveJobMethod.Inject, ThinkResult? thinkResult = null, Job currentJob = null)
 		{
-			Job mountJob = new Job(ResourceBank.JobDefOf.Mount, animal) {count = 1};
-			if (giveJobMethod == GiveJobMethod.Queue)
+			//Immediately mount the pawn on the animal. This is done when the mount job finishes, or emulating that it has already finished such as when pawns come in pre-mounted
+			if (giveJobMethod == GiveJobMethod.Instant)
+			{
+				//First check if the pawn had a mount to begin with...
+				ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[rider.thingIDNumber];
+				if (animal == null) animal = pawnData.reservedMount;
+				
+				//If they did...
+				if (animal != null)
+				{
+					//Instantly mount, as if the mount jobdriver had just finished
+					pawnData.Mount = animal;
+					
+					//Set the animal job and state
+					if (animal.CurJob?.def != ResourceBank.JobDefOf.Mounted)
+					{
+						animal.mindState.duty = new PawnDuty(DutyDefOf.Defend);
+						if (animal.jobs == null) animal.jobs = new Pawn_JobTracker(animal);
+						animal.jobs.TryTakeOrderedJob(new Job(ResourceBank.JobDefOf.Mounted, rider) { count = 1});
+					}
+					
+					//Sanity check the xData
+					pawnData.ReserveMount = animal;
+					ExtendedDataStorage.GUComp[animal.thingIDNumber].reservedBy = rider;
+				}
+			}
+			//This prompts them to mount up before they carry out another job they were planning to do
+			else if (giveJobMethod == GiveJobMethod.Inject)
 			{
 				if (currentJob != null) rider.jobs?.jobQueue?.EnqueueFirst(currentJob);
-				if (thinkResult != null) return new ThinkResult(mountJob, thinkResult.Value.SourceNode, thinkResult.Value.Tag, false);
+				if (thinkResult != null) return new ThinkResult(new Job(ResourceBank.JobDefOf.Mount, animal) {count = 1}, thinkResult.Value.SourceNode, thinkResult.Value.Tag, false);
 			}
-			else
+			//This has them mount after they're done doing their current task
+			else if (giveJobMethod == GiveJobMethod.Try)
 			{
 				animal.jobs.StopAll();
 				animal.jobs.EndCurrentJob(JobCondition.InterruptForced, false, false); //The StopAll above will trigger the WaitForRider job. This will stop it.
 				animal.pather.StopDead();
-				rider.jobs.TryTakeOrderedJob(mountJob);
+				rider.jobs.TryTakeOrderedJob(new Job(ResourceBank.JobDefOf.Mount, animal) {count = 1});
 			}
+			//TODO: May be possible to merge this and Inject together
+			else if (giveJobMethod == GiveJobMethod.Think)
+			{
+				var job = new Job(ResourceBank.JobDefOf.Mount, animal) {count = 1};
+				rider.jobs?.StartJob(job, JobCondition.InterruptOptional, null, true, false);
+			}
+			
 			return null;
 		}
-		public static bool GenerateMounts(ref List<Pawn> list, IncidentParms parms, int inBiomeWeight, int outBiomeWeight, int nonWildWeight, int mountChance, int mountChanceTribal)
+		public static bool GenerateMounts(ref List<Pawn> list, IncidentParms parms)
 		{
 			//if (MP.enabled) return false; // Best we can do for now
 			Map map = parms.target as Map;
@@ -45,68 +80,69 @@ namespace GiddyUp
 				if (map == null) return false;
 			}
 
-			Predicate<PawnKindDef> isAnimal = (PawnKindDef d) => d.race != null && d.race.race.Animal;
-
-			mountChance = GetMountChance(parms, mountChance, mountChanceTribal);
+			int mountChance = Settings.enemyMountChance;
+			int mountChancePreInd = Settings.enemyMountChancePreInd;
+			float domesticWeight = Settings.nonWildWeight;
+			float localWeight = Settings.inBiomeWeight;
+			float foreignWeight = Settings.outBiomeWeight;
+			
+			mountChance = GetMountChance(parms, mountChance, mountChancePreInd);
 			if (mountChance == -1) return false; //wrong faction
 
-			List<PawnKindDef> factionDomesticAnimalRestrictions = new List<PawnKindDef>();
-			List<PawnKindDef> factionWildAnimalRestrictions = new List<PawnKindDef>();
+			//Setup working list
+			PawnKindDef[] wildAnimals;
+			PawnKindDef[] domesticAnimals;
+			PawnKindDef[] localAnimals;
 			
-			FactionRestrictions factionRestrictions = parms.faction.def.GetModExtension<FactionRestrictions>();
-			if (factionRestrictions != null)
+			FactionRestrictions factionRules = parms.faction?.def?.GetModExtension<FactionRestrictions>();
+			if (factionRules != null)
 			{
-				factionDomesticAnimalRestrictions = factionRestrictions.allowedNonWildAnimals;
-				factionWildAnimalRestrictions = factionRestrictions.allowedWildAnimals;
+				//Override working list
+				wildAnimals = factionRules.allowedWildAnimals;
+				domesticAnimals = factionRules.allowedNonWildAnimals;
+				localAnimals = map.Biome.AllWildAnimals.
+					Where(x => wildAnimals.Contains(x) && map.mapTemperature.SeasonAcceptableFor(x.race) && 
+					Settings.mountableCache.Contains(x.shortHash) && parms.points > x.combatPower * 2f).ToArray();
 
-				if (factionRestrictions.mountChance > -1)
-				{
-					mountChance = factionRestrictions.mountChance;
-				}
+				//Override mount chance
+				if (factionRules.mountChance > -1) mountChance = factionRules.mountChance;
 
-				if (!factionWildAnimalRestrictions.NullOrEmpty() && factionDomesticAnimalRestrictions.NullOrEmpty() && factionRestrictions.wildAnimalWeight >= 0)
-				{
-					inBiomeWeight = 0;
-					nonWildWeight = 0;
-					outBiomeWeight = factionRestrictions.wildAnimalWeight;
-				}
-				if (factionWildAnimalRestrictions.NullOrEmpty() && !factionDomesticAnimalRestrictions.NullOrEmpty() && factionRestrictions.nonWildAnimalWeight >= 0)
-				{
-					inBiomeWeight = 0;
-					outBiomeWeight = 0;
-					nonWildWeight = factionRestrictions.nonWildAnimalWeight;
-				}
-				if (!factionWildAnimalRestrictions.NullOrEmpty() && !factionDomesticAnimalRestrictions.NullOrEmpty())
-				{
-					inBiomeWeight = 0;
-					if (factionRestrictions.wildAnimalWeight >= 0)
-					outBiomeWeight = factionRestrictions.wildAnimalWeight;
-					if (factionRestrictions.nonWildAnimalWeight >= 0)
-					nonWildWeight = factionRestrictions.nonWildAnimalWeight;
-				}
+				//Apply weights if needed
+				if (wildAnimals.Length == 0) localWeight = foreignWeight = 0;
+				else if (factionRules.wildAnimalWeight >= 0) foreignWeight = factionRules.wildAnimalWeight;
+
+				if (domesticAnimals.Length == 0) domesticWeight = 0;
+				else if (factionRules.nonWildAnimalWeight >= 0) foreignWeight = factionRules.nonWildAnimalWeight;
+			}
+			else
+			{
+				wildAnimals = allWildAnimals.ToArray();
+				domesticAnimals = allDomesticAnimals.ToArray();
+				localAnimals = map.Biome.AllWildAnimals.
+					Where(x => map.mapTemperature.SeasonAcceptableFor(x.race) && Settings.mountableCache.Contains(x.shortHash) && parms.points > x.combatPower * 2f).ToArray();
 			}
 
-			int totalWeight = inBiomeWeight + outBiomeWeight + nonWildWeight;
-			float inBiomeWeightNormalized = (float)inBiomeWeight / (float)totalWeight * 100f;
-			float outBiomeWeightNormalized = (float)outBiomeWeight / (float)totalWeight * 100f;
+			//Setup weight ranges.
+			float totalWeight = localWeight + foreignWeight + domesticWeight; //EG 100
+			localWeight /= totalWeight * 100f; //EG 20
+			foreignWeight /= totalWeight * 100f; //EG 20+10 = 30
+			foreignWeight += localWeight;
+			float averageCommonality = AverageAnimalCommonality(map.Biome);
 
-			List<Pawn> animals = new List<Pawn>();
-			
 			var length = list.Count;
 			for (int i = 0; i < length; i++)
 			{
 				Pawn pawn = list[i];
-				//TODO add chance
 				PawnKindDef pawnKindDef = null;
 
 				if (!pawn.RaceProps.Humanlike || pawn.kindDef == PawnKindDefOf.Slave) continue;
 
-				int rndInt = Rand.Range(1, 100);
+				int random = Rand.Range(1, 100);
 
 				CustomMounts modExtension = pawn.kindDef.GetModExtension<CustomMounts>();
 				if (modExtension != null)
 				{
-					if (modExtension.mountChance <= rndInt) continue;
+					if (modExtension.mountChance <= random) continue;
 
 					Rand.PushState();
 					bool found = modExtension.possibleMounts.TryRandomElementByWeight((KeyValuePair<PawnKindDef, int> mount) => mount.Value, out KeyValuePair<PawnKindDef, int> selectedMount);
@@ -115,81 +151,68 @@ namespace GiddyUp
 				}
 				else
 				{
-					if (mountChance <= rndInt || !pawn.RaceProps.Humanlike) continue;
+					if (mountChance <= random) continue;
 					int pawnHandlingLevel = pawn.skills.GetSkill(SkillDefOf.Animals).Level;
+					if (pawnHandlingLevel >= Settings.minHandlingLevel) continue;
 
-					pawnKindDef = DeterminePawnKind(map, isAnimal, inBiomeWeightNormalized, outBiomeWeightNormalized, rndInt, pawnHandlingLevel, factionDomesticAnimalRestrictions, factionWildAnimalRestrictions, parms);
+					PawnKindDef[] workingList;
+					bool domestic = false;
+					switch (DetermineList(localWeight, foreignWeight, random))
+					{
+						case ListToUse.Local: workingList = localAnimals; break;
+						case ListToUse.Foreign: workingList = wildAnimals; break;
+						default: workingList = domesticAnimals; domestic = true; break;
+					}
+
+					if (domestic) workingList.Where(x => Settings.mountableCache.Contains(x.shortHash)).
+						TryRandomElementByWeight(def => def.race.BaseMarketValue / def.race.GetStatValueAbstract(StatDefOf.CaravanRidingSpeedFactor), out pawnKindDef);
+					else workingList.Where(x => map.mapTemperature.SeasonAcceptableFor(x.race) && Settings.mountableCache.Contains(x.shortHash) && parms.points > x.combatPower * 2f).
+						TryRandomElementByWeight(def => CalculateCommonality(def, map.Biome, pawnHandlingLevel, averageCommonality), out pawnKindDef);
 				}
-				if (pawnKindDef == null) return false;
+
+				//Validate and spawn
+				if (pawnKindDef == null) 
+				{
+					if (Settings.logging) Log.Warning("[Giddy-up] Could not find any suitable animal for " + pawn.thingIDNumber);
+					return false;
+				}
 				Pawn animal = PawnGenerator.GeneratePawn(pawnKindDef, parms.faction);
 				GenSpawn.Spawn(animal, pawn.Position, map, parms.spawnRotation);
-				NPCMountAnimal(pawn, ref animal);
-				animals.Add(animal);
+
+				//Set their training
+				animal.playerSettings = new Pawn_PlayerSettings(animal);
+				animal.training.Train(TrainableDefOf.Obedience, pawn);
+
+				//Mount up
+				GiveMountJob(pawn, animal, GiveJobMethod.Instant);
+				list.Add(animal);
 			}
-			list.AddRange(animals);
 			return true;
 		}
-		static void NPCMountAnimal(Pawn pawn, ref Pawn animal)
+		
+		static ListToUse DetermineList(float localWeight, float foreignWeight, int random)
 		{
-			ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
-			ExtendedPawnData animalData = ExtendedDataStorage.GUComp[animal.thingIDNumber];
-
-			pawnData.Mount = animal;
-			pawnData.drawOffset = TextureUtility.FetchCache(pawnData.mount);
-			animal.mindState.duty = new PawnDuty(DutyDefOf.Defend);
-			if (animal.jobs == null) animal.jobs = new Pawn_JobTracker(animal);
-			Job jobAnimal = new Job(ResourceBank.JobDefOf.Mounted, pawn);
-			jobAnimal.count = 1;
-			animal.jobs.TryTakeOrderedJob(jobAnimal);
-			animalData.reservedBy = pawn;
-			animal.playerSettings = new Pawn_PlayerSettings(animal);
-			animal.training.Train(TrainableDefOf.Obedience, pawn);
-			pawnData.reservedMount = animal;
+			if (random < foreignWeight) return ListToUse.Local;
+			else if (random >= localWeight && random < foreignWeight) return ListToUse.Foreign;
+			return ListToUse.Domestic;
 		}
-		static PawnKindDef DeterminePawnKind(Map map, Predicate<PawnKindDef> isAnimal, float inBiomeWeightNormalized, float outBiomeWeightNormalized, int rndInt, int pawnHandlingLevel, List<PawnKindDef> factionDomesticAnimalRestrictions, List<PawnKindDef> factionWildAnimalRestrictions, IncidentParms parms)
-		{
-			PawnKindDef pawnKindDef = null;
-			float averageCommonality = AverageAnimalCommonality(map);
-			Predicate<PawnKindDef> canUseAnimal = a => map.mapTemperature.SeasonAcceptableFor(a.race) && Settings.mountableCache.Contains(a.shortHash) && parms.points > a.combatPower * 2f;
-			Rand.PushState();
-			if (factionWildAnimalRestrictions.NullOrEmpty() && rndInt <= inBiomeWeightNormalized)
-			{
-				map.Biome.AllWildAnimals.Where(x => canUseAnimal(x)).TryRandomElementByWeight(def => CalculateCommonality(def, map, pawnHandlingLevel), out pawnKindDef);
-			}
-			else if (rndInt <= inBiomeWeightNormalized + outBiomeWeightNormalized)
-			{
-				animalsWithBiome.Where(x => isAnimal(x) && canUseAnimal(x) && factionWildAnimalRestrictions.Contains(x)).
-					TryRandomElementByWeight(def => CalculateCommonality(def, map, pawnHandlingLevel, averageCommonality), out pawnKindDef);
-			}
-			else
-			{
-				animalsWithoutBiome.Where(x => isAnimal(x) && canUseAnimal(x) && factionDomesticAnimalRestrictions.Contains(x)).
-					TryRandomElementByWeight(def => CalculateCommonality(def, map, pawnHandlingLevel, averageCommonality), out pawnKindDef);
-			}
-			Rand.PopState();
-			return pawnKindDef;
-		}
-		static float AverageAnimalCommonality(Map map)
+		static float AverageAnimalCommonality(BiomeDef biome)
 		{
 			float sum = 0;
-			foreach (PawnKindDef animalKind in map.Biome.AllWildAnimals)
+			float count = 0f;
+			foreach (PawnKindDef animalKind in biome.AllWildAnimals)
 			{
-				sum += map.Biome.CommonalityOfAnimal(animalKind);
+				sum += biome.CommonalityOfAnimal(animalKind);
+				++count;
 			}
-			return sum / map.Biome.AllWildAnimals.Count();
+			return sum / count;
 		}
-		static float CalculateCommonality(PawnKindDef def, Map map, int pawnHandlingLevel, float averageCommonality = 0)
+		static float CalculateCommonality(PawnKindDef def, BiomeDef biome, int pawnHandlingLevel, float averageCommonality = 0)
 		{
 			float commonality;
-			if (averageCommonality == 0)
-			{
-				commonality = map.Biome.CommonalityOfAnimal(def);
-			}
-			else
-			{
-				commonality = averageCommonality;
-			}
-				
+			if (averageCommonality == 0) commonality = biome.CommonalityOfAnimal(def);
+			else commonality = averageCommonality;
+
 			//minimal level to get bonus. 
 			pawnHandlingLevel = pawnHandlingLevel > 5 ? pawnHandlingLevel - 5 : 0;
 
@@ -201,24 +224,12 @@ namespace GiddyUp
 			//Log.Message("name: " + def.defName + ", commonality: " + commonality + ", pawnHandlingLevel: " + pawnHandlingLevel + ", wildness: " + def.RaceProps.wildness + ", commonalityBonus: " + commonalityAdjusted + ", wildnessPenalty: " + wildnessPenalty + ", result: " + commonalityAdjusted * wildnessPenalty);
 			return commonalityAdjusted * wildnessPenalty;
 		}
-		static int GetMountChance(IncidentParms parms, int mountChance, int mountChanceTribal)
+		static int GetMountChance(IncidentParms parms, int mountChance, int mountChancePreInd)
 		{
-			if (parms.faction == null)
-			{
-				return -1;
-			}
-			if (parms.faction.def == FactionDefOf.Ancients || parms.faction.def == FactionDefOf.AncientsHostile)
-			{
-				return mountChanceTribal;
-			}
-			else if (parms.faction.def != FactionDefOf.Mechanoid)
-			{
-				return mountChance;
-			}
-			else
-			{
-				return -1;
-			}
+			if (parms.faction == null) return -1;
+			if (parms.faction.def.techLevel < TechLevel.Industrial) return mountChancePreInd;
+			else if (parms.faction.def != FactionDefOf.Mechanoid) return mountChance;
+			return -1;
 		}
 	}
 }

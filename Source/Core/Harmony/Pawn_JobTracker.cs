@@ -4,7 +4,6 @@ using HarmonyLib;
 using RimWorld;
 using Verse;
 using Verse.AI;
-using GiddyUpRideAndRoll;
 using System.Linq;
 using Verse.AI.Group;
 using Settings = GiddyUp.ModSettings_GiddyUp;
@@ -248,28 +247,28 @@ namespace GiddyUp.Harmony
 				}
 				ThinkResult InsertMountingJobs(ThinkResult __result, Pawn closestAnimal, JobQueue jobQueue, ExtendedPawnData pawData)
 				{
-					return MountUtility.GiveMountJob(pawn, closestAnimal, MountUtility.GiveJobMethod.Queue, __result, __result.Job).Value;
+					return MountUtility.GiveMountJob(pawn, closestAnimal, MountUtility.GiveJobMethod.Inject, __result, __result.Job).Value;
 				}
 			}
 			//This is responsible for friendly guests mounting/dismounting their animals they rode in on
-			void CaravanPostFix(Pawn_JobTracker jobTracker, ref ThinkResult __result, Pawn pawn)
+			void CaravanPostFix(Pawn_JobTracker jobTracker, ref ThinkResult thinkResult, Pawn pawn)
 			{
 				Lord lord = pawn.GetLord();
 				if (lord == null) return;
 				
 				var isAnimal = pawn.RaceProps.Animal;
-				if (isAnimal && __result.SourceNode is JobGiver_Wander jobGiver_Wander && (lord.CurLordToil is LordToil_DefendPoint || lord.CurLordToil.GetType() == typeof(LordToil_DefendTraderCaravan)))
+				if (isAnimal && thinkResult.SourceNode is JobGiver_Wander jobGiver_Wander && (lord.CurLordToil is LordToil_DefendPoint || lord.CurLordToil.GetType() == typeof(LordToil_DefendTraderCaravan)))
 				{
 					jobGiver_Wander.wanderRadius = 5f; //TODO: is this really needed?
 				}
 
 				//Filter out anything that is not a guest rider
-				if (pawn.def.race.intelligence != Intelligence.Humanlike || pawn.Faction.HostileTo(Current.gameInt.worldInt.factionManager.ofPlayer) || pawn.IsPrisoner || __result.Job == null)
+				if (pawn.def.race.intelligence != Intelligence.Humanlike || pawn.Faction.HostileTo(Current.gameInt.worldInt.factionManager.ofPlayer) || pawn.IsPrisoner || thinkResult.Job == null)
 				{            
 					return;
 				}
 
-				var job = __result.Job;
+				var job = thinkResult.Job;
 				LocalTargetInfo target = job.GetFirstTarget(TargetIndex.A);
 				if (!target.IsValid) return;
 
@@ -292,7 +291,7 @@ namespace GiddyUp.Harmony
 						pawnData.mount == null && 
 						pawnData.reservedMount.IsMountable(out IsMountableUtility.Reason reason, pawn, true, true))
 					{
-						__result = MountUtility.GiveMountJob(pawn, pawnData.reservedMount, MountUtility.GiveJobMethod.Queue, __result, job).Value;
+						thinkResult = MountUtility.GiveMountJob(pawn, pawnData.reservedMount, MountUtility.GiveJobMethod.Inject, thinkResult, job).Value;
 					}
 				}
 				else if (lord.CurLordToil.GetType() == typeof(LordToil_DefendTraderCaravan) || lord.CurLordToil is LordToil_DefendPoint) //first option is internal class, hence this way of accessing. 

@@ -3,10 +3,10 @@
 	<GU_Car_NotReachable_DropAnimal_NPC_Message> Visitor could not reach NPC Drop off point. Make sure all NPC drop off points are reachable.</GU_Car_NotReachable_DropAnimal_NPC_Message>
 	
 	<GU_Car_visitorMountChance_Title>Visitors mount chance (Min: {0}% Max: {1}% Default: {2}% Current: {3}%)</GU_Car_visitorMountChance_Title>
-	<GU_Car_visitorMountChance_Description>Chance that visiting friendly NPC pawns ride an animal</GU_Car_visitorMountChance_Description>
+	<GU_Car_visitorMountChance_Description>Chance that visitors of a preindustrial faction will show up riding upon an animal.</GU_Car_visitorMountChance_Description>
 	
-	<GU_Car_visitorMountChanceTribal_Title>Tribal visitors mount chance (Min: {0}% Max: {1}% Default: {2}% Current: {3}%)</GU_Car_visitorMountChanceTribal_Title>
-	<GU_Car_visitorMountChanceTribal_Description>Chance that visiting friendly tribal NPC pawns ride an animal</GU_Car_visitorMountChanceTribal_Description>
+	<GU_Car_visitorMountChanceTribal_Title>Pre-industrial visitors mount chance (Min: {0}% Max: {1}% Default: {2}% Current: {3}%)</GU_Car_visitorMountChanceTribal_Title>
+	<GU_Car_visitorMountChanceTribal_Description>Chance that visitors of a pre-industrial faction will show up riding upon an animal.</GU_Car_visitorMountChanceTribal_Description>
 	
 	<GU_Car_Designator_GU_DropAnimal_NPC_Clear_Label>Clear visitor mount spot</GU_Car_Designator_GU_DropAnimal_NPC_Clear_Label>
 	<GU_Car_Designator_GU_DropAnimal_NPC_Clear_Description>Clear designated guest mount spots</GU_Car_Designator_GU_DropAnimal_NPC_Clear_Description>

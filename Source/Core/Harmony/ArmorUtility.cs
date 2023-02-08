@@ -7,7 +7,7 @@ namespace GiddyUp.Harmony
     {
         public static void Postfix(ref float armorRating, ref float damAmount, ref bool metalArmor, Pawn pawn)
         {
-            if (pawn.IsAnimalMounted())
+            if (pawn.IsMountedAnimal())
             {
                 var modExt = pawn.def.GetModExtension<CustomStats>();
                 if (modExt != null)

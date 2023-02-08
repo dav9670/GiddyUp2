@@ -4,7 +4,6 @@ using RimWorld;
 using System.Collections.Generic;
 using Verse;
 using System.Reflection;
-using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUpCaravan.Harmony
 {
@@ -29,10 +28,7 @@ namespace GiddyUpCaravan.Harmony
         static List<Pawn> MountAnimals(IncidentWorker_TraderCaravanArrival instance, IncidentParms parms)
         {
             var pawns = instance.SpawnPawns(parms);
-            if (!pawns.NullOrEmpty())
-            {
-                MountUtility.GenerateMounts(ref pawns, parms, Settings.inBiomeWeight, Settings.outBiomeWeight, Settings.nonWildWeight, Settings.visitorMountChance, Settings.visitorMountChanceTribal);
-            }
+            if (!pawns.NullOrEmpty()) MountUtility.GenerateMounts(ref pawns, parms);
             return pawns;
         }
     }

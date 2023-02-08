@@ -13,7 +13,7 @@ namespace GiddyUp
 
 		static HashSet<JobDef> busyJobs = new HashSet<JobDef>() {ResourceBank.JobDefOf.Mounted, JobDefOf.LayEgg, JobDefOf.Nuzzle, JobDefOf.Lovin, JobDefOf.Vomit, JobDefOf.Wait_Downed};
 
-		public static bool IsAnimalMounted(this Pawn animal)
+		public static bool IsMountedAnimal(this Pawn animal)
 		{
 			if (animal.CurJob == null || animal.CurJob.def != ResourceBank.JobDefOf.Mounted)
 			{

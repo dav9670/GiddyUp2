@@ -46,7 +46,7 @@ namespace GiddyUp
             Scribe_Values.Look<Color>(ref this.color, "color", default(Color), false);
         }
         //Equiv version of the vanilla GetLabeled method, but it avoids iterating the list twice
-        public static void GetGUAreasFast(Map map, out Area areaNoMount, out Area areaDropAnimal)
+        public static bool GetGUAreasFast(Map map, out Area areaNoMount, out Area areaDropAnimal)
         {
             var list = map.areaManager.areas;
             var length = list.Count;
@@ -59,6 +59,7 @@ namespace GiddyUp
                 if (label == GiddyUp.ResourceBank.NOMOUNT_LABEL) areaNoMount = area;
                 else if (label == GiddyUp.ResourceBank.DROPANIMAL_LABEL) areaDropAnimal = area;
             }
+            return areaNoMount != null;
         }
     }
 }

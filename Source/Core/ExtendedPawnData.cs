@@ -1,9 +1,6 @@
 ﻿using Verse;
 using Settings = GiddyUp.ModSettings_GiddyUp;
 
-//Note: Currently this class contains information specific for other mods (caravanMount, caravanRider, etc), which is of course not ideal for a core framework. Ideally it should be completely generic. However I have yet to come up with an
-// way to do this properly without introducing a lot of extra work. So for now I'll just keep it as it is. 
-
 namespace GiddyUp
 {
 	public class ExtendedPawnData : IExposable
@@ -15,7 +12,7 @@ namespace GiddyUp
 		public float drawOffset;
 		
 		public bool automount = true;
-
+		
 		public ExtendedPawnData() { }
 		public ExtendedPawnData(int ID)
 		{
@@ -23,20 +20,21 @@ namespace GiddyUp
 		}
 		public Pawn ReserveMount
 		{
-			 set
-			 {
+			set
+			{
 				if (Settings.logging) Log.Message("[Giddy-Up] pawn " + ID.ToString() + " no longer reserved to  " + reservedMount?.thingIDNumber.ToString() ?? "NULL");
-				reservedMount = value; 
-			 }
+				reservedMount = value;
+			}
 		}
 		public Pawn Mount
 		{
-			 set
-			 {
+			set
+			{
 				if (value == null) 
 				{
 					if (Settings.logging) Log.Message("[Giddy-Up] pawn " + ID.ToString() + " no longer mounted upon " + mount?.thingIDNumber.ToString() ?? "NULL");
 					ExtendedDataStorage.isMounted.Remove(ID);
+					drawOffset = 0f;
 				}
 				else
 				{
@@ -44,16 +42,18 @@ namespace GiddyUp
 					ExtendedDataStorage.isMounted.Add(ID);
 					//Break ropes if there are any
 					if (value.roping?.IsRoped ?? false) value.roping.BreakAllRopes();
+					//Set the offset
+					drawOffset = TextureUtility.FetchCache(value);
 				}
 				mount = value; 
-			 }
+			}
 		}
 		public void ExposeData()
 		{
 			Scribe_References.Look(ref mount, "mount");
 			Scribe_References.Look(ref reservedBy, "reservedBy");
 			Scribe_References.Look(ref reservedMount, "reservedMount");
-
+			
 			Scribe_Values.Look(ref ID, "ID");
 			Scribe_Values.Look(ref automount, "automount", true);
 			Scribe_Values.Look(ref drawOffset, "drawOffset");
@@ -63,7 +63,8 @@ namespace GiddyUp
 				if (mount != null) ExtendedDataStorage.isMounted.Add(ID);
 			}
 		}
-
+		
+		//TODO: improve and refactor this
 		public void Reset()
 		{
 			Mount = null;

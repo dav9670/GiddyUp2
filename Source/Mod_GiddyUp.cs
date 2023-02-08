@@ -128,18 +128,19 @@ namespace GiddyUp
 			for (int i = 0; i < length; i++)
 			{
 				var biomeDef = biomeDefs[i];
-				foreach(PawnKindDef animalKind in biomeDef.AllWildAnimals)
-				{
-					MountUtility.animalsWithBiome.Add(animalKind);
-				}
+				foreach(PawnKindDef animalKind in biomeDef.AllWildAnimals) MountUtility.allWildAnimals.Add(animalKind);
 			}
 			
 			var pawnKindDefs = DefDatabase<PawnKindDef>.AllDefsListForReading;
-			length = biomeDefs.Count;
+			length = pawnKindDefs.Count;
 			for (int i = 0; i < length; i++)
 			{
-				var def = pawnKindDefs[i];
-				if (def.RaceProps.Animal && !MountUtility.animalsWithBiome.Contains(def)) MountUtility.animalsWithoutBiome.Add(def);
+				var pawnKindDef = pawnKindDefs[i];
+				if (pawnKindDef.RaceProps != null && pawnKindDef.RaceProps.wildness <= 0.6f && pawnKindDef.race != null && pawnKindDef.race.tradeTags != null &&
+					 (pawnKindDef.race.tradeTags.Contains("AnimalFighter") || pawnKindDef.race.tradeTags.Contains("AnimalFarm") ))
+				{
+					MountUtility.allDomesticAnimals.Add(pawnKindDef);
+				}
 			}
 		}
 		static void RemoveRideAndRoll()
@@ -242,20 +243,23 @@ namespace GiddyUp
 					options.GapLine(); //=============================
 					options.Gap();
 					
-					options.Label("BM_EnemyMountChance_Title".Translate("0", "100", "20", enemyMountChance.ToString()), -1f, "BM_EnemyMountChance_Description".Translate());
+					options.Label("BM_MinHandlingLevel_Title".Translate("0", "20", "3", minHandlingLevel.ToString()), -1f, "BM_MinHandlingLevel_Description".Translate());
+					minHandlingLevel = (int)options.Slider(minHandlingLevel, 0f, 20f);
+					
+					options.Label("BM_EnemyMountChance_Title".Translate("0", "100", "15", enemyMountChance.ToString()), -1f, "BM_EnemyMountChance_Description".Translate());
 					enemyMountChance = (int)options.Slider(enemyMountChance, 0f, 100f);
 
-					options.Label("BM_EnemyMountChanceTribal_Title".Translate("0", "100", "40", enemyMountChanceTribal.ToString()), -1f, "BM_EnemyMountChanceTribal_Description".Translate());
-					enemyMountChanceTribal = (int)options.Slider(enemyMountChanceTribal, 0f, 100f);
+					options.Label("BM_EnemyMountChanceTribal_Title".Translate("0", "100", "33", enemyMountChancePreInd.ToString()), -1f, "BM_EnemyMountChanceTribal_Description".Translate());
+					enemyMountChancePreInd = (int)options.Slider(enemyMountChancePreInd, 0f, 100f);
 
-					options.Label("BM_InBiomeWeight_Title".Translate("0", "100", "70", inBiomeWeight.ToString()), -1f, "BM_InBiomeWeight_Description".Translate());
-					inBiomeWeight = (int)options.Slider(inBiomeWeight, 0f, 100f);
+					options.Label("BM_InBiomeWeight_Title".Translate("0", "100", "20", inBiomeWeight.ToString()), -1f, "BM_InBiomeWeight_Description".Translate());
+					inBiomeWeight = options.Slider((float)Math.Round(inBiomeWeight), 0f, 100f);
 
-					options.Label("BM_OutBiomeWeight_Title".Translate("0", "100", "15", outBiomeWeight.ToString()), -1f, "BM_OutBiomeWeight_Description".Translate());
-					outBiomeWeight = (int)options.Slider(outBiomeWeight, 0f, 100f);
+					options.Label("BM_OutBiomeWeight_Title".Translate("0", "100", "10", outBiomeWeight.ToString()), -1f, "BM_OutBiomeWeight_Description".Translate());
+					outBiomeWeight = (int)options.Slider((float)Math.Round(outBiomeWeight), 0f, 100f);
 
-					options.Label("BM_NonWildWeight_Title".Translate("0", "100", "15", nonWildWeight.ToString()), -1f, "BM_NonWildWeight_Description".Translate());
-					nonWildWeight = (int)options.Slider(nonWildWeight, 0f, 100f);
+					options.Label("BM_NonWildWeight_Title".Translate("0", "100", "70", nonWildWeight.ToString()), -1f, "BM_NonWildWeight_Description".Translate());
+					nonWildWeight = (int)options.Slider((float)Math.Round(nonWildWeight), 0f, 100f);
 				}
 				
 				options.End();
@@ -272,11 +276,11 @@ namespace GiddyUp
 					options.GapLine(); //=============================
 					options.Gap();
 
-					options.Label("GU_Car_visitorMountChance_Title".Translate("0", "100", "20", visitorMountChance.ToString()), -1f, "GU_Car_visitorMountChance_Description".Translate());
+					options.Label("GU_Car_visitorMountChance_Title".Translate("0", "100", "15", visitorMountChance.ToString()), -1f, "GU_Car_visitorMountChance_Description".Translate());
 					visitorMountChance = (int)options.Slider(visitorMountChance, 0f, 100f);
 
-					options.Label("GU_Car_visitorMountChanceTribal_Title".Translate("0", "100", "40", visitorMountChanceTribal.ToString()), -1f, "GU_Car_visitorMountChanceTribal_Description".Translate());
-					visitorMountChanceTribal = (int)options.Slider(visitorMountChanceTribal, 0f, 100f);
+					options.Label("GU_Car_visitorMountChanceTribal_Title".Translate("0", "100", "33", visitorMountChancePreInd.ToString()), -1f, "GU_Car_visitorMountChanceTribal_Description".Translate());
+					visitorMountChancePreInd = (int)options.Slider(visitorMountChancePreInd, 0f, 100f);
 				}
 				
 				options.End();
@@ -371,13 +375,14 @@ namespace GiddyUp
 			Scribe_Values.Look(ref handlingAccuracyImpact, "handlingAccuracyImpact", 0.5f);
 			Scribe_Values.Look(ref accuracyPenalty, "accuracyPenalty", 10);
 			Scribe_Values.Look(ref minAutoMountDistance, "minAutoMountDistanceNew", 120);
-			Scribe_Values.Look(ref enemyMountChance, "enemyMountChance", 20);
-			Scribe_Values.Look(ref enemyMountChanceTribal, "enemyMountChanceTribal", 40);
-			Scribe_Values.Look(ref inBiomeWeight, "inBiomeWeight", 70);
-			Scribe_Values.Look(ref outBiomeWeight, "outBiomeWeight", 15);
-			Scribe_Values.Look(ref nonWildWeight, "nonWildWeight", 15);
-			Scribe_Values.Look(ref visitorMountChance, "visitorMountChance", 20);
-			Scribe_Values.Look(ref visitorMountChanceTribal, "visitorMountChanceTribal", 40);
+			Scribe_Values.Look(ref minHandlingLevel, "minHandlingLevel", 3);
+			Scribe_Values.Look(ref enemyMountChance, "enemyMountChance", 15);
+			Scribe_Values.Look(ref enemyMountChancePreInd, "enemyMountChancePreInd", 33);
+			Scribe_Values.Look(ref inBiomeWeight, "inBiomeWeight", 20f);
+			Scribe_Values.Look(ref outBiomeWeight, "outBiomeWeight", 10f);
+			Scribe_Values.Look(ref nonWildWeight, "nonWildWeight", 70);
+			Scribe_Values.Look(ref visitorMountChance, "visitorMountChance", 15);
+			Scribe_Values.Look(ref visitorMountChancePreInd, "visitorMountChancePreInd", 33);
 			Scribe_Values.Look(ref tabsHandler, "tabsHandler");
 			Scribe_Values.Look(ref rideAndRollEnabled, "rideAndRollEnabled", true);
 			Scribe_Values.Look(ref battleMountsEnabled, "battleMountsEnabled", true);
@@ -423,16 +428,19 @@ namespace GiddyUp
 			}
 		}
 
-		public static float handlingMovementImpact = 2.5f, bodySizeFilter = 1.2f, handlingAccuracyImpact = 0.5f;
+		public static float handlingMovementImpact = 2.5f,
+			bodySizeFilter = 1.2f,
+			handlingAccuracyImpact = 0.5f,
+			inBiomeWeight = 20f, 
+			outBiomeWeight = 10f,
+			nonWildWeight = 70f;
 		public static int accuracyPenalty = 10,
 			minAutoMountDistance = 120,
-			enemyMountChance = 20, 
-			enemyMountChanceTribal = 40, 
-			inBiomeWeight = 70, 
-			outBiomeWeight = 15, 
-			nonWildWeight = 15,
-			visitorMountChance = 20, 
-			visitorMountChanceTribal = 40;
+			minHandlingLevel = 3,
+			enemyMountChance = 15, 
+			enemyMountChancePreInd = 33, 
+			visitorMountChance = 15, 
+			visitorMountChancePreInd = 33;
 		public static bool rideAndRollEnabled = true, battleMountsEnabled = true, caravansEnabled = true, noMountedHunting, logging;
 		public static HashSet<string> invertMountingRules, invertDrawRules; //These are only used on game start to setup the below, fast cache collections
 		public static HashSet<ushort> mountableCache, drawRulesCache;

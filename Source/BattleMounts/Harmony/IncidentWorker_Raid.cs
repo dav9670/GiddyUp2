@@ -33,23 +33,7 @@ namespace BattleMounts.Harmony
             {
                 return;
             }
-            MountUtility.GenerateMounts(ref pawns, parms, Settings.inBiomeWeight, Settings.outBiomeWeight, Settings.nonWildWeight, Settings.enemyMountChance, Settings.enemyMountChanceTribal);
-
-            foreach (Pawn pawn in pawns)
-            {
-                if (pawn.equipment == null)
-                {
-                    pawn.equipment = new Pawn_EquipmentTracker(pawn);
-                }
-            }
-            foreach(Pawn pawn in pawns) //Moved this code here so we can check if the pawn actually has apparel. 
-            {
-                if (pawn.apparel != null && pawn.apparel.WornApparel != null && pawn.apparel.WornApparel.Any(ap => ap.def == ThingDefOf.Apparel_ShieldBelt))
-                {
-                    LessonAutoActivator.TeachOpportunity(ConceptDefOf.ShieldBelts, OpportunityType.Critical);
-                    break;
-                }
-            }
+            MountUtility.GenerateMounts(ref pawns, parms);
         }
     }
 }

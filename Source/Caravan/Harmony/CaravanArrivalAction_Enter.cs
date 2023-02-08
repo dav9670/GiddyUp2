@@ -41,17 +41,7 @@ namespace GiddyUpCaravan.Harmony
             {
                 if (pawn.IsColonist && pawn.Spawned)
                 {
-                    ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
-                    if (pawnData.reservedMount != null)
-                    {
-                        var animal = pawnData.reservedMount;
-                        ExtendedPawnData animalData = ExtendedDataStorage.GUComp[animal.thingIDNumber];
-                        pawnData.Mount = animal;
-                        Job jobAnimal = new Job(GiddyUp.ResourceBank.JobDefOf.Mounted, pawn);
-                        jobAnimal.count = 1;
-                        animal.jobs.TryTakeOrderedJob(jobAnimal);
-                        pawnData.drawOffset = GiddyUp.TextureUtility.FetchCache(pawnData.mount);
-                    }
+                    MountUtility.GiveMountJob(pawn, null, MountUtility.GiveJobMethod.Instant);
                 }
             }
         }

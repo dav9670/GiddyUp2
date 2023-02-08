@@ -58,31 +58,9 @@ namespace GiddyUp.Jobs
             toil.defaultDuration = 150; //TODO tie into handling skill bonus
             toil.AddFinishAction(delegate
             {
-                FinishAction();
+                MountUtility.GiveMountJob(this.pawn, Mount, MountUtility.GiveJobMethod.Instant);
             });
             return toil;
-        }
-        public void FinishAction()
-        {
-            var mount = Mount;
-            bool flag = mount.CurJob != null && mount.CurJob.def == ResourceBank.JobDefOf.Mounted;
-            if (Settings.rideAndRollEnabled || flag)
-            {
-                var pawnData = ExtendedDataStorage.GUComp[this.pawn.thingIDNumber];
-                var animalData = ExtendedDataStorage.GUComp[mount.thingIDNumber];
-
-                if (flag)
-                {
-                    pawnData.Mount = mount;
-                    pawnData.drawOffset = TextureUtility.FetchCache(pawnData.mount);
-                }
-
-                if (Settings.rideAndRollEnabled)
-                {
-                    pawnData.reservedMount = mount;
-                    animalData.reservedBy = this.pawn;
-                }
-            }
         }
     }
 }

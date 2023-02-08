@@ -70,7 +70,7 @@ namespace GiddyUp
 		}
 		public override void PostDraw()
 		{
-			if (valid && pawn.IsAnimalMounted() && graphicCache.TryGetValue(pawn.Rotation, out (GraphicData, Vector3, Vector3, Vector3) cache))
+			if (valid && pawn.IsMountedAnimal() && graphicCache.TryGetValue(pawn.Rotation, out (GraphicData, Vector3, Vector3, Vector3) cache))
 			{	
 				Vector3 drawPos = parent.DrawPos;
 				Vector3 offset = (pawn.gender == Gender.Female) ? cache.Item2 : cache.Item3;

@@ -19,10 +19,11 @@ namespace GiddyUpCaravan.Harmony
             AddMissingPawnsToLord(__instance);
             foreach (Pawn pawn in __instance.lord.ownedPawns)
             {
+                if (pawn.RaceProps.Animal) continue;
                 Pawn animal = ExtendedDataStorage.GUComp[pawn.thingIDNumber].reservedMount;
                 if (animal != null)
                 {
-                    MountUtility.GiveMountJob(pawn, animal, MountUtility.GiveJobMethod.Try);
+                    MountUtility.GiveMountJob(pawn, animal, MountUtility.GiveJobMethod.Think);
                 }
             }
         }
