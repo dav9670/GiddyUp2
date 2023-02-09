@@ -22,7 +22,7 @@
   <GUC_BodySizeFilter_Title>按體型篩選 （範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</GUC_BodySizeFilter_Title>
   <GUC_BodySizeFilter_Description>按體型篩選可騎乘的動物</GUC_BodySizeFilter_Description>
 
-  <GUC_NotInModOptions>無法騎乘，在模組選中為無法騎乘</GUC_NotInModOptions>
+  <GUC_NotInModOptions>無法騎乘，在模組設置為無法騎乘</GUC_NotInModOptions>
   <GUC_AnimalBusy>無法騎乘，正在做其他事</GUC_AnimalBusy>
   <GUC_NotFullyGrown>無法騎乘，未完全長大</GUC_NotFullyGrown>
   <GUC_NeedsObedience>無法騎乘，沒有接受“服從”訓練</GUC_NeedsObedience>
