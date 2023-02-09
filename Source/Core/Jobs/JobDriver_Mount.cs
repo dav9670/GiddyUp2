@@ -58,7 +58,7 @@ namespace GiddyUp.Jobs
             toil.defaultDuration = 150; //TODO tie into handling skill bonus
             toil.AddFinishAction(delegate
             {
-                MountUtility.GiveMountJob(this.pawn, Mount, MountUtility.GiveJobMethod.Instant);
+                this.pawn.GoMount(Mount, MountUtility.GiveJobMethod.Instant);
             });
             return toil;
         }

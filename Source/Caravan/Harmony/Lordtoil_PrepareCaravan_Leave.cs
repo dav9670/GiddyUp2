@@ -23,7 +23,7 @@ namespace GiddyUpCaravan.Harmony
                 Pawn animal = ExtendedDataStorage.GUComp[pawn.thingIDNumber].reservedMount;
                 if (animal != null)
                 {
-                    MountUtility.GiveMountJob(pawn, animal, MountUtility.GiveJobMethod.Think);
+                    pawn.GoMount(animal, MountUtility.GiveJobMethod.Think);
                 }
             }
         }

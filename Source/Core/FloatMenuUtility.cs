@@ -21,7 +21,7 @@ namespace GiddyUp
                 {
                     Action action = delegate
                     {
-                        MountUtility.GiveMountJob(pawn, animal, MountUtility.GiveJobMethod.Try);
+                        pawn.GoMount(animal, MountUtility.GiveJobMethod.Try);
                     };
                     opts.Add(new FloatMenuOption("GUC_Mount".Translate() + " " + animal.Name, action, MenuOptionPriority.Low));
                 }
@@ -43,15 +43,9 @@ namespace GiddyUp
             }
             else if (animal == pawnData.mount)
             {
-                Action action = delegate { ResetPawnData(pawnData); };
+                Action action = delegate { pawn.Dismount(animal, pawnData); };
                 opts.Add(new FloatMenuOption("GUC_Dismount".Translate(), action, MenuOptionPriority.High));
             }
-        }
-
-        //[SyncMethod]
-        static void ResetPawnData(ExtendedPawnData pawnData)
-        {
-            pawnData.Reset();
         }
     }
 }

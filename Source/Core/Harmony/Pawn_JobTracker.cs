@@ -27,24 +27,21 @@ namespace GiddyUp.Harmony
 		static void Postfix(Pawn_JobTracker __instance, ref ThinkResult __result)
 		{
 			Pawn pawn = __instance.pawn;
-			if (pawn.factionInt == null) return;
+			if (pawn.Faction == null) return;
 			if (pawn.def.race.intelligence == Intelligence.Humanlike)
 			{
-				//Remove mount in case the mount somehow isn't mounted by pawn. 
+				//Sanity check, make sure the mount driver is still valid
 				if (ExtendedDataStorage.isMounted.Contains(pawn.thingIDNumber) && pawn.IsColonist)
 				{
 					ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
-					if (pawnData.mount.CurJob == null || pawnData.mount.CurJobDef != ResourceBank.JobDefOf.Mounted)
+					if (pawnData.mount.CurJobDef != ResourceBank.JobDefOf.Mounted ||
+						(pawnData.mount.jobs.curDriver is JobDriver_Mounted driver && driver.Rider != pawn))
 					{
-						pawnData.Reset();
-					}
-					else if (pawnData.mount.jobs.curDriver is JobDriver_Mounted driver && driver.Rider != pawn)
-					{
-						pawnData.Reset();
+						pawn.Dismount(null, pawnData);
 					}
 				}
 				//If a hostile pawn owns an animal, make sure it mounts it whenever possible
-				else if (pawn.factionInt.HostileTo(Current.gameInt.worldInt.factionManager.ofPlayer) && 
+				else if (pawn.Faction.HostileTo(Current.gameInt.worldInt.factionManager.ofPlayer) && 
 					!pawn.Downed && !pawn.IsPrisoner && !pawn.HasAttachment(ThingDefOf.Fire))
 				{
 
@@ -60,11 +57,11 @@ namespace GiddyUp.Harmony
 						return;
 					}
 
-					MountUtility.GiveMountJob(pawn, hostileMount);
+					pawn.GoMount(hostileMount);
 				}
-				else if (Settings.rideAndRollEnabled && pawn.factionInt.def.isPlayer) RnRPostfix(__instance, ref __result, pawn);
+				else if (Settings.rideAndRollEnabled && pawn.Faction.def.isPlayer) RnRPostfix(__instance, ref __result, pawn);
 			}
-			if (Settings.caravansEnabled && !pawn.factionInt.def.isPlayer) CaravanPostFix(__instance, ref __result, pawn);
+			if (Settings.caravansEnabled && !pawn.Faction.def.isPlayer) CaravanPostFix(__instance, ref __result, pawn);
 
 			//This is responsbile for the automount mechanic
 			void RnRPostfix(Pawn_JobTracker jobTracker, ref ThinkResult thinkResult, Pawn pawn)
@@ -125,7 +122,8 @@ namespace GiddyUp.Harmony
 					{
 						//Do some less performant final check. It's less costly to run these near the end on successful mount attempts than to check constantly
 						if (pawn.IsWorkTypeDisabledByAge(WorkTypeDefOf.Handling, out int ageNeeded) || pawn.IsBorrowedByAnyFaction()) return;
-						thinkResult = InsertMountingJobs(thinkResult, bestChoiceAnimal, jobTracker.jobQueue, pawnData);
+						//Finally, go mount up
+						thinkResult = pawn.GoMount(bestChoiceAnimal, MountUtility.GiveJobMethod.Inject, thinkResult, thinkResult.Job).Value;
 					}
 				}
 
@@ -245,10 +243,6 @@ namespace GiddyUp.Harmony
 					if (timeBestRiding < timeNormalWalking) return closestAnimal;
 					return null;
 				}
-				ThinkResult InsertMountingJobs(ThinkResult __result, Pawn closestAnimal, JobQueue jobQueue, ExtendedPawnData pawData)
-				{
-					return MountUtility.GiveMountJob(pawn, closestAnimal, MountUtility.GiveJobMethod.Inject, __result, __result.Job).Value;
-				}
 			}
 			//This is responsible for friendly guests mounting/dismounting their animals they rode in on
 			void CaravanPostFix(Pawn_JobTracker jobTracker, ref ThinkResult thinkResult, Pawn pawn)
@@ -291,7 +285,7 @@ namespace GiddyUp.Harmony
 						pawnData.mount == null && 
 						pawnData.reservedMount.IsMountable(out IsMountableUtility.Reason reason, pawn, true, true))
 					{
-						thinkResult = MountUtility.GiveMountJob(pawn, pawnData.reservedMount, MountUtility.GiveJobMethod.Inject, thinkResult, job).Value;
+						thinkResult = pawn.GoMount(pawnData.reservedMount, MountUtility.GiveJobMethod.Inject, thinkResult, job).Value;
 					}
 				}
 				else if (lord.CurLordToil.GetType() == typeof(LordToil_DefendTraderCaravan) || lord.CurLordToil is LordToil_DefendPoint) //first option is internal class, hence this way of accessing. 
@@ -302,7 +296,7 @@ namespace GiddyUp.Harmony
 					}
 				}
 				
-				void ParkAnimal(Pawn_JobTracker __instance, Pawn pawn, ExtendedPawnData pawnData)
+				void ParkAnimal(Pawn_JobTracker pawnJobs, Pawn pawn, ExtendedPawnData pawnData)
 				{
 					Area areaFound = pawn.Map.areaManager.GetLabeled(ResourceBank.DropAnimal_NPC_LABEL);
 					IntVec3 targetLoc = pawn.Position;
@@ -313,10 +307,8 @@ namespace GiddyUp.Harmony
 
 						if (pawn.Map.reachability.CanReach(pawn.Position, targetLoc, PathEndMode.OnCell, TraverseParms.For(TraverseMode.PassDoors, Danger.Deadly, false)))
 						{
-							Job dismountJob = new Job(ResourceBank.JobDefOf.Dismount);
-							dismountJob.count = 1;
-							__instance.jobQueue.EnqueueFirst(dismountJob);
-							__instance.jobQueue.EnqueueFirst(new Job(JobDefOf.Goto, targetLoc));
+							pawnJobs.jobQueue.EnqueueFirst(new Job(ResourceBank.JobDefOf.Dismount) { count = 1});
+							pawnJobs.jobQueue.EnqueueFirst(new Job(JobDefOf.Goto, targetLoc));
 							PawnDuty animalDuty = pawnData.mount.mindState.duty;
 
 							if (animalDuty != null) animalDuty.focus = new LocalTargetInfo(targetLoc);

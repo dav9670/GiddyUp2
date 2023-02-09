@@ -41,7 +41,7 @@ namespace GiddyUpCaravan.Harmony
             {
                 if (pawn.IsColonist && pawn.Spawned)
                 {
-                    MountUtility.GiveMountJob(pawn, null, MountUtility.GiveJobMethod.Instant);
+                    pawn.GoMount(null, MountUtility.GiveJobMethod.Instant);
                 }
             }
         }

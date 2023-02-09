@@ -36,7 +36,7 @@ namespace GiddyUp
 				return false;
 			}
 			//Check faction
-			if (checkFaction && animal.factionInt != rider.factionInt)
+			if (checkFaction && animal.Faction != rider.Faction)
 			{
 				reason = Reason.WrongFaction;
 				return false;

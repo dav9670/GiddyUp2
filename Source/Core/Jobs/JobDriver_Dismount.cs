@@ -4,6 +4,7 @@ using Verse.AI;
 
 namespace GiddyUp.Jobs
 {
+    //This job is only used by non-hostile guests when they want to go use the guest dismount spots
     class JobDriver_Dismount : JobDriver
     {
         public override bool TryMakePreToilReservations(bool errorOnFailed)

@@ -14,7 +14,8 @@ namespace GiddyUp
 	[StaticConstructorOnStartup]
 	public static class Setup
 	{
-		public static ThingDef[] allAnimals;
+		public static ThingDef[] allAnimals; //Only used during setup and for the mod options UI
+		static HashSet<ushort> defEditLedger = new HashSet<ushort>();
 		public const float defaultSizeThreshold = 1.2f;
 
 		static Setup()
@@ -52,7 +53,7 @@ namespace GiddyUp
 			for (int i = 0; i < length; i++)
 			{
 				var def = list[i];
-				if (def.race != null && def.race.Animal) 
+				if (def.race != null && def.race.Animal)
 				{
 					workingList.Add(def);
 
@@ -63,10 +64,7 @@ namespace GiddyUp
 					if (setting)
 					{
 						mountableCache.Add(def.shortHash);
-						if (!def.StatBaseDefined(StatDefOf.CaravanRidingSpeedFactor))
-						{
-							StatUtility.SetStatValueInList(ref def.statBases, StatDefOf.CaravanRidingSpeedFactor, 1.00001f);
-						}
+						CalculateCaravanSpeed(def);
 					}
 					else mountableCache.Remove(def.shortHash);
 
@@ -183,6 +181,68 @@ namespace GiddyUp
 					designator is Designator_GU_DropAnimal_NPC_Expand) designationCategoryDef.resolvedDesignators.Remove(designator);
 			}
 		}
+		public static void CalculateCaravanSpeed(ThingDef def, bool check = false)
+		{
+			//Horse		2.4 size	5.8 speed	packAnimal	550 value	0.35 wildeness	= 1.6
+			//Thrumbo	4.0 size	5.5 speed	!packAnimal	4000 value	0.985 wildness	= 1.5
+			//Dromedary	2.1 size	4.3 speed	packAnimal	300 value	0.25 wildeness	= 1.3
+
+			//Muffalo	2.4 size	4.5 speed	packAnimal	300 value	0.6 wildness	= ???
+									
+			float speed;
+			
+			//This would pass if the animal has an XML-defined bonus that we didn't apply, leave it alone
+			if (def.StatBaseDefined(StatDefOf.CaravanRidingSpeedFactor) && !defEditLedger.Contains(def.shortHash)) return;
+			//This would pass if mod options are changed, the mount is no longer rideable, and it was once given a bonus
+			else if (check && !mountableCache.Contains(def.shortHash) && defEditLedger.Contains(def.shortHash))
+			{
+				defEditLedger.Remove(def.shortHash);
+				speed = 1f;
+			}
+			//Give a the bonus
+			else if (giveCaravanSpeed)
+			{
+				defEditLedger.Add(def.shortHash);
+				speed = sizeFactor.Evaluate(def.race.baseBodySize) * 
+					speedFactor.Evaluate(def.GetStatValueAbstract(StatDefOf.MoveSpeed)) * 
+					valueFactor.Evaluate(def.BaseMarketValue) * 
+					wildnessFactor.Evaluate(def.race.wildness) * 
+					(def.race.packAnimal ? 1.1f : 0.95f);
+				if (speed < 1.00001f) speed = 1.00001f;
+			}
+			//Don't give a bonus and instead just set the value to be above 1f so the game thinks it's a rideable mount on the caravan UI, but low enough to render as 100%
+			else
+			{
+				defEditLedger.Remove(def.shortHash);
+				speed = speed = 1.00001f;
+			}
+			StatUtility.SetStatValueInList(ref def.statBases, StatDefOf.CaravanRidingSpeedFactor, speed);
+		}
+		static SimpleCurve sizeFactor = new SimpleCurve
+		{
+			{ new CurvePoint(1.2f, 0.9f) },
+			{ new CurvePoint(1.5f, 1f) },
+			{ new CurvePoint(2.4f, 1.15f) },
+			{ new CurvePoint(4f, 1.25f) }
+		};
+		static SimpleCurve speedFactor = new SimpleCurve
+		{
+			{ new CurvePoint(4.3f, 1f) },
+			{ new CurvePoint(5.8f, 1.2f) },
+			{ new CurvePoint(8f, 1.4f) }
+		};
+		static SimpleCurve valueFactor = new SimpleCurve
+		{
+			{ new CurvePoint(300f, 1f) },
+			{ new CurvePoint(550f, 1.15f) },
+			{ new CurvePoint(5000f, 1.3f) }
+		};
+		static SimpleCurve wildnessFactor = new SimpleCurve
+		{
+			{ new CurvePoint(0.2f, 1f) },
+			{ new CurvePoint(0.6f, 0.9f) },
+			{ new CurvePoint(1f, 0.85f) }
+		};
 	}
 	public class Mod_GiddyUp : Mod
 	{
@@ -281,6 +341,8 @@ namespace GiddyUp
 
 					options.Label("GU_Car_visitorMountChanceTribal_Title".Translate("0", "100", "33", visitorMountChancePreInd.ToString()), -1f, "GU_Car_visitorMountChanceTribal_Description".Translate());
 					visitorMountChancePreInd = (int)options.Slider(visitorMountChancePreInd, 0f, 100f);
+
+					options.CheckboxLabeled("GU_Car_GiveCaravanSpeed_Title".Translate(), ref giveCaravanSpeed, "GU_Car_GiveCaravanSpeed_Description".Translate());
 				}
 				
 				options.End();
@@ -359,6 +421,8 @@ namespace GiddyUp
 				else JobDriver_Mounted.allowedJobs.Remove(JobDefOf.Hunt);
 
 				if (offsetCache == null) Setup.ProcessPawnKinds(true);
+
+				if (giveCaravanSpeed) for (int i = 0; i < Setup.allAnimals.Length; i++) Setup.CalculateCaravanSpeed(Setup.allAnimals[i], true);
 			}
 			catch (System.Exception ex)
 			{
@@ -388,6 +452,7 @@ namespace GiddyUp
 			Scribe_Values.Look(ref battleMountsEnabled, "battleMountsEnabled", true);
 			Scribe_Values.Look(ref caravansEnabled, "caravansEnabled", true);
 			Scribe_Values.Look(ref noMountedHunting, "noMountedHunting");
+			Scribe_Values.Look(ref giveCaravanSpeed, "giveCaravanSpeed");
 			Scribe_Collections.Look(ref invertMountingRules, "invertMountingRules", LookMode.Value);
 			Scribe_Collections.Look(ref invertDrawRules, "invertDrawRules", LookMode.Value);
 			Scribe_Collections.Look(ref offsetCache, "offsetCache", LookMode.Value);
@@ -441,7 +506,12 @@ namespace GiddyUp
 			enemyMountChancePreInd = 33, 
 			visitorMountChance = 15, 
 			visitorMountChancePreInd = 33;
-		public static bool rideAndRollEnabled = true, battleMountsEnabled = true, caravansEnabled = true, noMountedHunting, logging;
+		public static bool rideAndRollEnabled = true, 
+			battleMountsEnabled = true,
+			caravansEnabled = true,
+			noMountedHunting,
+			logging,
+			giveCaravanSpeed;
 		public static HashSet<string> invertMountingRules, invertDrawRules; //These are only used on game start to setup the below, fast cache collections
 		public static HashSet<ushort> mountableCache, drawRulesCache;
 		public static string tabsHandler;

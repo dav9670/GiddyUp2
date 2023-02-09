@@ -53,9 +53,7 @@ namespace GiddyUpRideAndRoll.Harmony
 					if (isMovingToDismount && pather.nextCell == parkLoc && pawnData.mount != null)
 					{
 						var animal = pawnData.mount;
-						pawnData.Reset(); //TODO unify dismounting
-						pawnData.ReserveMount = null;
-						ExtendedDataStorage.GUComp[animal.thingIDNumber].reservedBy = null;
+						pawn.Dismount(animal, pawnData);
 
 						//Check if the animal should be hitched
 						if (AnimalPenUtility.NeedsToBeManagedByRope(animal))

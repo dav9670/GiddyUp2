@@ -2,16 +2,15 @@
 using System.Collections.Generic;
 using RimWorld.Planet;
 using Verse;
-using UnityEngine;
 using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUp
 {
     public class ExtendedDataStorage : WorldComponent, IExposable
     {
-        public static ExtendedDataStorage GUComp;
-        public static HashSet<int> isMounted = new HashSet<int>();
-        Dictionary<int, ExtendedPawnData> _store = new Dictionary<int, ExtendedPawnData>();
+        public static ExtendedDataStorage GUComp; //Singleton instance creaed on world init
+        public static HashSet<int> isMounted = new HashSet<int>(); //This just serves as a cached logic gate
+        Dictionary<int, ExtendedPawnData> _store = new Dictionary<int, ExtendedPawnData>(); //Pawn xData sorted via their thingID
         public ExtendedDataStorage(World world) : base(world) {}
 
         public override void FinalizeInit()
@@ -67,6 +66,20 @@ namespace GiddyUp
                 _store[pawnID] = newExtendedData;
                 return newExtendedData;
             }
+        }
+        //Only used for sanity check and cleanup
+        public bool ReverseLookup(int ID, out ExtendedPawnData pawnData)
+        {
+            foreach (var (key, value) in _store)
+            {
+                if (value.reservedBy?.thingIDNumber == ID)
+                {
+                    pawnData = value;
+                    return true;
+                }
+            }
+            pawnData = null;
+            return false;
         }
     }
 }

@@ -10,41 +10,16 @@ using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUp
 {
-	public class MountUtility
+	static class MountUtility
 	{
 		public static HashSet<PawnKindDef> allWildAnimals = new HashSet<PawnKindDef>(), allDomesticAnimals = new HashSet<PawnKindDef>();
 		public enum GiveJobMethod { Inject, Try, Instant, Think };
 		enum ListToUse { Local, Foreign, Domestic };
 		
-		//Centralized funnel for all the various mounting calls
-		public static ThinkResult? GiveMountJob(Pawn rider, Pawn animal, GiveJobMethod giveJobMethod = GiveJobMethod.Inject, ThinkResult? thinkResult = null, Job currentJob = null)
+		public static ThinkResult? GoMount(this Pawn rider, Pawn animal, GiveJobMethod giveJobMethod = GiveJobMethod.Inject, ThinkResult? thinkResult = null, Job currentJob = null)
 		{
 			//Immediately mount the pawn on the animal. This is done when the mount job finishes, or emulating that it has already finished such as when pawns come in pre-mounted
-			if (giveJobMethod == GiveJobMethod.Instant)
-			{
-				//First check if the pawn had a mount to begin with...
-				ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[rider.thingIDNumber];
-				if (animal == null) animal = pawnData.reservedMount;
-				
-				//If they did...
-				if (animal != null)
-				{
-					//Instantly mount, as if the mount jobdriver had just finished
-					pawnData.Mount = animal;
-					
-					//Set the animal job and state
-					if (animal.CurJob?.def != ResourceBank.JobDefOf.Mounted)
-					{
-						animal.mindState.duty = new PawnDuty(DutyDefOf.Defend);
-						if (animal.jobs == null) animal.jobs = new Pawn_JobTracker(animal);
-						animal.jobs.TryTakeOrderedJob(new Job(ResourceBank.JobDefOf.Mounted, rider) { count = 1});
-					}
-					
-					//Sanity check the xData
-					pawnData.ReserveMount = animal;
-					ExtendedDataStorage.GUComp[animal.thingIDNumber].reservedBy = rider;
-				}
-			}
+			if (giveJobMethod == GiveJobMethod.Instant) rider.Mount(animal);
 			//This prompts them to mount up before they carry out another job they were planning to do
 			else if (giveJobMethod == GiveJobMethod.Inject)
 			{
@@ -67,6 +42,74 @@ namespace GiddyUp
 			}
 			
 			return null;
+		}
+		static void Mount(this Pawn rider, Pawn animal)
+		{
+			//First check if the pawn had a mount to begin with...
+			ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[rider.thingIDNumber];
+			if (animal == null) animal = pawnData.reservedMount;
+			
+			//If they did...
+			if (animal != null)
+			{
+				//Instantly mount, as if the mount jobdriver had just finished
+				pawnData.mount = animal;
+				ExtendedDataStorage.isMounted.Add(rider.thingIDNumber);
+				
+				//Break ropes if there are any
+				if (animal.roping?.IsRoped ?? false) animal.roping.BreakAllRopes();
+
+				//Set the offset
+				pawnData.drawOffset = TextureUtility.FetchCache(animal);
+				
+				//Set the animal job and state
+				if (animal.CurJob?.def != ResourceBank.JobDefOf.Mounted)
+				{
+					animal.mindState.duty = new PawnDuty(DutyDefOf.Defend);
+					if (animal.jobs == null) animal.jobs = new Pawn_JobTracker(animal);
+					animal.jobs.TryTakeOrderedJob(new Job(ResourceBank.JobDefOf.Mounted, rider) { count = 1});
+				}
+				
+				//Sanity check the xData
+				pawnData.ReserveMount = animal;
+				ExtendedDataStorage.GUComp[animal.thingIDNumber].reservedBy = rider;
+			}
+		}
+		//[SyncMethod]
+		public static void Dismount(this Pawn rider, Pawn animal, ExtendedPawnData pawnData, bool animalShouldWait = false)
+		{
+			ExtendedDataStorage.isMounted.Remove(rider.thingIDNumber);
+			if (pawnData == null) pawnData = ExtendedDataStorage.GUComp[rider.thingIDNumber];
+			pawnData.mount = pawnData.reservedMount = null;
+
+			//Normally should not happens, come in null from sanity checks. Odd bugs or save/reload conflicts between version changes
+			if (animal == null)
+			{
+				if (ExtendedDataStorage.GUComp.ReverseLookup(rider.thingIDNumber, out ExtendedPawnData animalData)) animalData.reservedBy = null;
+				return; //Nothing left to do without an animal ref
+			}			
+			ExtendedDataStorage.GUComp[animal.thingIDNumber].reservedBy = null;
+
+			//Reset free locomotion
+			animal.Drawer.tweener = new PawnTweener(animal);
+			animal.pather.ResetToCurrentPosition();
+			
+			//Follow the rider for a while to give it an opportunity to take a ride back
+			if (animalShouldWait && Settings.rideAndRollEnabled)
+			{
+				bool isRoped = rider.roping != null && rider.roping.IsRoped;
+				if (!isRoped && !rider.Drafted && animal.Faction.def.isPlayer && pawnData.reservedBy != null && rider.GetCaravan() == null)
+				{
+					rider.jobs.jobQueue.EnqueueFirst(new Job(ResourceBank.JobDefOf.WaitForRider, pawnData.reservedBy)
+					{
+						expiryInterval = 10000,
+						checkOverrideOnExpire = true,
+						followRadius = 8,
+						locomotionUrgency = LocomotionUrgency.Walk
+					}
+					);
+				}
+			}
 		}
 		public static bool GenerateMounts(ref List<Pawn> list, IncidentParms parms)
 		{
@@ -184,52 +227,52 @@ namespace GiddyUp
 				animal.training.Train(TrainableDefOf.Obedience, pawn);
 
 				//Mount up
-				GiveMountJob(pawn, animal, GiveJobMethod.Instant);
+				pawn.GoMount(animal, GiveJobMethod.Instant);
 				list.Add(animal);
 			}
 			return true;
-		}
-		
-		static ListToUse DetermineList(float localWeight, float foreignWeight, int random)
-		{
-			if (random < foreignWeight) return ListToUse.Local;
-			else if (random >= localWeight && random < foreignWeight) return ListToUse.Foreign;
-			return ListToUse.Domestic;
-		}
-		static float AverageAnimalCommonality(BiomeDef biome)
-		{
-			float sum = 0;
-			float count = 0f;
-			foreach (PawnKindDef animalKind in biome.AllWildAnimals)
+
+			int GetMountChance(IncidentParms parms, int mountChance, int mountChancePreInd)
 			{
-				sum += biome.CommonalityOfAnimal(animalKind);
-				++count;
+				if (parms.faction == null) return -1;
+				if (parms.faction.def.techLevel < TechLevel.Industrial) return mountChancePreInd;
+				else if (parms.faction.def != FactionDefOf.Mechanoid) return mountChance;
+				return -1;
 			}
-			return sum / count;
-		}
-		static float CalculateCommonality(PawnKindDef def, BiomeDef biome, int pawnHandlingLevel, float averageCommonality = 0)
-		{
-			float commonality;
-			if (averageCommonality == 0) commonality = biome.CommonalityOfAnimal(def);
-			else commonality = averageCommonality;
+			ListToUse DetermineList(float localWeight, float foreignWeight, int random)
+			{
+				if (random < foreignWeight) return ListToUse.Local;
+				else if (random >= localWeight && random < foreignWeight) return ListToUse.Foreign;
+				return ListToUse.Domestic;
+			}
+			float AverageAnimalCommonality(BiomeDef biome)
+			{
+				float sum = 0;
+				float count = 0f;
+				foreach (PawnKindDef animalKind in biome.AllWildAnimals)
+				{
+					sum += biome.CommonalityOfAnimal(animalKind);
+					++count;
+				}
+				return sum / count;
+			}
+			float CalculateCommonality(PawnKindDef def, BiomeDef biome, int pawnHandlingLevel, float averageCommonality = 0)
+			{
+				float commonality;
+				if (averageCommonality == 0) commonality = biome.CommonalityOfAnimal(def);
+				else commonality = averageCommonality;
 
-			//minimal level to get bonus. 
-			pawnHandlingLevel = pawnHandlingLevel > 5 ? pawnHandlingLevel - 5 : 0;
+				//minimal level to get bonus. 
+				pawnHandlingLevel = pawnHandlingLevel > 5 ? pawnHandlingLevel - 5 : 0;
 
-			//Common animals more likely when pawns have low handling, and rare animals more likely when pawns have high handling.  
-			float commonalityAdjusted = commonality * ((15f - (float)commonality)) / 15f + (1 - commonality) * ((float)pawnHandlingLevel) / 15f;
-			//Wildness decreases the likelyhood of the mount being picked. Handling level mitigates this. 
-			float wildnessPenalty = 1 - (def.RaceProps.wildness * ((15f - (float)pawnHandlingLevel) / 15f));
+				//Common animals more likely when pawns have low handling, and rare animals more likely when pawns have high handling.  
+				float commonalityAdjusted = commonality * ((15f - (float)commonality)) / 15f + (1 - commonality) * ((float)pawnHandlingLevel) / 15f;
+				//Wildness decreases the likelyhood of the mount being picked. Handling level mitigates this. 
+				float wildnessPenalty = 1 - (def.RaceProps.wildness * ((15f - (float)pawnHandlingLevel) / 15f));
 
-			//Log.Message("name: " + def.defName + ", commonality: " + commonality + ", pawnHandlingLevel: " + pawnHandlingLevel + ", wildness: " + def.RaceProps.wildness + ", commonalityBonus: " + commonalityAdjusted + ", wildnessPenalty: " + wildnessPenalty + ", result: " + commonalityAdjusted * wildnessPenalty);
-			return commonalityAdjusted * wildnessPenalty;
-		}
-		static int GetMountChance(IncidentParms parms, int mountChance, int mountChancePreInd)
-		{
-			if (parms.faction == null) return -1;
-			if (parms.faction.def.techLevel < TechLevel.Industrial) return mountChancePreInd;
-			else if (parms.faction.def != FactionDefOf.Mechanoid) return mountChance;
-			return -1;
+				//Log.Message("name: " + def.defName + ", commonality: " + commonality + ", pawnHandlingLevel: " + pawnHandlingLevel + ", wildness: " + def.RaceProps.wildness + ", commonalityBonus: " + commonalityAdjusted + ", wildnessPenalty: " + wildnessPenalty + ", result: " + commonalityAdjusted * wildnessPenalty);
+				return commonalityAdjusted * wildnessPenalty;
+			}
 		}
 	}
 }
