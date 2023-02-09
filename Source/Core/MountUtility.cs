@@ -1,6 +1,5 @@
 using RimWorld;
 using RimWorld.Planet;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 //using Multiplayer.API;
@@ -20,12 +19,14 @@ namespace GiddyUp
 		{
 			//Immediately mount the pawn on the animal. This is done when the mount job finishes, or emulating that it has already finished such as when pawns come in pre-mounted
 			if (giveJobMethod == GiveJobMethod.Instant) rider.Mount(animal);
+			
 			//This prompts them to mount up before they carry out another job they were planning to do
 			else if (giveJobMethod == GiveJobMethod.Inject)
 			{
 				if (currentJob != null) rider.jobs?.jobQueue?.EnqueueFirst(currentJob);
 				if (thinkResult != null) return new ThinkResult(new Job(ResourceBank.JobDefOf.Mount, animal) {count = 1}, thinkResult.Value.SourceNode, thinkResult.Value.Tag, false);
 			}
+			
 			//This has them mount after they're done doing their current task
 			else if (giveJobMethod == GiveJobMethod.Try)
 			{
@@ -34,11 +35,11 @@ namespace GiddyUp
 				animal.pather.StopDead();
 				rider.jobs.TryTakeOrderedJob(new Job(ResourceBank.JobDefOf.Mount, animal) {count = 1});
 			}
-			//TODO: May be possible to merge this and Inject together
+			
+			//TODO: May be possible to merge this and Inject together. Also not quite working right. Only used by colonist caravan leaving
 			else if (giveJobMethod == GiveJobMethod.Think)
 			{
-				var job = new Job(ResourceBank.JobDefOf.Mount, animal) {count = 1};
-				rider.jobs?.StartJob(job, JobCondition.InterruptOptional, null, true, false);
+				rider.jobs?.StartJob(new Job(ResourceBank.JobDefOf.Mount, animal) {count = 1}, JobCondition.InterruptOptional, null, true, false);
 			}
 			
 			return null;
@@ -55,6 +56,8 @@ namespace GiddyUp
 				//Instantly mount, as if the mount jobdriver had just finished
 				pawnData.mount = animal;
 				ExtendedDataStorage.isMounted.Add(rider.thingIDNumber);
+				pawnData.ReserveMount = animal;
+				ExtendedDataStorage.GUComp[animal.thingIDNumber].reservedBy = rider;
 				
 				//Break ropes if there are any
 				if (animal.roping?.IsRoped ?? false) animal.roping.BreakAllRopes();
@@ -69,33 +72,68 @@ namespace GiddyUp
 					if (animal.jobs == null) animal.jobs = new Pawn_JobTracker(animal);
 					animal.jobs.TryTakeOrderedJob(new Job(ResourceBank.JobDefOf.Mounted, rider) { count = 1});
 				}
-				
-				//Sanity check the xData
-				pawnData.ReserveMount = animal;
-				ExtendedDataStorage.GUComp[animal.thingIDNumber].reservedBy = rider;
 			}
 		}
-		//[SyncMethod]
-		public static void Dismount(this Pawn rider, Pawn animal, ExtendedPawnData pawnData, bool animalShouldWait = false)
+		public static bool GoDismount(this Pawn rider, Pawn animal, GiveJobMethod giveJobMethod, IntVec3 target = default(IntVec3))
+		{
+			bool isGuest = !rider.Faction?.def.isPlayer ?? false;
+			Area areaFound = rider.Map.areaManager.GetLabeled(isGuest ? ResourceBank.DropAnimal_NPC_LABEL : ResourceBank.DROPANIMAL_LABEL);
+
+			IntVec3 targetLoc;
+			//Any dismount spots available?
+			if (areaFound?.innerGrid.TrueCount != 0) targetLoc = areaFound.GetClosestAreaLoc(target == default(IntVec3) ? rider.Position : target);
+			
+			//If not, use a pen?
+			else 
+			{
+				var pen = AnimalPenUtility.GetPenAnimalShouldBeTakenTo(rider, animal, out string failReason, true, true, false, true);
+				if (pen != null) targetLoc = AnimalPenUtility.FindPlaceInPenToStand(pen, rider);
+				else return false; //Neither a pen or spot available
+			}
+			//Can reach
+			if (rider.Map.reachability.CanReach(rider.Position, targetLoc, PathEndMode.OnCell, TraverseParms.For(TraverseMode.PassDoors, Danger.Deadly, false)))
+			{
+				rider.jobs.jobQueue.EnqueueFirst(new Job(ResourceBank.JobDefOf.Dismount, targetLoc) { count = 1});
+				return true;
+			}
+			else Messages.Message("GU_Car_NotReachable_DropAnimal_NPC_Message".Translate(), new RimWorld.Planet.GlobalTargetInfo(targetLoc, rider.Map), MessageTypeDefOf.NegativeEvent);
+
+			return false;
+		}
+		public static void Dismount(this Pawn rider, Pawn animal, ExtendedPawnData pawnData, bool clearReservation = false, bool animalShouldWait = false, IntVec3 parkLoc = default(IntVec3))
 		{
 			ExtendedDataStorage.isMounted.Remove(rider.thingIDNumber);
 			if (pawnData == null) pawnData = ExtendedDataStorage.GUComp[rider.thingIDNumber];
-			pawnData.mount = pawnData.reservedMount = null;
+			pawnData.mount = null;
+			if (clearReservation) pawnData.ReserveMount = null; //Guests keep their reservation
 
 			//Normally should not happens, come in null from sanity checks. Odd bugs or save/reload conflicts between version changes
 			if (animal == null)
 			{
 				if (ExtendedDataStorage.GUComp.ReverseLookup(rider.thingIDNumber, out ExtendedPawnData animalData)) animalData.reservedBy = null;
 				return; //Nothing left to do without an animal ref
-			}			
+			}
 			ExtendedDataStorage.GUComp[animal.thingIDNumber].reservedBy = null;
 
 			//Reset free locomotion
 			animal.Drawer.tweener = new PawnTweener(animal);
 			animal.pather.ResetToCurrentPosition();
 			
+			//========Post-dismount behavior======
+			//If this is a visitor's animal, kepe it from wandering off
+			if (!rider.Faction.def.isPlayer && animal.mindState.duty != null) animal.mindState.duty.focus = new LocalTargetInfo(animal.Position);
+			
+			//If the animal is being dismounted outside of a pen and it's a roamer, hitch it
+			if (AnimalPenUtility.NeedsToBeManagedByRope(animal) && AnimalPenUtility.GetCurrentPenOf(animal, true) == null &&
+				 (animal.roping == null || !animal.roping.IsRoped) && !animal.Position.CloseToEdge(animal.Map, 8))
+			{
+				if (animal.roping == null) animal.roping = new Pawn_RopeTracker(animal); //Not needed, but changes to modded animals could maybe cause issues
+				if (Settings.logging) Log.Message("[Giddy-Up] pawn " + rider.thingIDNumber.ToString() + " just roped " + animal.thingIDNumber);
+				animal.roping.RopeToSpot(parkLoc == default(IntVec3) ? animal.Position : parkLoc);
+			}
+			
 			//Follow the rider for a while to give it an opportunity to take a ride back
-			if (animalShouldWait && Settings.rideAndRollEnabled)
+			else if (animalShouldWait && Settings.rideAndRollEnabled)
 			{
 				bool isRoped = rider.roping != null && rider.roping.IsRoped;
 				if (!isRoped && !rider.Drafted && animal.Faction.def.isPlayer && pawnData.reservedBy != null && rider.GetCaravan() == null)
@@ -106,8 +144,7 @@ namespace GiddyUp
 						checkOverrideOnExpire = true,
 						followRadius = 8,
 						locomotionUrgency = LocomotionUrgency.Walk
-					}
-					);
+					});
 				}
 			}
 		}

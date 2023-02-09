@@ -43,7 +43,7 @@ namespace GiddyUp
             }
             else if (animal == pawnData.mount)
             {
-                Action action = delegate { pawn.Dismount(animal, pawnData); };
+                Action action = delegate { pawn.Dismount(animal, pawnData, true); };
                 opts.Add(new FloatMenuOption("GUC_Dismount".Translate(), action, MenuOptionPriority.High));
             }
         }

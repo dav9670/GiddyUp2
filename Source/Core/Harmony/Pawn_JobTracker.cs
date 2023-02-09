@@ -37,7 +37,7 @@ namespace GiddyUp.Harmony
 					if (pawnData.mount.CurJobDef != ResourceBank.JobDefOf.Mounted ||
 						(pawnData.mount.jobs.curDriver is JobDriver_Mounted driver && driver.Rider != pawn))
 					{
-						pawn.Dismount(null, pawnData);
+						pawn.Dismount(null, pawnData, true);
 					}
 				}
 				//If a hostile pawn owns an animal, make sure it mounts it whenever possible
@@ -290,31 +290,7 @@ namespace GiddyUp.Harmony
 				}
 				else if (lord.CurLordToil.GetType() == typeof(LordToil_DefendTraderCaravan) || lord.CurLordToil is LordToil_DefendPoint) //first option is internal class, hence this way of accessing. 
 				{
-					if (pawnData.mount != null)
-					{
-						ParkAnimal(jobTracker, pawn, pawnData);
-					}
-				}
-				
-				void ParkAnimal(Pawn_JobTracker pawnJobs, Pawn pawn, ExtendedPawnData pawnData)
-				{
-					Area areaFound = pawn.Map.areaManager.GetLabeled(ResourceBank.DropAnimal_NPC_LABEL);
-					IntVec3 targetLoc = pawn.Position;
-
-					if (areaFound != null && areaFound.innerGrid.TrueCount != 0)
-					{
-						targetLoc = DistanceUtility.GetClosestAreaLoc(pawn, areaFound);
-
-						if (pawn.Map.reachability.CanReach(pawn.Position, targetLoc, PathEndMode.OnCell, TraverseParms.For(TraverseMode.PassDoors, Danger.Deadly, false)))
-						{
-							pawnJobs.jobQueue.EnqueueFirst(new Job(ResourceBank.JobDefOf.Dismount) { count = 1});
-							pawnJobs.jobQueue.EnqueueFirst(new Job(JobDefOf.Goto, targetLoc));
-							PawnDuty animalDuty = pawnData.mount.mindState.duty;
-
-							if (animalDuty != null) animalDuty.focus = new LocalTargetInfo(targetLoc);
-						}
-						else Messages.Message("GU_Car_NotReachable_DropAnimal_NPC_Message".Translate(), new RimWorld.Planet.GlobalTargetInfo(targetLoc, pawn.Map), MessageTypeDefOf.NegativeEvent);
-					}
+					if (pawnData.mount != null) pawn.GoDismount(pawnData.mount, MountUtility.GiveJobMethod.Try);
 				}
 			}
 		}

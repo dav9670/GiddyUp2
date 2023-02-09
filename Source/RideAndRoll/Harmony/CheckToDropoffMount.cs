@@ -38,7 +38,7 @@ namespace GiddyUpRideAndRoll.Harmony
 			{
 				Toil toil = toils[i];
 				
-				//checkedToil makes sure the ActiveCells.Contains is only called once, preventing performance impact. 
+				//TODO: This all needs to be refactored into the GoDismount() method
 				toil.AddPreTickAction(delegate
 				{
 					var pather = toil.actor.pather;
@@ -52,16 +52,8 @@ namespace GiddyUpRideAndRoll.Harmony
 					//Pawn has taken animal to dropoff point, remove association
 					if (isMovingToDismount && pather.nextCell == parkLoc && pawnData.mount != null)
 					{
-						var animal = pawnData.mount;
-						pawn.Dismount(animal, pawnData);
-
-						//Check if the animal should be hitched
-						if (AnimalPenUtility.NeedsToBeManagedByRope(animal))
-						{
-							if (animal.roping == null) animal.roping = new Pawn_RopeTracker(pawn); //Not needed, but changes to modded animals could maybe cause issues
-							animal.roping.RopeToSpot(parkLoc);
-						}
-						pather.StartPath(originalLoc, PathEndMode.OnCell);
+						pawn.Dismount(pawnData.mount, pawnData, true, true, parkLoc);
+						pather.StartPath(originalLoc, PathEndMode.OnCell); //Resume original work
 					}
 				});
 			}
@@ -84,7 +76,7 @@ namespace GiddyUpRideAndRoll.Harmony
 		static bool TryParkAnimalDropSpot(Area areaDropAnimal, ref IntVec3 parkLoc, Pawn actor)
 		{
 			bool succeeded = false;
-			parkLoc = DistanceUtility.GetClosestAreaLoc(actor.pather.Destination.Cell, areaDropAnimal);
+			parkLoc = areaDropAnimal.GetClosestAreaLoc(actor.pather.Destination.Cell);
 			if (actor.Map.reachability.CanReach(actor.Position, parkLoc, PathEndMode.OnCell, TraverseParms.For(TraverseMode.PassDoors, Danger.Deadly, false)))
 			{
 				actor.pather.StartPath(parkLoc, PathEndMode.OnCell);

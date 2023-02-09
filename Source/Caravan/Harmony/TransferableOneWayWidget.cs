@@ -175,11 +175,10 @@ namespace GiddyUpCaravan.Harmony
         {
             if (animalData.reservedBy != null)
             {
-                ExtendedPawnData riderData = ExtendedDataStorage.GUComp[animalData.reservedBy.thingIDNumber];
-                riderData.ReserveMount = null;
+                ExtendedDataStorage.GUComp[animalData.reservedBy.thingIDNumber].ReserveMount = null;
             }
 
-            pawnData.reservedMount = animal;
+            pawnData.ReserveMount = animal;
             animalData.reservedBy = pawn;
 
             animalData.selectedForCaravan = true;

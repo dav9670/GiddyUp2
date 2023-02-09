@@ -52,7 +52,7 @@ namespace GiddyUp.Harmony
             //Failsafe. Should never happen but too dangerous to chance
             if (pawnData.mount == null)
             {
-                pawn.Dismount(null, pawnData);
+                pawn.Dismount(null, pawnData, true);
                 return Vector3.zero;
             }
             var offset = pawnData.mount.Drawer.DrawPos;

@@ -142,7 +142,7 @@ namespace GiddyUp.Jobs
 
 			toil.AddFinishAction(delegate
 			{
-				rider.Dismount(pawn, riderData, !interrupted);
+				if (riderData.mount != null) rider.Dismount(pawn, riderData, false, !interrupted);
 				isFinished = true;
 			});
 			

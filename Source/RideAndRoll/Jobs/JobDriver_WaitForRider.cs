@@ -92,7 +92,6 @@ namespace GiddyUpRideAndRoll.Jobs
         {
             ExtendedPawnData animalData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
             ExtendedPawnData riderData = ExtendedDataStorage.GUComp[animalData.reservedBy.thingIDNumber];
-            if (animalData.selectedForCaravan) return;
             riderData.ReserveMount = null;
             animalData.reservedBy = null;
         }

@@ -15,7 +15,7 @@ namespace GiddyUp
             }
             return job.GetTarget(index).Cell;
         }
-        public static IntVec3 GetClosestAreaLoc(IntVec3 sourceLocation, Area area)
+        public static IntVec3 GetClosestAreaLoc(this Area area, IntVec3 sourceLocation)
         {
             IntVec3 targetLoc = new IntVec3();
             float minDistance = float.MaxValue;
@@ -29,10 +29,6 @@ namespace GiddyUp
                 }
             }
             return targetLoc;
-        }
-        public static IntVec3 GetClosestAreaLoc(Pawn pawn, Area areaFound)
-        {
-            return GetClosestAreaLoc(pawn.Position, areaFound);
         }
         public static IntVec3 GetClosestPen(ref float workingNum, Map map, Pawn animal, Pawn rider, IntVec3 firstTarget, IntVec3 secondTarget)
         {

@@ -19,6 +19,7 @@
 					<li>AttackMelee</li> 
 					<li>AttackStatic</li> 
 					<li>Capture</li> 
+					<li>Dismount</li>
 					<li>DropEquipment</li> 
 					<li>EscortPrisonerToBed</li> 
 					<li>ExtinguishSelf</li> 

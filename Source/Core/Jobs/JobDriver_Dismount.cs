@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Verse;
 using Verse.AI;
 
 namespace GiddyUp.Jobs
@@ -13,19 +12,17 @@ namespace GiddyUp.Jobs
         }
         public override IEnumerable<Toil> MakeNewToils()
         {
-            yield return Dismount();
-        }
-        Toil Dismount()
-        {
-            Toil toil = new Toil();
-            toil.defaultCompleteMode = ToilCompleteMode.Never;
-            toil.initAction = delegate
+            yield return Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.OnCell);
+            yield return new Toil()
             {
-                Pawn mount = ExtendedDataStorage.GUComp[pawn.thingIDNumber].mount;
-                mount?.jobs.EndCurrentJob(JobCondition.InterruptForced);
-                ReadyForNextToil();
+                defaultCompleteMode = ToilCompleteMode.Never,
+                initAction = delegate
+                {
+                    var pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
+                    pawn.Dismount(pawnData.mount, pawnData, false, false, this.job.GetFirstTarget(TargetIndex.A));
+                    ReadyForNextToil();
+                }
             };
-            return toil;
         }
     }
 }
