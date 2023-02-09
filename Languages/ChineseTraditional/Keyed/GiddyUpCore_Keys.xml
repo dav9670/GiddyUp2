@@ -10,19 +10,19 @@
   <GUC_StatPart_HandlingMovementImpact>速度－等級影響</GUC_StatPart_HandlingMovementImpact>
   <GUC_StatPart_MountTypeMultiplier>騎獸類型－倍率</GUC_StatPart_MountTypeMultiplier>
 
-  <GUC_HandlingAccuracyImpact_Title>馴獸技能－射擊精度  （最小值：{0}% 最大值：{1}% 默認值：{2}% 當前值：{3}%）</GUC_HandlingAccuracyImpact_Title>
+  <GUC_HandlingAccuracyImpact_Title>馴獸技能－射擊精度  （範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</GUC_HandlingAccuracyImpact_Title>
   <GUC_HandlingAccuracyImpact_Description>如果騎手技能高/低於所需等級時，會有增益/減益。</GUC_HandlingAccuracyImpact_Description>
 
-  <GUC_HandlingMovementImpact_Title>馴獸等級－移動速度（最小值：{0}% 最大值：{1}% 默認值：{2}% 當前值：{3}%）</GUC_HandlingMovementImpact_Title>
+  <GUC_HandlingMovementImpact_Title>馴獸等級－移動速度（範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</GUC_HandlingMovementImpact_Title>
   <GUC_HandlingMovementImpact_Description>如果騎手技能高/低於所需等級時，會有增益/減益。</GUC_HandlingMovementImpact_Description>
 
-  <GUC_AccuracyPenalty_Title>騎乘射擊－減益（最小值：{0}% 最大值：{1}% 默認值：{2}% 當前值：{3}%）</GUC_AccuracyPenalty_Title>
+  <GUC_AccuracyPenalty_Title>騎乘射擊－減益（範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</GUC_AccuracyPenalty_Title>
   <GUC_AccuracyPenalty_Description>騎乘時，射擊精度受到的減益</GUC_AccuracyPenalty_Description>
 
-  <GUC_BodySizeFilter_Title>按體型篩選 （最小值：{0}% 最大值：{1}% 默認值：{2}% 當前值：{3}%）</GUC_BodySizeFilter_Title>
+  <GUC_BodySizeFilter_Title>按體型篩選 （範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</GUC_BodySizeFilter_Title>
   <GUC_BodySizeFilter_Description>按體型篩選可騎乘的動物</GUC_BodySizeFilter_Description>
 
-  <GUC_NotInModOptions>無法騎乘，在模組選中為無法騎乘</GUC_NotInModOptions>
+  <GUC_NotInModOptions>無法騎乘，在模組設置為無法騎乘</GUC_NotInModOptions>
   <GUC_AnimalBusy>無法騎乘，正在做其他事</GUC_AnimalBusy>
   <GUC_NotFullyGrown>無法騎乘，未完全長大</GUC_NotFullyGrown>
   <GUC_NeedsObedience>無法騎乘，沒有接受“服從”訓練</GUC_NeedsObedience>
@@ -32,7 +32,7 @@
 
   <GUC_Mountable_Tab>可騎乘</GUC_Mountable_Tab>
   <GUC_DrawBehavior_Tab>圖層</GUC_DrawBehavior_Tab>
-  <GUC_DrawBehavior_Description>勾選的動物，更改圖層渲染的優先級（優先於單位，使用於脖子長的物種）。</GUC_DrawBehavior_Description>
+  <GUC_DrawBehavior_Description>勾選的動物，更改圖層渲染的優先級（優先於單位，脖子長的動物建議勾選）。</GUC_DrawBehavior_Description>
 
   <GUC_Core_Tab>Core</GUC_Core_Tab>
   <GUC_RnR_Tab>Ride and Roll</GUC_RnR_Tab>

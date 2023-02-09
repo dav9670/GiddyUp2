@@ -2,10 +2,10 @@
 <LanguageData>
   <GU_Car_NotReachable_DropAnimal_NPC_Message>訪客無法到達坐騎釋放區，請確保所有的坐騎釋放區都可到達</GU_Car_NotReachable_DropAnimal_NPC_Message>
 
-  <GU_Car_visitorMountChance_Title>訪客－騎乘機率（最小值：{0}% 最大值：{1}% 默認值：{2}% 當前值：{3}%）</GU_Car_visitorMountChance_Title>
+  <GU_Car_visitorMountChance_Title>訪客－騎乘機率（範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</GU_Car_visitorMountChance_Title>
   <GU_Car_visitorMountChance_Description>訪客騎乘動物的機率。</GU_Car_visitorMountChance_Description>
 
-  <GU_Car_visitorMountChanceTribal_Title>部落訪客－騎乘機率 （最小值：{0}% 最大值：{1}% 默認值：{2}% 當前值：{3}%）</GU_Car_visitorMountChanceTribal_Title>
+  <GU_Car_visitorMountChanceTribal_Title>部落訪客－騎乘機率 （範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</GU_Car_visitorMountChanceTribal_Title>
   <GU_Car_visitorMountChanceTribal_Description>友好的部落人騎乘動物的機率</GU_Car_visitorMountChanceTribal_Description>
 
   <GU_Car_Designator_GU_DropAnimal_NPC_Clear_Label>刪除坐騎釋放區</GU_Car_Designator_GU_DropAnimal_NPC_Clear_Label>
