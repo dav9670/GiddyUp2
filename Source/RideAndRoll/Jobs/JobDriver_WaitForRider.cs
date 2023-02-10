@@ -13,51 +13,44 @@ namespace GiddyUpRideAndRoll.Jobs
             return true;
         }
 
-        public Pawn Followee {
+        public Pawn ReservedBy
+        {
             get
             {
-                if (TargetA.Thing is Pawn pawn){
-
-                    return pawn;
-                }
-                else
-                {
-                    return null;
-                }
+                if (TargetA.Thing is Pawn pawn) { return pawn; }
+                else { return null; }
             }
         }
         int moveInterval = Rand.Range(300, 1200);
-        JobDef initialJob;
+        JobDef initialJob; //Keep track of the pawn's job
 
         public override IEnumerable<Toil> MakeNewToils()
         {
-            this.FailOn(() => pawn.Map == null || this.Followee == null);
-            initialJob = Followee.CurJobDef;
-            Toil firstToil = new Toil {
-                initAction = delegate
-                {
-                    WalkRandomNearby();
-                }
-            };
-            firstToil.defaultCompleteMode = ToilCompleteMode.Instant;
-            yield return firstToil;
+            this.FailOn(() => pawn.Map == null || this.ReservedBy == null);
+            initialJob = ReservedBy.CurJobDef;
+            yield return new Toil { initAction = () => WalkRandomNearby(), defaultCompleteMode = ToilCompleteMode.Instant };
             Toil toil = new Toil
             {
                 tickAction = delegate
                 {
-                    if (this.Followee.Map == null ||
-                       this.Followee.Dead ||
-                       this.Followee.Downed ||
-                       this.Followee.InMentalState ||
-                       this.Followee.InBed() ||
-                       this.Followee.CurJobDef == GiddyUp.ResourceBank.JobDefOf.Mount ||
+                    var reservedBy = ReservedBy;
+                    if (reservedBy.Map == null ||
+                       reservedBy.Dead ||
+                       reservedBy.Downed ||
+                       reservedBy.InMentalState ||
+                       reservedBy.CurJobDef == ResourceBank.JobDefOf.Mount ||
+                       reservedBy.InBed() ||
                        pawn.health.HasHediffsNeedingTend() ||
                        (pawn.needs.food != null && pawn.needs.food.CurCategory >= HungerCategory.UrgentlyHungry) ||
-                       pawn.needs.rest != null && pawn.needs.rest.CurCategory >= RestCategory.VeryTired ||
-                       (this.Followee.GetRoom() != null && !(this.Followee.GetRoom().Role == GiddyUp.ResourceBank.RoomRoleDefOf.Barn || this.Followee.GetRoom().Role == RoomRoleDefOf.None)))//Don't allow animals to follow pawns inside
+                       (pawn.needs.rest != null && pawn.needs.rest.CurCategory >= RestCategory.VeryTired))
                     {
-                        this.EndJobWith(JobCondition.Succeeded);
-                        return;
+                        //One last check - if the animal is in a barn, they needn't wait.
+                        var room = pawn.GetRoom();
+                        if (room == null || room.Role == ResourceBank.RoomRoleDefOf.Barn)
+                        {
+                            this.EndJobWith(JobCondition.Succeeded);
+                            return;
+                        }
                     }   
                     
                     if (pawn.IsHashIntervalTick(moveInterval) && !this.pawn.pather.Moving)
@@ -65,7 +58,7 @@ namespace GiddyUpRideAndRoll.Jobs
                         WalkRandomNearby();
                         moveInterval = Rand.Range(300, 600);
                     }
-                    if (TimeUntilExpire(pawn.CurJob) < 10 && Followee.CurJobDef == initialJob)
+                    if (TimeUntilExpire(pawn.CurJob) < 10 && ReservedBy.CurJobDef == initialJob)
                     {
                         pawn.CurJob.expiryInterval += 1000;
                     }
@@ -74,13 +67,13 @@ namespace GiddyUpRideAndRoll.Jobs
             };
             toil.AddFinishAction(() =>
             {
-                if (this.Followee.CurJobDef != GiddyUp.ResourceBank.JobDefOf.Mount)
+                var reservedBy = ReservedBy;
+                if (reservedBy.CurJobDef != ResourceBank.JobDefOf.Mount)
                 {
-                    var pen = AnimalPenUtility.GetPenAnimalShouldBeTakenTo(this.Followee, this.pawn, out string failReason, true, true, false, true);
+                    var pen = AnimalPenUtility.GetPenAnimalShouldBeTakenTo(reservedBy, this.pawn, out string failReason, true);
                     if (pen != null)
                     {
-                        IntVec3 c = AnimalPenUtility.FindPlaceInPenToStand(pen, this.Followee);
-                        this.Followee.jobs.jobQueue.EnqueueFirst(new Job(JobDefOf.RopeToPen, this.pawn, c));
+                        reservedBy.jobs.jobQueue.EnqueueFirst(new Job(JobDefOf.RopeToPen, this.pawn, AnimalPenUtility.FindPlaceInPenToStand(pen, reservedBy)));
                     }
                 }
 
@@ -92,13 +85,17 @@ namespace GiddyUpRideAndRoll.Jobs
         {
             ExtendedPawnData animalData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
             ExtendedPawnData riderData = ExtendedDataStorage.GUComp[animalData.reservedBy.thingIDNumber];
-            riderData.ReserveMount = null;
-            animalData.reservedBy = null;
+            if (riderData.reservedMount == this.pawn) riderData.ReservedMount = null;
+            animalData.ReservedBy = null;
         }
         void WalkRandomNearby()
         {
-            IntVec3 target = RCellFinder.RandomWanderDestFor(Followee, this.Followee.Position, 8, ((Pawn p, IntVec3 loc, IntVec3 root) => true), Danger.Some);
-            this.pawn.pather.StartPath(target, PathEndMode.Touch);
+            var room = ReservedBy.GetRoom();
+            if (room == null || room.Role == RoomRoleDefOf.None)
+            {
+                IntVec3 target = RCellFinder.RandomWanderDestFor(ReservedBy, this.ReservedBy.Position, 8, ((Pawn p, IntVec3 loc, IntVec3 root) => true), Danger.Some);
+                this.pawn.pather.StartPath(target, PathEndMode.Touch);
+            }
         }
         int TimeUntilExpire(Job job)
         {

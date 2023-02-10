@@ -52,7 +52,7 @@ namespace GiddyUpRideAndRoll.Harmony
 					//Pawn has taken animal to dropoff point, remove association
 					if (isMovingToDismount && pather.nextCell == parkLoc && pawnData.mount != null)
 					{
-						pawn.Dismount(pawnData.mount, pawnData, true, true, parkLoc);
+						pawn.Dismount(pawnData.mount, pawnData, false, parkLoc);
 						pather.StartPath(originalLoc, PathEndMode.OnCell); //Resume original work
 					}
 				});

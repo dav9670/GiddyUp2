@@ -17,13 +17,22 @@ namespace GiddyUp
 		{
 			this.ID = ID;
 		}
-		public Pawn ReserveMount
+		public Pawn ReservedMount
 		{
 			set
 			{
 				if (Settings.logging && value == null) Log.Message("[Giddy-Up] pawn " + ID.ToString() + " no longer reserved to  " + (reservedMount?.thingIDNumber.ToString() ?? "NULL"));
 				else if (Settings.logging && value != null) Log.Message("[Giddy-Up] pawn " + ID.ToString() + " now reserved to  " + (value?.thingIDNumber.ToString() ?? "NULL"));
 				reservedMount = value;
+			}
+		}
+		public Pawn ReservedBy
+		{
+			set
+			{
+				if (Settings.logging && value == null) Log.Message("[Giddy-Up] animal " + ID.ToString() + " no longer reserved to  " + (reservedBy?.thingIDNumber.ToString() ?? "NULL"));
+				else if (Settings.logging && value != null) Log.Message("[Giddy-Up] animal " + ID.ToString() + " now reserved to  " + (value?.thingIDNumber.ToString() ?? "NULL"));
+				reservedBy = value;
 			}
 		}
 		public void ExposeData()

@@ -19,7 +19,7 @@ namespace GiddyUp.Jobs
                 initAction = delegate
                 {
                     var pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
-                    pawn.Dismount(pawnData.mount, pawnData, false, false, this.job.GetFirstTarget(TargetIndex.A));
+                    pawn.Dismount(pawnData.mount, pawnData, false, this.job.GetFirstTarget(TargetIndex.A));
                     ReadyForNextToil();
                 }
             };

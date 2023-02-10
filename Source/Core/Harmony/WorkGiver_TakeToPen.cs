@@ -10,12 +10,11 @@ namespace GiddyUp.Harmony
     {
         static bool Prefix(Thing t, Job __result)
         {
-            if (t is Pawn animal && ExtendedDataStorage.GUComp[animal.thingIDNumber].reservedBy != null)
+            if (t is Pawn animal && (animal.IsMountedAnimal() || animal.CurJobDef == ResourceBank.JobDefOf.WaitForRider))
             {
                 __result = null;
                 return false;
-            }
-            
+            }            
             return true;
         }
     }

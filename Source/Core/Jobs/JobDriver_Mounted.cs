@@ -59,7 +59,7 @@ namespace GiddyUp.Jobs
 
 			if (rider.Drafted || !pawn.Faction.def.isPlayer) return false;
 			
-			var riderJobDef = rider.CurJob?.def;
+			var riderJobDef = rider.CurJobDef;
 			
 			if (Settings.caravansEnabled)
 			{
@@ -103,7 +103,7 @@ namespace GiddyUp.Jobs
 					ReadyForNextToil();
 				}
 
-				var curJobDef = rider.CurJob?.def;
+				var curJobDef = rider.CurJobDef;
 				if (curJobDef != ResourceBank.JobDefOf.Mount && 
 					curJobDef != JobDefOf.Vomit && 
 					curJobDef != JobDefOf.Wait_MaintainPosture && 
@@ -142,7 +142,7 @@ namespace GiddyUp.Jobs
 
 			toil.AddFinishAction(delegate
 			{
-				if (riderData.mount != null) rider.Dismount(pawn, riderData, false, !interrupted);
+				if (riderData.mount != null) rider.Dismount(pawn, riderData, false);
 				isFinished = true;
 			});
 			

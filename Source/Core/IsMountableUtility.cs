@@ -15,7 +15,7 @@ namespace GiddyUp
 
 		public static bool IsMountedAnimal(this Pawn animal)
 		{
-			if (animal.CurJob == null || animal.CurJob.def != ResourceBank.JobDefOf.Mounted)
+			if (animal.CurJobDef != ResourceBank.JobDefOf.Mounted)
 			{
 				return false;
 			}
@@ -50,7 +50,7 @@ namespace GiddyUp
 			//Check animal's jobs to see if busy
 			if (checkState)
 			{
-				if (busyJobs.Contains(animal.CurJob?.def))
+				if (busyJobs.Contains(animal.CurJobDef))
 				{
 					reason = Reason.IsBusy;
 					return false;

@@ -8,7 +8,6 @@ using Verse.AI;
 namespace GiddyUpRideAndRoll.Harmony
 {
     [HarmonyPatch(typeof(Pawn), nameof(Pawn.GetGizmos))]
-    [HarmonyPriority(Priority.First)]
     public class Pawn_GetGizmos
     {
         static bool Prepare()
@@ -19,17 +18,14 @@ namespace GiddyUpRideAndRoll.Harmony
         {
             foreach (var value in values) yield return value;
             
-            if (__instance.jobs?.curJob?.def == GiddyUp.ResourceBank.JobDefOf.WaitForRider && __instance.def.race.Animal)
+            if (__instance.CurJobDef == GiddyUp.ResourceBank.JobDefOf.WaitForRider)
             {
                 yield return new Command_Action
                 {
                     defaultLabel = "GU_RR_Gizmo_LeaveRider_Label".Translate(),
                     defaultDesc = "GU_RR_Gizmo_LeaveRider_Description".Translate(),
                     icon = ContentFinder<Texture2D>.Get(("UI/" + "LeaveRider"), true),
-                    action = () =>
-                    {
-                        PawnEndCurrentJob(__instance);
-                    }
+                    action = () => PawnEndCurrentJob(__instance)
                 };
             }
         }

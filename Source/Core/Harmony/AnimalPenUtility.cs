@@ -13,7 +13,7 @@ namespace GiddyUpCaravan
         }
         static bool Postfix(bool __result, Pawn pawn)
         {
-            if (__result) return ExtendedDataStorage.GUComp[pawn.thingIDNumber].reservedBy == null;
+            if (__result) return !pawn.IsMountedAnimal();
             return __result;
         }
     }

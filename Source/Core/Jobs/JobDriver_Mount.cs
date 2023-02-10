@@ -2,7 +2,6 @@
 using Verse;
 using Verse.AI;
 using RimWorld;
-using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUp.Jobs
 {
@@ -45,7 +44,7 @@ namespace GiddyUp.Jobs
         Toil TalkToAnimal()
         {
             Toil toil = new Toil();
-            toil.AddFailCondition(delegate { return Mount.CurJob.def != ResourceBank.JobDefOf.Mounted; });
+            toil.AddFailCondition(delegate { return Mount?.CurJobDef != ResourceBank.JobDefOf.Mounted; });
             toil.initAction = delegate
             {
                 Pawn actor = toil.GetActor();
@@ -58,7 +57,7 @@ namespace GiddyUp.Jobs
             toil.defaultDuration = 150; //TODO tie into handling skill bonus
             toil.AddFinishAction(delegate
             {
-                this.pawn.GoMount(Mount, MountUtility.GiveJobMethod.Instant);
+                this.pawn?.GoMount(Mount, MountUtility.GiveJobMethod.Instant);
             });
             return toil;
         }

@@ -33,7 +33,7 @@ namespace GiddyUp.Harmony
                 {
                     if (current.caller != null) current.caller.Notify_Released();
 
-                    if (current.CurJob.def != ResourceBank.JobDefOf.Mounted) current.jobs.EndCurrentJob(JobCondition.InterruptForced, true);
+                    if (current.CurJobDef != ResourceBank.JobDefOf.Mounted) current.jobs.EndCurrentJob(JobCondition.InterruptForced, true);
                 }
             }
         }

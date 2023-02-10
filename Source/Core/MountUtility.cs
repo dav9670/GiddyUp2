@@ -56,8 +56,8 @@ namespace GiddyUp
 				//Instantly mount, as if the mount jobdriver had just finished
 				pawnData.mount = animal;
 				ExtendedDataStorage.isMounted.Add(rider.thingIDNumber);
-				pawnData.ReserveMount = animal;
-				ExtendedDataStorage.GUComp[animal.thingIDNumber].reservedBy = rider;
+				pawnData.ReservedMount = animal;
+				ExtendedDataStorage.GUComp[animal.thingIDNumber].ReservedBy = rider;
 				
 				//Break ropes if there are any
 				if (animal.roping?.IsRoped ?? false) animal.roping.BreakAllRopes();
@@ -100,22 +100,26 @@ namespace GiddyUp
 
 			return false;
 		}
-		public static void Dismount(this Pawn rider, Pawn animal, ExtendedPawnData pawnData, bool clearReservation = false, bool animalShouldWait = false, IntVec3 parkLoc = default(IntVec3))
+		public static void Dismount(this Pawn rider, Pawn animal, ExtendedPawnData pawnData, bool clearReservation = false, IntVec3 parkLoc = default(IntVec3))
 		{
 			ExtendedDataStorage.isMounted.Remove(rider.thingIDNumber);
 			if (pawnData == null) pawnData = ExtendedDataStorage.GUComp[rider.thingIDNumber];
 			pawnData.mount = null;
-			if (clearReservation) pawnData.ReserveMount = null; //Guests keep their reservation
 
 			//Normally should not happens, come in null from sanity checks. Odd bugs or save/reload conflicts between version changes
-			if (animal == null)
-			{
-				if (ExtendedDataStorage.GUComp.ReverseLookup(rider.thingIDNumber, out ExtendedPawnData animalData)) animalData.reservedBy = null;
-				return; //Nothing left to do without an animal ref
-			}
-			ExtendedDataStorage.GUComp[animal.thingIDNumber].reservedBy = null;
+			ExtendedPawnData animalData;
+			if (animal == null) ExtendedDataStorage.GUComp.ReverseLookup(rider.thingIDNumber, out animalData);
+			else animalData = ExtendedDataStorage.GUComp[animal.thingIDNumber];
 
+			//Reservation handling
+			if (clearReservation) 
+			{
+				pawnData.ReservedMount = null;
+				animalData.ReservedBy = null;
+			}
+			
 			//Reset free locomotion
+			if (animal == null) return; //We're done here
 			animal.Drawer.tweener = new PawnTweener(animal);
 			animal.pather.ResetToCurrentPosition();
 			
@@ -131,20 +135,21 @@ namespace GiddyUp
 				if (Settings.logging) Log.Message("[Giddy-Up] pawn " + rider.thingIDNumber.ToString() + " just roped " + animal.thingIDNumber);
 				animal.roping.RopeToSpot(parkLoc == default(IntVec3) ? animal.Position : parkLoc);
 			}
-			
 			//Follow the rider for a while to give it an opportunity to take a ride back
-			else if (animalShouldWait && Settings.rideAndRollEnabled)
+			if (Settings.rideAndRollEnabled)
 			{
-				bool isRoped = rider.roping != null && rider.roping.IsRoped;
-				if (!isRoped && !rider.Drafted && animal.Faction.def.isPlayer && pawnData.reservedBy != null && rider.GetCaravan() == null)
+				if ((animal.roping == null || !animal.roping.IsRoped) && !rider.Drafted && animal.Faction.def.isPlayer && animalData.reservedBy != null)
 				{
-					rider.jobs.jobQueue.EnqueueFirst(new Job(ResourceBank.JobDefOf.WaitForRider, pawnData.reservedBy)
+					if (animal.CurJobDef != ResourceBank.JobDefOf.Mounted || animal.jobs.curDriver is not Jobs.JobDriver_Mounted mountJob || !mountJob.interrupted)
 					{
-						expiryInterval = 10000,
-						checkOverrideOnExpire = true,
-						followRadius = 8,
-						locomotionUrgency = LocomotionUrgency.Walk
-					});
+						animal.jobs.jobQueue.EnqueueFirst(new Job(ResourceBank.JobDefOf.WaitForRider, animalData.reservedBy)
+						{
+							expiryInterval = 10000,
+							checkOverrideOnExpire = true,
+							followRadius = 8,
+							locomotionUrgency = LocomotionUrgency.Walk
+						});
+					}
 				}
 			}
 		}

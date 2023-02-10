@@ -16,7 +16,7 @@ namespace GiddyUp.Harmony
 	{    
 	   static bool Prefix(Pawn_JobTracker __instance)
 	   {
-			return __instance.curDriver == null || __instance.curDriver.pawn == null || __instance.curDriver.pawn.CurJob == null || __instance.curDriver.pawn.CurJob.def != ResourceBank.JobDefOf.Mounted;
+			return __instance.curDriver == null || __instance.curDriver.pawn == null || __instance.curDriver.pawn.CurJobDef != ResourceBank.JobDefOf.Mounted;
 	   }
 	}
 	
