@@ -12,9 +12,9 @@ namespace GiddyUp
             iconNoMountClear = ContentFinder<Texture2D>.Get("UI/GU_RR_Designator_GU_NoMount_Clear", true),
             iconNoMountExpand = ContentFinder<Texture2D>.Get("UI/GU_RR_Designator_GU_NoMount_Expand", true);
 
-        public const string DROPANIMAL_LABEL = "Gu_Area_DropMount", 
-            NOMOUNT_LABEL = "Gu_Area_NoMount",
-            DropAnimal_NPC_LABEL = "GU_Car_Area_GU_DropAnimal_NPC";
+        public const string VisitorAreaDropMount = "GU_Car_Area_GU_DropAnimal_NPC",
+            AreaDropMount = "Gu_Area_DropMount", 
+            AreaNoMount = "Gu_Area_NoMount";
 
         [DefOf]
         public class ConceptDefOf

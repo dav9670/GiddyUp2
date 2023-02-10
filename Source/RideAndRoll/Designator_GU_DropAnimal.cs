@@ -11,7 +11,7 @@ namespace GiddyUpRideAndRoll
             defaultLabel = "GU_RR_Designator_GU_DropAnimal_Clear_Label".Translate();
             defaultDesc = "GU_RR_Designator_GU_DropAnimal_Clear_Description".Translate();
             icon = GiddyUp.ResourceBank.iconDropAnimalClear;
-            areaLabel = GiddyUp.ResourceBank.DROPANIMAL_LABEL;
+            areaLabel = GiddyUp.ResourceBank.AreaDropMount;
         }
         public override void DesignateSingleCell(IntVec3 c)
         {
@@ -43,7 +43,7 @@ namespace GiddyUpRideAndRoll
             defaultLabel = "GU_RR_Designator_GU_DropAnimal_Expand_Label".Translate();
             defaultDesc = "GU_RR_Designator_GU_DropAnimal_Expand_Description".Translate();
             icon = GiddyUp.ResourceBank.iconDropAnimalExpand;
-            areaLabel = GiddyUp.ResourceBank.DROPANIMAL_LABEL;
+            areaLabel = GiddyUp.ResourceBank.AreaDropMount;
         }
         public override void DesignateSingleCell(IntVec3 c)
         {

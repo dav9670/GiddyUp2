@@ -2,6 +2,7 @@
 using GiddyUp;
 using HarmonyLib;
 using RimWorld;
+using RimWorld.Planet;
 using Verse;
 using Verse.AI;
 using System.Linq;
@@ -62,7 +63,17 @@ namespace GiddyUp.Harmony
 				}
 				else if (Settings.rideAndRollEnabled && pawn.Faction.def.isPlayer) TryAutoMount(__instance, ref __result, pawn);
 			}
-			if (Settings.caravansEnabled && !pawn.Faction.def.isPlayer) HandleVisitorsMounting(__instance, ref __result, pawn);
+			if (Settings.caravansEnabled && !pawn.Faction.def.isPlayer)
+			{
+				//Handle failsafe for roped animals belonging to invalid pawns
+				//TODO: Ensure logic, would this be a problem for quest animals you may rope?
+				if (pawn.roping != null && pawn.roping.IsRoped)
+				{
+					var owner = pawn.GetGUData().reservedBy;
+					if (owner == null || owner.Dead || !owner.Spawned) pawn.roping.BreakAllRopes();
+				}
+				HandleVisitorsMounting(__instance, ref __result, pawn);
+			}
 
 			//This is responsbile for the automount mechanic
 			void TryAutoMount(Pawn_JobTracker jobTracker, ref ThinkResult thinkResult, Pawn pawn)
@@ -110,8 +121,8 @@ namespace GiddyUp.Harmony
 				Lord lord = pawn.GetLord();
 				if (lord == null) return;
 				
-				var isAnimal = pawn.RaceProps.Animal;
-				if (isAnimal && thinkResult.SourceNode is JobGiver_Wander jobGiver_Wander && (lord.CurLordToil is LordToil_DefendPoint || lord.CurLordToil.GetType() == typeof(LordToil_DefendTraderCaravan)))
+				if (pawn.RaceProps.Animal && thinkResult.SourceNode is JobGiver_Wander jobGiver_Wander && 
+					(lord.CurLordToil is LordToil_DefendPoint || lord.CurLordToil.GetType() == typeof(LordToil_DefendTraderCaravan)))
 				{
 					jobGiver_Wander.wanderRadius = 5f; //TODO: is this really needed?
 				}

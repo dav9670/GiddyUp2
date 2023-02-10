@@ -24,9 +24,13 @@ namespace GiddyUp
 		}
 		public static bool IsEverMountable(this Pawn pawn)
 		{
-			return IsMountable(pawn, out Reason reason, null, false, false);
+			return IsEverMountable(pawn, out Reason reason);
 		}
-		public static bool IsMountable(this Pawn animal, out Reason reason, Pawn rider, bool checkState = true, bool checkFaction = false)
+		public static bool IsEverMountable(this Pawn pawn, out Reason reason)
+		{
+			return IsMountable(pawn, out reason, null, false, false, false);
+		}
+		public static bool IsMountable(this Pawn animal, out Reason reason, Pawn rider, bool checkState = true, bool checkFaction = false, bool checkTraining = true)
 		{
 			reason = Reason.CanMount;
 			//Is even an animal?
@@ -96,7 +100,7 @@ namespace GiddyUp
 				}
 			}
 			//Check training
-			if (animal.training == null || !animal.training.HasLearned(TrainableDefOf.Tameness))
+			if (checkTraining && (animal.training == null || !animal.training.HasLearned(TrainableDefOf.Tameness)))
 			{
 				reason = Reason.NeedsTraining;
 				return false;

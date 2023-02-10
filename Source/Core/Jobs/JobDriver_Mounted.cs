@@ -142,6 +142,7 @@ namespace GiddyUp.Jobs
 				}
 				pawn.Drawer.tweener = rider.Drawer.tweener; //Could probably just be set once, but reloading could cause issues?
 				pawn.Position = rider.Position;
+				pawn.Rotation = rider.Rotation;
 				TryAttackEnemy(rider);
 			};
 

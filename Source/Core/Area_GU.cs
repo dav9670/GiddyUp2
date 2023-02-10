@@ -56,8 +56,8 @@ namespace GiddyUp
             {
                 var area = list[i];
                 var label = area.Label;
-                if (label == GiddyUp.ResourceBank.NOMOUNT_LABEL) areaNoMount = area;
-                else if (label == GiddyUp.ResourceBank.DROPANIMAL_LABEL) areaDropAnimal = area;
+                if (label == ResourceBank.AreaNoMount) areaNoMount = area;
+                else if (label == ResourceBank.AreaDropMount) areaDropAnimal = area;
             }
             return areaNoMount != null;
         }

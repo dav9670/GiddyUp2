@@ -76,8 +76,9 @@ namespace GiddyUp
 		}
 		public static bool GoDismount(this Pawn rider, Pawn animal, GiveJobMethod giveJobMethod, IntVec3 target = default(IntVec3))
 		{
-			bool isGuest = !rider.Faction?.def.isPlayer ?? false;
-			Area areaFound = rider.Map.areaManager.GetLabeled(isGuest ? ResourceBank.DropAnimal_NPC_LABEL : ResourceBank.DROPANIMAL_LABEL);
+			if (animal == null) return false;
+			bool isGuest = animal.Faction == null || !animal.Faction.def.isPlayer;
+			Area areaFound = rider.Map.areaManager.GetLabeled(isGuest ? ResourceBank.VisitorAreaDropMount : ResourceBank.AreaDropMount);
 
 			IntVec3 targetLoc;
 			//Any dismount spots available?
@@ -214,19 +215,27 @@ namespace GiddyUp
 			foreignWeight /= totalWeight * 100f; //EG 20+10 = 30
 			foreignWeight += localWeight;
 			float averageCommonality = AverageAnimalCommonality(map.Biome);
-
+			
+			bool hasPackAnimals = list.GetPackAnimals(out List<Pawn> packAnimals);
 			var length = list.Count;
 			for (int i = 0; i < length; i++)
 			{
 				Pawn pawn = list[i];
-				PawnKindDef pawnKindDef = null;
-
 				if (!pawn.RaceProps.Humanlike || pawn.kindDef == PawnKindDefOf.Slave) continue;
 
 				int random = Rand.Range(1, 100);
 
+				PawnKindDef pawnKindDef;
+				Pawn animal;
 				CustomMounts modExtension = pawn.kindDef.GetModExtension<CustomMounts>();
-				if (modExtension != null)
+				if (hasPackAnimals)
+				{
+					animal = packAnimals.Pop();
+					animal.Position = pawn.Position; //Avoids the pop-in glitch
+					hasPackAnimals = packAnimals.Count != 0;
+					goto Spawned;
+				}
+				else if (modExtension != null)
 				{
 					if (modExtension.mountChance <= random) continue;
 
@@ -234,6 +243,7 @@ namespace GiddyUp
 					bool found = modExtension.possibleMounts.TryRandomElementByWeight((KeyValuePair<PawnKindDef, int> mount) => mount.Value, out KeyValuePair<PawnKindDef, int> selectedMount);
 					Rand.PopState();
 					if (found) pawnKindDef = selectedMount.Key;
+					else pawnKindDef = null;
 				}
 				else
 				{
@@ -262,16 +272,17 @@ namespace GiddyUp
 					if (Settings.logging) Log.Warning("[Giddy-Up] Could not find any suitable animal for " + pawn.thingIDNumber);
 					return false;
 				}
-				Pawn animal = PawnGenerator.GeneratePawn(pawnKindDef, parms.faction);
+				animal = PawnGenerator.GeneratePawn(pawnKindDef, parms.faction);
 				GenSpawn.Spawn(animal, pawn.Position, map, parms.spawnRotation);
+				list.Add(animal);
 
 				//Set their training
+				Spawned:
 				animal.playerSettings = new Pawn_PlayerSettings(animal);
 				animal.training.Train(TrainableDefOf.Obedience, pawn);
 
 				//Mount up
 				pawn.GoMount(animal, GiveJobMethod.Instant);
-				list.Add(animal);
 			}
 			return true;
 
@@ -444,6 +455,23 @@ namespace GiddyUp
 			}
 			bestanimal = null;
 			return false;
+		}
+		static bool GetPackAnimals(this List<Pawn> list, out List<Pawn> packAnimals)
+		{
+			packAnimals = new List<Pawn>();
+			if (list.NullOrEmpty()) return false;
+
+			var length = list.Count;
+			for (int i = 0; i < length; i++)
+			{
+				Pawn pawn = list[i];
+				if (pawn.IsEverMountable(out IsMountableUtility.Reason reason) && pawn.RaceProps.packAnimal && pawn.inventory != null && pawn.inventory.innerContainer.Count > 0)
+				{
+					packAnimals.Add(pawn);
+				}
+				else if (Settings.logging) Log.Message("[Giddy-Up] Skipping " + pawn.def.defName +"-"+ pawn.thingIDNumber.ToString() + ". Reason: " + reason.ToString());
+			}
+			return packAnimals.Count == 0 ? false : true;
 		}
 	}
 }
