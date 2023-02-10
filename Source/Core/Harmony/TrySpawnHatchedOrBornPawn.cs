@@ -11,8 +11,8 @@ namespace GiddyUp.Harmony
         {
             if (motherOrEgg is Pawn mother)
             {
-                var pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
-                var motherData = ExtendedDataStorage.GUComp[mother.thingIDNumber];
+                var pawnData = pawn.GetGUData();
+                var motherData = mother.GetGUData();
                 pawnData.automount = motherData.automount;
             }
         }

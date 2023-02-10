@@ -17,11 +17,10 @@ namespace GiddyUp.Harmony
             }
             Pawn pawn = eqt.pawn;
             if (pawn == null || pawn.stances == null) return __result;
-            Pawn mount = ExtendedDataStorage.GUComp[pawn.thingIDNumber].mount;
-            if (mount == null)
-            {
-                return __result;
-            }
+            
+            Pawn mount = pawn.GetGUData().mount;
+            if (mount == null) return __result;
+
             float adjustedLevel = 5;
             if (pawn.skills != null)
             {

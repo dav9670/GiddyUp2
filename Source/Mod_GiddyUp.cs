@@ -285,6 +285,9 @@ namespace GiddyUp
 					options.Label("GU_RR_MinAutoMountDistance_Title".Translate("0", "500", "16", minAutoMountDistance.ToString()), -1f, "GU_RR_MinAutoMountDistance_Description".Translate());
 					minAutoMountDistance = (int)options.Slider(minAutoMountDistance, 0f, 500f);
 
+					options.Label("GU_RR_AutoHitchDistance_Title".Translate("0", "200", "50", autoHitchDistance.ToString()), -1f, "GU_RR_AutoHitchDistance_Description".Translate());
+					autoHitchDistance = (int)options.Slider(autoHitchDistance, 0f, 200f);
+
 					options.CheckboxLabeled("GU_RR_NoMountedHunting_Title".Translate(), ref noMountedHunting, "GU_RR_NoMountedHunting_Description".Translate());
 					if (Prefs.DevMode) options.CheckboxLabeled("Enable dev mode logging", ref logging);
 				}
@@ -426,7 +429,7 @@ namespace GiddyUp
 			}
 			catch (System.Exception ex)
 			{
-				Log.Error("[Giddy-up] Error writing Giddy-up settings. Skipping...\n" + ex);   
+				Log.Error("[Giddy-Up] Error writing Giddy-Up settings. Skipping...\n" + ex);   
 			}
 			base.WriteSettings();
 		}   
@@ -447,6 +450,7 @@ namespace GiddyUp
 			Scribe_Values.Look(ref nonWildWeight, "nonWildWeight", 70);
 			Scribe_Values.Look(ref visitorMountChance, "visitorMountChance", 15);
 			Scribe_Values.Look(ref visitorMountChancePreInd, "visitorMountChancePreInd", 33);
+			Scribe_Values.Look(ref autoHitchDistance, "autoHitchThreshold", 50);
 			Scribe_Values.Look(ref tabsHandler, "tabsHandler");
 			Scribe_Values.Look(ref rideAndRollEnabled, "rideAndRollEnabled", true);
 			Scribe_Values.Look(ref battleMountsEnabled, "battleMountsEnabled", true);
@@ -505,7 +509,8 @@ namespace GiddyUp
 			enemyMountChance = 15, 
 			enemyMountChancePreInd = 33, 
 			visitorMountChance = 15, 
-			visitorMountChancePreInd = 33;
+			visitorMountChancePreInd = 33,
+			autoHitchDistance = 50;
 		public static bool rideAndRollEnabled = true, 
 			battleMountsEnabled = true,
 			caravansEnabled = true,

@@ -23,7 +23,7 @@ namespace GiddyUp.Harmony
             //If the owner of an NPC mount is downed, let the animal flee. Null checking the GUcomp 'cause this could happen before the world sets up.
             if (pawn.RaceProps.Humanlike && !pawn.Faction.def.isPlayer && ExtendedDataStorage.GUComp != null)
             {
-                ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
+                ExtendedPawnData pawnData = pawn.GetGUData();
                 if (pawnData.reservedMount != null && !pawnData.reservedMount.Dead && pawnData.reservedMount.Spawned)
                 {
                     pawnData.reservedMount.mindState.mentalStateHandler.TryStartMentalState(MentalStateDefOf.PanicFlee);
@@ -41,7 +41,7 @@ namespace GiddyUp.Harmony
             //If the owner of an NPC mount is downed, let the animal flee
             if (pawn.RaceProps.Humanlike && !pawn.Faction.def.isPlayer)
             {
-                ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
+                ExtendedPawnData pawnData = pawn.GetGUData();
                 if (pawnData.reservedMount != null && !pawnData.reservedMount.Dead && pawnData.reservedMount.Spawned)
                 {
                     pawnData.reservedMount.mindState.mentalStateHandler.TryStartMentalState(MentalStateDefOf.PanicFlee);

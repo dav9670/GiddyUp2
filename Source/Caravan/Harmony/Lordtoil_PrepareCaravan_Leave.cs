@@ -20,7 +20,7 @@ namespace GiddyUpCaravan.Harmony
             foreach (Pawn pawn in __instance.lord.ownedPawns)
             {
                 if (pawn.RaceProps.Animal) continue;
-                Pawn animal = ExtendedDataStorage.GUComp[pawn.thingIDNumber].reservedMount;
+                Pawn animal = pawn.GetGUData().reservedMount;
                 if (animal != null)
                 {
                     pawn.GoMount(animal, MountUtility.GiveJobMethod.Think);
@@ -33,7 +33,7 @@ namespace GiddyUpCaravan.Harmony
         {
             foreach (Pawn pawn in __instance.lord.ownedPawns.ToList())
             {
-                Pawn reservedMount = ExtendedDataStorage.GUComp[pawn.thingIDNumber].reservedMount;
+                Pawn reservedMount = pawn.GetGUData().reservedMount;
                 if (reservedMount == null) continue;
                 if (!__instance.lord.ownedPawns.Contains(reservedMount))
                 {

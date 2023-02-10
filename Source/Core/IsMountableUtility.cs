@@ -20,7 +20,7 @@ namespace GiddyUp
 				return false;
 			}
 			var rider = animal.jobs.curDriver.job.targetA.Thing;
-			return ExtendedDataStorage.isMounted.Contains(rider.thingIDNumber);
+			return rider.IsMounted();
 		}
 		public static bool IsEverMountable(this Pawn pawn)
 		{
@@ -101,7 +101,7 @@ namespace GiddyUp
 				reason = Reason.NeedsTraining;
 				return false;
 			}
-			//Can reserve?
+			//Can reserve? Null check as this may be a non-specific check like the UI
 			if (rider != null && !rider.CanReserve(animal))
 			{
 				reason = Reason.IsReserved;

@@ -9,6 +9,9 @@
 	<GU_RR_MinAutoMountDistanceFromAnimal_Title>Maximum distance from animal (Min: {0} Max: {1} Default: {2} Current: {3})</GU_RR_MinAutoMountDistanceFromAnimal_Title>
 	<GU_RR_MinAutoMountDistanceFromAnimal_Description>If the distance between a pawn and a mount is less than this threshold, they will consider riding it.</GU_RR_MinAutoMountDistanceFromAnimal_Description>
 	
+	<GU_RR_AutoHitchDistance_Title>Autohitch threshold (Min: {0} Max: {1} Default: {2} Current: {3})</GU_RR_AutoHitchDistance_Title>
+	<GU_RR_AutoHitchDistance_Description>A pawn will try to drop a mount off at a designated spot first. If the closest one from their destination is farther than this threshold, they will autohitch their mount instead.</GU_RR_AutoHitchDistance_Description>
+	
 	<GU_RR_Designator_GU_DropAnimal_Expand_Label>Place mount spot</GU_RR_Designator_GU_DropAnimal_Expand_Label> <!--Should be short-->
 	<GU_RR_Designator_GU_DropAnimal_Expand_Description>Pawns will use mount spots when riding an animal that does not need to be penned. If it does, they will just go to a nearby pen instead.</GU_RR_Designator_GU_DropAnimal_Expand_Description>
 	

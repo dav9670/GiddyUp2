@@ -18,8 +18,7 @@ namespace GiddyUp
             {
                 if (ExtendedDataStorage.isMounted.Contains(pawn.thingIDNumber))
                 {
-                    ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
-                    float mountSpeed = pawnData.mount.GetStatValue(StatDefOf.MoveSpeed);
+                    float mountSpeed = pawn.GetGUData().mount.GetStatValue(StatDefOf.MoveSpeed);
                     sb.AppendLine("GUC_StatPart_Mounted".Translate());
                     sb.AppendLine("    " + "GUC_StatPart_MountMoveSpeed".Translate() + ": " + mountSpeed.ToStringByStyle(ToStringStyle.FloatTwo));
                 }
@@ -54,18 +53,14 @@ namespace GiddyUp
             {
                 if (ExtendedDataStorage.isMounted.Contains(pawn.thingIDNumber))
                 {
-                    ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
-                    float mountSpeed = pawnData.mount.GetStatValue(StatDefOf.MoveSpeed);
-                    val = mountSpeed;
-                    return;
+                    val = pawn.GetGUData().mount.GetStatValue(StatDefOf.MoveSpeed);
                 }
-                if (pawn.jobs != null)
+                else if (pawn.jobs != null && pawn.jobs.curDriver is JobDriver_Mounted jdMounted)
                 {
-                    if (pawn.jobs.curDriver is JobDriver_Mounted jdMounted) val = GetRidingSpeed(val, pawn, jdMounted.Rider.skills);
-                    /// Set speed of mount so it always matches the speed of the pawn the animal is waiting for. 
-                    else if (ModSettings_GiddyUp.rideAndRollEnabled && pawn.jobs.curDriver is GiddyUpRideAndRoll.Jobs.JobDriver_WaitForRider jobDriver) val = jobDriver.ReservedBy.GetStatValue(StatDefOf.MoveSpeed);
+                    val = GetRidingSpeed(val, pawn, jdMounted.Rider.skills);
                 }
             }
+            return;
         }
         public static float GetRidingSpeed(float baseValue, Pawn animal, Pawn_SkillTracker skills)
         {

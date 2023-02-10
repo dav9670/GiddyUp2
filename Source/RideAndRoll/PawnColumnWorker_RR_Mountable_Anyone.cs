@@ -13,13 +13,13 @@ namespace GiddyUpRideAndRoll
         }
         public override bool GetValue(Pawn pawn)
         {
-            return ExtendedDataStorage.GUComp[pawn.thingIDNumber].automount;
+            return pawn.GetGUData().automount;
         }
 
         //[SyncMethod]
         public override void SetValue(Pawn pawn, bool value, PawnTable table)
         {
-            ExtendedDataStorage.GUComp[pawn.thingIDNumber].automount = value;
+            pawn.GetGUData().automount = value;
         }
     }
 }

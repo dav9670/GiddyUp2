@@ -14,7 +14,7 @@ namespace GiddyUp
         public static void AddMountingOptions(Pawn animal, Pawn pawn, List<FloatMenuOption> opts)
         {
             if (pawn.IsWorkTypeDisabledByAge(WorkTypeDefOf.Handling, out int ageNeeded)) return;
-            var pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
+            var pawnData = pawn.GetGUData();
             if (pawnData.mount == null)
             {
                 if (animal.IsMountable(out Reason reason, pawn, true, true))
@@ -27,7 +27,7 @@ namespace GiddyUp
                 }
                 else
                 {
-                    if (Settings.logging) Log.Message("[Giddy-up] " + pawn.Name.ToString() + " could not mount " + animal.thingIDNumber.ToString() + " because: " + reason.ToString());
+                    if (Settings.logging) Log.Message("[Giddy-Up] " + pawn.Name.ToString() + " could not mount " + animal.thingIDNumber.ToString() + " because: " + reason.ToString());
                     switch (reason)
                     {
                         case Reason.NotAnimal: return;

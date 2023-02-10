@@ -26,7 +26,7 @@ namespace GiddyUp.Harmony
                 {
                     Pawn pawn = thing as Pawn;
                     //dont return, blocking things can still be found
-                    return !(pawn.CurJob != null && pawn.CurJob.def == ResourceBank.JobDefOf.Mounted);
+                    return !(pawn.CurJobDef == ResourceBank.JobDefOf.Mounted);
                 }
             }
             return __result;

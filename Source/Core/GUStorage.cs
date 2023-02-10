@@ -1,0 +1,143 @@
+﻿using RimWorld;
+using System.Collections.Generic;
+using RimWorld.Planet;
+using Verse;
+using Settings = GiddyUp.ModSettings_GiddyUp;
+
+namespace GiddyUp
+{
+    static class StorageUtility
+    {
+        //Needs to be its own class as an extension
+        public static ExtendedPawnData GetGUData(this Pawn pawn)
+        {
+            //return ExtendedDataStorage.GUComp[pawn.thingIDNumber];
+            var _store = ExtendedDataStorage.GUComp._store;
+            int pawnID = pawn?.thingIDNumber ?? -1;
+            if (_store.TryGetValue(pawnID, out ExtendedPawnData data))
+            {
+                return data;
+            }
+            else if (pawnID == -1) Log.Warning("[Giddy-Up] Invalid pawnID sent.");
+
+            var newExtendedData = new ExtendedPawnData(pawnID);
+
+            _store[pawnID] = newExtendedData;
+            return newExtendedData;
+        }
+        public static bool IsMounted(this Thing pawn)
+        {
+            return ExtendedDataStorage.isMounted.Contains(pawn.thingIDNumber);
+        }
+    }
+    public class ExtendedDataStorage : WorldComponent, IExposable
+    {
+        public static ExtendedDataStorage GUComp; //Singleton instance creaed on world init
+        public static HashSet<int> isMounted = new HashSet<int>(); //This just serves as a cached logic gate
+        public Dictionary<int, ExtendedPawnData> _store = new Dictionary<int, ExtendedPawnData>(); //Pawn xData sorted via their thingID
+        public ExtendedDataStorage(World world) : base(world) {}
+
+        public override void FinalizeInit()
+        {
+            GUComp = this;
+            ExtendedDataStorage.isMounted = new HashSet<int>();
+
+            LessonAutoActivator.TeachOpportunity(ResourceBank.ConceptDefOf.GUC_Animal_Handling, OpportunityType.GoodToKnow);
+            //Remove alert
+            if (!Settings.rideAndRollEnabled)
+            {
+                try { Find.Alerts.AllAlerts.RemoveAll(x => x.GetType() == typeof(GiddyUpRideAndRoll.Alert_NoDropAnimal)); }
+                catch (System.Exception) { Log.Warning("[Giddy-Up] Failed to remove Alert_NoDropAnimal instance."); }
+            }
+
+            //BM
+            if (Settings.battleMountsEnabled)
+            {
+                LessonAutoActivator.TeachOpportunity(ResourceBank.ConceptDefOf.BM_Mounting, OpportunityType.GoodToKnow);
+                LessonAutoActivator.TeachOpportunity(ResourceBank.ConceptDefOf.BM_Enemy_Mounting, OpportunityType.GoodToKnow);
+            }
+        }
+        public override void ExposeData()
+        {
+            List<ExtendedPawnData> _extendedPawnDataWorkingList = new List<ExtendedPawnData>();
+            List<int> _idWorkingList = new List<int>();
+            
+            base.ExposeData();
+            Scribe_Collections.Look(ref _store, "store", LookMode.Value, LookMode.Deep, ref _idWorkingList, ref _extendedPawnDataWorkingList);
+            
+            //Validate data
+            if (Scribe.mode == LoadSaveMode.PostLoadInit)
+            {
+                var workingList = new List<int>();
+                foreach (var item in _store)
+                {
+                    if (item.Value == null || item.Value.ID == 0) workingList.Add(item.Key);
+                }
+                _store.RemoveAll(x => workingList.Contains(x.Key));
+            }
+        }
+        
+        //Only used for sanity check and cleanup
+        public bool ReverseLookup(int ID, out ExtendedPawnData pawnData)
+        {
+            foreach (var (key, value) in _store)
+            {
+                if (value.reservedBy?.thingIDNumber == ID)
+                {
+                    pawnData = value;
+                    return true;
+                }
+            }
+            pawnData = null;
+            return false;
+        }
+    }
+    public class ExtendedPawnData : IExposable
+	{
+		public int ID;
+		public Pawn mount;
+		public Pawn reservedMount, reservedBy; //Used by the rider and mount respectively. This creates a short-term association, like for example of a rider hops off for a few moments.
+		public bool selectedForCaravan = false;
+		public float drawOffset;
+		public bool automount = true;
+		
+		public ExtendedPawnData() { }
+		public ExtendedPawnData(int ID)
+		{
+			this.ID = ID;
+		}
+		public Pawn ReservedMount
+		{
+			set
+			{
+				if (Settings.logging && value == null) Log.Message("[Giddy-Up] pawn " + ID.ToString() + " no longer reserved to  " + (reservedMount?.thingIDNumber.ToString() ?? "NULL"));
+				else if (Settings.logging && value != null) Log.Message("[Giddy-Up] pawn " + ID.ToString() + " now reserved to  " + (value?.thingIDNumber.ToString() ?? "NULL"));
+				reservedMount = value;
+			}
+		}
+		public Pawn ReservedBy
+		{
+			set
+			{
+				if (Settings.logging && value == null) Log.Message("[Giddy-Up] animal " + ID.ToString() + " no longer reserved to  " + (reservedBy?.thingIDNumber.ToString() ?? "NULL"));
+				else if (Settings.logging && value != null) Log.Message("[Giddy-Up] animal " + ID.ToString() + " now reserved to  " + (value?.thingIDNumber.ToString() ?? "NULL"));
+				reservedBy = value;
+			}
+		}
+		public void ExposeData()
+		{
+			Scribe_References.Look(ref mount, "mount");
+			Scribe_References.Look(ref reservedBy, "reservedBy");
+			Scribe_References.Look(ref reservedMount, "reservedMount");
+			
+			Scribe_Values.Look(ref ID, "ID");
+			Scribe_Values.Look(ref automount, "automount", true);
+			Scribe_Values.Look(ref drawOffset, "drawOffset");
+			
+			if (Scribe.mode == LoadSaveMode.PostLoadInit)
+			{
+				if (mount != null) ExtendedDataStorage.isMounted.Add(ID);
+			}
+		}
+	}
+}

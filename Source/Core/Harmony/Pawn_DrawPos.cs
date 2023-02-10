@@ -47,7 +47,7 @@ namespace GiddyUp.Harmony
         public static Vector3 DrawOffset(Pawn_DrawTracker __instance)
         {
             Pawn pawn = __instance.pawn;
-            ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
+            ExtendedPawnData pawnData = pawn.GetGUData();
 
             //Failsafe. Should never happen but too dangerous to chance
             if (pawnData.mount == null)

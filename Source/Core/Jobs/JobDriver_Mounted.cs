@@ -14,7 +14,6 @@ namespace GiddyUp.Jobs
 		public Pawn Rider { get { return job.targetA.Thing as Pawn; } }
 		ExtendedPawnData riderData;
 		public bool interrupted = false;
-		bool isFinished = false;
 
 		public override IEnumerable<Toil> MakeNewToils()
 		{
@@ -27,9 +26,10 @@ namespace GiddyUp.Jobs
 			return true;
 		}
 		//This method is often responsible for why pawns dismount
-		bool ShouldCancelJob(ExtendedPawnData riderData)
+		enum DismountReason { False, Interrupted, BadState, LeftMap, NotSpawned, WrongMount, BadJob };
+		DismountReason ShouldDismount(ExtendedPawnData riderData)
 		{
-			if (interrupted || riderData == null || riderData.mount == null) return true;
+			if (interrupted || riderData == null || riderData.mount == null) return DismountReason.Interrupted;
 
 			Pawn rider = Rider;
 			var riderIsDead = rider.Dead;
@@ -39,7 +39,7 @@ namespace GiddyUp.Jobs
 				pawn.InMentalState || (rider.InMentalState && rider.MentalState.def != MentalStateDefOf.PanicFlee)
 			)
 			{
-				return true; //Down or dead?
+				return DismountReason.BadState;
 			}
 			if (!rider.Spawned)
 			{
@@ -47,20 +47,19 @@ namespace GiddyUp.Jobs
 				if (!riderIsColonist && !riderIsDead)
 				{
 					pawn.ExitMap(false, CellRect.WholeMap(base.Map).GetClosestEdge(this.pawn.Position));
-					return true; //No longer spawned?
+					return DismountReason.NotSpawned;
 				}
 				else if (riderIsColonist && rider.GetCaravan() != null)
 				{
 					pawn.ExitMap(true, CellRect.WholeMap(base.Map).GetClosestEdge(this.pawn.Position));
-					return true; //Left map?
+					return DismountReason.LeftMap;
 				}
-				else return true;
+				else return DismountReason.NotSpawned;
 			}
 
-			if (rider.Drafted || !pawn.Faction.def.isPlayer) return false;
+			if (rider.Drafted || !pawn.Faction.def.isPlayer) return DismountReason.False;
 			
 			var riderJobDef = rider.CurJobDef;
-			
 			if (Settings.caravansEnabled)
 			{
 				var riderMindstateDef = rider.mindState?.duty?.def;
@@ -69,18 +68,25 @@ namespace GiddyUp.Jobs
 					riderMindstateDef == DutyDefOf.PrepareCaravan_GatherAnimals || 
 					riderMindstateDef == DutyDefOf.PrepareCaravan_GatherDownedPawns)
 				{
-					return riderData.reservedMount != pawn;
+					return riderData.reservedMount == pawn ? DismountReason.False : DismountReason.WrongMount;
 				}
 				
-				if (rider.Position.CloseToEdge(rider.Map, 10)) return false; //Caravan just entered map and has not picked a job yet on this tick.
+				if (rider.Position.CloseToEdge(rider.Map, 10)) return DismountReason.False; //Caravan just entered map and has not picked a job yet on this tick.
 			}
 
 			//If the job is not on the whitelist...
+			/*
 			if (Settings.rideAndRollEnabled && riderJobDef != null && !allowedJobs.Contains(riderJobDef))
 			{
-				return true;
+				return DismountReason.BadJob;
 			}
-			return false;
+			*/
+			return DismountReason.False;
+		}
+		bool CheckReason(DismountReason dismountReason, out DismountReason reason)
+		{
+			reason = dismountReason;
+			return dismountReason != DismountReason.False;
 		}
 		Toil WaitForRider()
 		{
@@ -97,7 +103,7 @@ namespace GiddyUp.Jobs
 					return;
 				}
 
-				riderData = ExtendedDataStorage.GUComp[rider.thingIDNumber];
+				riderData = rider.GetGUData();
 				if (riderData.mount != null && riderData.mount == pawn)
 				{
 					ReadyForNextToil();
@@ -127,23 +133,22 @@ namespace GiddyUp.Jobs
 
 			toil.tickAction = delegate
 			{
-				if (isFinished) return;
-				riderData = ExtendedDataStorage.GUComp[rider.thingIDNumber];
-				if (ShouldCancelJob(riderData))
+				riderData = rider.GetGUData();
+				if (CheckReason(ShouldDismount(riderData), out DismountReason dismountReason))
 				{
+					if (Settings.logging) Log.Message("[Giddy-Up] Pawn " + pawn.thingIDNumber + " dismounting for reason: " + dismountReason.ToString());
 					ReadyForNextToil();
 					return;
 				}
-				pawn.Drawer.tweener = rider.Drawer.tweener;
+				pawn.Drawer.tweener = rider.Drawer.tweener; //Could probably just be set once, but reloading could cause issues?
 				pawn.Position = rider.Position;
 				TryAttackEnemy(rider);
-				pawn.Rotation = rider.Rotation;
 			};
 
 			toil.AddFinishAction(delegate
 			{
+				//Check mount first. If it's null then they must have dismounted outside the driver's control
 				if (riderData.mount != null) rider.Dismount(pawn, riderData, false);
-				isFinished = true;
 			});
 			
 			return toil;

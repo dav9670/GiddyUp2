@@ -18,7 +18,7 @@ namespace GiddyUp.Jobs
                 defaultCompleteMode = ToilCompleteMode.Never,
                 initAction = delegate
                 {
-                    var pawnData = ExtendedDataStorage.GUComp[pawn.thingIDNumber];
+                    var pawnData = pawn.GetGUData();
                     pawn.Dismount(pawnData.mount, pawnData, false, this.job.GetFirstTarget(TargetIndex.A));
                     ReadyForNextToil();
                 }

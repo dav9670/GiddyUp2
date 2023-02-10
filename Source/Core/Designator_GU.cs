@@ -5,7 +5,7 @@ using Verse;
 
 namespace GiddyUp
 {
-    //Is used in other Giddy-up mods as a base for simple areas that can be requested in the areamanager using their label
+    //Is used in other Giddy-Up mods as a base for simple areas that can be requested in the areamanager using their label
     public class Designator_GU : Designator
     {    
         protected Area selectedArea;

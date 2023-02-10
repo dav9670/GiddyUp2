@@ -47,7 +47,7 @@ namespace GiddyUp
 		static void Mount(this Pawn rider, Pawn animal)
 		{
 			//First check if the pawn had a mount to begin with...
-			ExtendedPawnData pawnData = ExtendedDataStorage.GUComp[rider.thingIDNumber];
+			ExtendedPawnData pawnData = rider.GetGUData();
 			if (animal == null) animal = pawnData.reservedMount;
 			
 			//If they did...
@@ -57,7 +57,7 @@ namespace GiddyUp
 				pawnData.mount = animal;
 				ExtendedDataStorage.isMounted.Add(rider.thingIDNumber);
 				pawnData.ReservedMount = animal;
-				ExtendedDataStorage.GUComp[animal.thingIDNumber].ReservedBy = rider;
+				animal.GetGUData().ReservedBy = rider;
 				
 				//Break ropes if there are any
 				if (animal.roping?.IsRoped ?? false) animal.roping.BreakAllRopes();
@@ -103,13 +103,14 @@ namespace GiddyUp
 		public static void Dismount(this Pawn rider, Pawn animal, ExtendedPawnData pawnData, bool clearReservation = false, IntVec3 parkLoc = default(IntVec3))
 		{
 			ExtendedDataStorage.isMounted.Remove(rider.thingIDNumber);
-			if (pawnData == null) pawnData = ExtendedDataStorage.GUComp[rider.thingIDNumber];
+			if (pawnData == null) pawnData = rider.GetGUData();
 			pawnData.mount = null;
+			if (Settings.logging) Log.Message("[Giddy-Up] pawn " + rider.thingIDNumber.ToString() + " no longer riding  " + (animal?.thingIDNumber.ToString() ?? "NULL"));
 
 			//Normally should not happens, come in null from sanity checks. Odd bugs or save/reload conflicts between version changes
 			ExtendedPawnData animalData;
 			if (animal == null) ExtendedDataStorage.GUComp.ReverseLookup(rider.thingIDNumber, out animalData);
-			else animalData = ExtendedDataStorage.GUComp[animal.thingIDNumber];
+			else animalData = animal.GetGUData();
 
 			//Reservation handling
 			if (clearReservation) 
@@ -258,7 +259,7 @@ namespace GiddyUp
 				//Validate and spawn
 				if (pawnKindDef == null) 
 				{
-					if (Settings.logging) Log.Warning("[Giddy-up] Could not find any suitable animal for " + pawn.thingIDNumber);
+					if (Settings.logging) Log.Warning("[Giddy-Up] Could not find any suitable animal for " + pawn.thingIDNumber);
 					return false;
 				}
 				Pawn animal = PawnGenerator.GeneratePawn(pawnKindDef, parms.faction);
@@ -315,6 +316,134 @@ namespace GiddyUp
 				//Log.Message("name: " + def.defName + ", commonality: " + commonality + ", pawnHandlingLevel: " + pawnHandlingLevel + ", wildness: " + def.RaceProps.wildness + ", commonalityBonus: " + commonalityAdjusted + ", wildnessPenalty: " + wildnessPenalty + ", result: " + commonalityAdjusted * wildnessPenalty);
 				return commonalityAdjusted * wildnessPenalty;
 			}
+		}
+		//Gets animal that'll get the pawn to the target the quickest. Returns null if no animal is found or if walking is faster. 
+		public static bool GetBestAnimal(Pawn pawn, out Pawn bestanimal, IntVec3 firstTarget, IntVec3 secondTarget, float pawnTargetDistance, float firstToSecondTargetDistance)
+		{
+			//Prepare locals
+			float pawnWalkSpeed = pawn.GetStatValue(StatDefOf.MoveSpeed);
+			float timeNormalWalking = (pawnTargetDistance + firstToSecondTargetDistance) / pawnWalkSpeed;
+			ExtendedPawnData pawnData = pawn.GetGUData();
+			bool firstTargetInForbiddenArea = false;
+			bool secondTargetInForbiddenArea = false;
+			Map map = pawn.Map;
+			Area_GU.GetGUAreasFast(map, out Area areaNoMount, out Area areaDropAnimal);
+
+			//This notes that the first destination is in a no-ride zone
+			IntVec3[] areaDropCache = new IntVec3[0];
+			if (areaNoMount != null && areaDropAnimal != null)
+			{
+				firstTargetInForbiddenArea = areaNoMount.innerGrid[map.cellIndices.CellToIndex(firstTarget)];
+				secondTargetInForbiddenArea = secondTarget.y >= 0 && areaNoMount.innerGrid[map.cellIndices.CellToIndex(secondTarget)];
+				areaDropCache = areaDropAnimal.ActiveCells.ToArray();
+			}
+
+			//Start looking for an animal
+			Pawn closestAnimal = null;
+			float timeBestRiding = float.MaxValue;
+			float distanceBestRiding = float.MaxValue;
+			var list = map.mapPawns.pawnsSpawned;
+			var length = list.Count;
+			for (int i = 0; i < length; i++)
+			{
+				Pawn animal = list[i];
+
+				if (!animal.IsMountable(out IsMountableUtility.Reason reason, pawn, true, true)) 
+				{
+					if (Settings.logging) Log.Message("[Giddy-Up] Pawn " + pawn.Name.ToString() + " will not ride " + animal.thingIDNumber + " because: " + reason.ToString());
+					continue;
+				}
+			
+				ExtendedPawnData animalData = animal.GetGUData();
+				if (!animalData.automount) continue; //Disallowed
+
+
+				//TODO: Cache the dropoff calculations somehow
+				#region CalculateTime
+				float distanceRiding = 0f;
+				var animalPos = animal.Position;
+				float distancePawnToAnimal = pawn.Position.DistanceTo(animalPos);
+				
+				bool needsPen = (firstTargetInForbiddenArea || secondTargetInForbiddenArea) && (areaNoMount == null || AnimalPenUtility.NeedsToBeManagedByRope(animal));
+				IntVec3 firstDropOffPoint = IntVec3.Zero;
+				/*
+				if (firstTargetInForbiddenArea)
+				{
+					float workingNum = float.MaxValue;
+					if (needsPen)
+					{
+						firstDropOffPoint = DistanceUtility.GetClosestPen(ref workingNum, map, animal, pawn, animalPos, firstTarget);
+					}
+					else if (areaNoMount != null)
+					{
+						firstDropOffPoint = DistanceUtility.GetClosestDropoffPoint(ref workingNum, areaDropCache, animalPos, firstTarget);
+					}
+					distanceRiding = workingNum;
+				}
+				*/
+				distanceRiding += animalPos.DistanceTo(firstTarget);
+
+				/*
+				if (secondTargetInForbiddenArea)
+				{
+					//This assumes that the pawn will go from their pickup point, back to the firt drop off point to return to their animal.
+					if (firstDropOffPoint != IntVec3.Zero) distanceRiding += firstTarget.DistanceTo(firstDropOffPoint);
+					
+					float workingNum = float.MaxValue;
+					if (needsPen)
+					{
+						DistanceUtility.GetClosestPen(ref workingNum, map, animal, pawn, firstTarget, secondTarget);
+					}
+					else if (areaNoMount != null)
+					{
+						DistanceUtility.GetClosestDropoffPoint(ref workingNum, areaDropCache, firstTarget, secondTarget);
+					}
+					distanceRiding += workingNum;
+				}
+				*/
+				distanceRiding += firstToSecondTargetDistance;
+
+				distanceRiding *= 1.05f; //Unassurance compensation due to their being more variables and moving parts, data may become stale by the time the pawn arrives
+				
+				var animalMountedSpeed = StatPart_Riding.GetRidingSpeed(animal.GetStatValue(StatDefOf.MoveSpeed), animal, pawn.skills);
+
+				float timeNeededForThisMount = (distancePawnToAnimal / pawnWalkSpeed) + (distanceRiding / animalMountedSpeed);
+				#endregion
+
+				
+				if (timeNeededForThisMount < timeBestRiding)
+				{
+					closestAnimal = animal;
+					timeBestRiding = timeNeededForThisMount;
+					distanceBestRiding = distanceRiding; //Only used for logging
+				}
+			}
+			
+			if (Settings.logging)
+			{
+				if (closestAnimal == null) Log.Message("[Giddy-Up] " + (pawn.Name?.ToString() ?? "NULL") + " tried to find an animal but couldn't fnid any.");
+				else Log.Message("[Giddy-Up] report for " + (pawn.Name?.ToString() ?? "NULL") + ":\n" +
+				"Animal: " + (closestAnimal.Name?.ToString() ?? closestAnimal.thingIDNumber.ToString()) + "\n" +
+				"First target: " + (firstTarget.ToString()) + "\n" + 
+				"Second target: " + (secondTarget.ToString()) + "\n" + 
+				"Normal walking speed: " + ((int)(pawnWalkSpeed)).ToString() + "\n" + 
+				"Normal walking distance: " + ((int)(pawnTargetDistance + firstToSecondTargetDistance)).ToString() + "\n" + 
+				"Normal walking time: " + ((int)timeNormalWalking).ToString() + "\n" + 
+				"Distance to animal: " + ((int)pawn.Position.DistanceTo(closestAnimal.Position)).ToString() + "\n" + 
+				"Ride distance: " + ((int)distanceBestRiding).ToString()  + "\n" + 
+				"Ride speed: " + ((int)StatPart_Riding.GetRidingSpeed(closestAnimal.GetStatValue(StatDefOf.MoveSpeed), closestAnimal, pawn.skills)).ToString() + "\n" +
+				"Ride time: " + ((int)((pawn.Position.DistanceTo(closestAnimal.Position) / pawnWalkSpeed) + 
+					(distanceBestRiding / StatPart_Riding.GetRidingSpeed(closestAnimal.GetStatValue(StatDefOf.MoveSpeed), closestAnimal, pawn.skills)))).ToString()
+				);
+			}
+
+			if (timeBestRiding < timeNormalWalking)
+			{
+				bestanimal = closestAnimal;
+				return true;
+			}
+			bestanimal = null;
+			return false;
 		}
 	}
 }
