@@ -134,8 +134,7 @@ namespace GiddyUp.Harmony
 				}
 
 				var job = thinkResult.Job;
-				LocalTargetInfo target = job.GetFirstTarget(TargetIndex.A);
-				if (!target.IsValid) return;
+				if (!job.GetFirstTarget(TargetIndex.A).IsValid) return;
 
 				if (job.def == ResourceBank.JobDefOf.Dismount || job.def == ResourceBank.JobDefOf.Mount)
 				{
@@ -161,7 +160,13 @@ namespace GiddyUp.Harmony
 				}
 				else if (lord.CurLordToil.GetType() == typeof(LordToil_DefendTraderCaravan) || lord.CurLordToil is LordToil_DefendPoint) //first option is internal class, hence this way of accessing. 
 				{
-					if (pawnData.mount != null) pawn.GoDismount(pawnData.mount, MountUtility.GiveJobMethod.Try);
+					if (pawnData.mount != null) 
+					{
+						//Dismount on-the-top if it's a pack animal, the guards want to keep it nearby
+						if (pawnData.mount.inventory != null && pawnData.mount.inventory.innerContainer.Count > 0) pawn.Dismount(pawnData.mount, pawnData);
+						//Other animals go to the assigned dismount spot.
+						else pawn.GoDismount(pawnData.mount, MountUtility.GiveJobMethod.Try);
+					}
 				}
 			}
 		}

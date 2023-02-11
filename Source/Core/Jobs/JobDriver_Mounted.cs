@@ -165,7 +165,7 @@ namespace GiddyUp.Jobs
 				targetThing = rider.TargetCurrentlyAimingAt.Thing;
 			}
 			//The rider is already trying to attack something
-			else if (rider.CurJob?.def == JobDefOf.AttackMelee && rider.CurJob.targetA.Thing.HostileTo(rider))
+			else if (rider.CurJobDef == JobDefOf.AttackMelee && rider.CurJob.targetA.Thing.HostileTo(rider))
 			{
 				targetThing = rider.CurJob.targetA.Thing;
 				confirmedHostile = true;

@@ -14,9 +14,24 @@ namespace GiddyUp.Harmony
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
             var label = generator.DefineLabel();
+            bool labelNext = false;
             foreach (var code in instructions)
             {
-                if (code.opcode == OpCodes.Ret)
+                if (!labelNext && code.opcode == OpCodes.Call && code.OperandIs(AccessTools.Method(typeof(GenMapUI), nameof(GenMapUI.DrawPawnLabel), new System.Type[]
+                {
+                    typeof(Pawn), 
+                    typeof(Vector2),
+                    typeof(float), 
+                    typeof(float), 
+                    typeof(Dictionary<string, string>), 
+                    typeof(GameFont),
+                    typeof(bool),
+                    typeof(bool)
+                })))
+                {
+                    labelNext = true;
+                }
+                else if (labelNext)
                 {
                     code.labels.Add(label);
                     break;

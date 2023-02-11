@@ -66,10 +66,9 @@ namespace GiddyUp
 				pawnData.drawOffset = TextureUtility.FetchCache(animal);
 				
 				//Set the animal job and state
-				if (animal.CurJob?.def != ResourceBank.JobDefOf.Mounted)
+				if (animal.CurJobDef != ResourceBank.JobDefOf.Mounted)
 				{
-					animal.mindState.duty = new PawnDuty(DutyDefOf.Defend);
-					if (animal.jobs == null) animal.jobs = new Pawn_JobTracker(animal);
+					if (animal.HostileTo(Current.gameInt.worldInt.factionManager.ofPlayer)) animal.mindState.duty = new PawnDuty(DutyDefOf.Defend);
 					animal.jobs.TryTakeOrderedJob(new Job(ResourceBank.JobDefOf.Mounted, rider) { count = 1});
 				}
 			}
@@ -82,7 +81,7 @@ namespace GiddyUp
 
 			IntVec3 targetLoc;
 			//Any dismount spots available?
-			if (areaFound?.innerGrid.TrueCount != 0) targetLoc = areaFound.GetClosestAreaLoc(target == default(IntVec3) ? rider.Position : target);
+			if (areaFound != null && areaFound.innerGrid.TrueCount > 0) targetLoc = areaFound.GetClosestAreaLoc(target == default(IntVec3) ? rider.Position : target);
 			
 			//If not, use a pen?
 			else 
@@ -130,8 +129,10 @@ namespace GiddyUp
 			if (!rider.Faction.def.isPlayer && animal.mindState.duty != null) animal.mindState.duty.focus = new LocalTargetInfo(animal.Position);
 			
 			//If the animal is being dismounted outside of a pen and it's a roamer, hitch it
-			if (AnimalPenUtility.NeedsToBeManagedByRope(animal) && AnimalPenUtility.GetCurrentPenOf(animal, true) == null &&
-				 (animal.roping == null || !animal.roping.IsRoped) && !animal.Position.CloseToEdge(animal.Map, 8))
+			if (AnimalPenUtility.NeedsToBeManagedByRope(animal) && AnimalPenUtility.GetCurrentPenOf(animal, true) == null && //Needs to be roped and not already penned?
+				 (animal.roping == null || !animal.roping.IsRoped) && //Skip already roped
+				 !animal.Position.CloseToEdge(animal.Map, 8) && //Skip pawns near the map edge. They may be entering/exiting the map which triggers dismount calls
+				 (animal.Faction.def.isPlayer && animal.inventory != null && animal.inventory.innerContainer.Count == 0)) //Skip guest caravan pack animals
 			{
 				if (animal.roping == null) animal.roping = new Pawn_RopeTracker(animal); //Not needed, but changes to modded animals could maybe cause issues
 				if (Settings.logging) Log.Message("[Giddy-Up] pawn " + rider.thingIDNumber.ToString() + " just roped " + animal.thingIDNumber);
@@ -168,55 +169,25 @@ namespace GiddyUp
 			}
 
 			int mountChance = Settings.enemyMountChance;
-			int mountChancePreInd = Settings.enemyMountChancePreInd;
 			float domesticWeight = Settings.nonWildWeight;
 			float localWeight = Settings.inBiomeWeight;
 			float foreignWeight = Settings.outBiomeWeight;
 			
-			mountChance = GetMountChance(parms, mountChance, mountChancePreInd);
+			mountChance = GetMountChance(parms, mountChance);
 			if (mountChance == -1) return false; //wrong faction
 
-			//Setup working list
-			PawnKindDef[] wildAnimals;
-			PawnKindDef[] domesticAnimals;
-			PawnKindDef[] localAnimals;
+			//Setup working lists
+			GetAnimalArrays(out PawnKindDef[] wildAnimals, out PawnKindDef[] domesticAnimals, out PawnKindDef[] localAnimals);
 			
-			FactionRestrictions factionRules = parms.faction?.def?.GetModExtension<FactionRestrictions>();
-			if (factionRules != null)
-			{
-				//Override working list
-				wildAnimals = factionRules.allowedWildAnimals;
-				domesticAnimals = factionRules.allowedNonWildAnimals;
-				localAnimals = map.Biome.AllWildAnimals.
-					Where(x => wildAnimals.Contains(x) && map.mapTemperature.SeasonAcceptableFor(x.race) && 
-					Settings.mountableCache.Contains(x.shortHash) && parms.points > x.combatPower * 2f).ToArray();
-
-				//Override mount chance
-				if (factionRules.mountChance > -1) mountChance = factionRules.mountChance;
-
-				//Apply weights if needed
-				if (wildAnimals.Length == 0) localWeight = foreignWeight = 0;
-				else if (factionRules.wildAnimalWeight >= 0) foreignWeight = factionRules.wildAnimalWeight;
-
-				if (domesticAnimals.Length == 0) domesticWeight = 0;
-				else if (factionRules.nonWildAnimalWeight >= 0) foreignWeight = factionRules.nonWildAnimalWeight;
-			}
-			else
-			{
-				wildAnimals = allWildAnimals.ToArray();
-				domesticAnimals = allDomesticAnimals.ToArray();
-				localAnimals = map.Biome.AllWildAnimals.
-					Where(x => map.mapTemperature.SeasonAcceptableFor(x.race) && Settings.mountableCache.Contains(x.shortHash) && parms.points > x.combatPower * 2f).ToArray();
-			}
-
-			//Setup weight ranges.
+			//Setup weight ranges
 			float totalWeight = localWeight + foreignWeight + domesticWeight; //EG 100
 			localWeight /= totalWeight * 100f; //EG 20
 			foreignWeight /= totalWeight * 100f; //EG 20+10 = 30
 			foreignWeight += localWeight;
 			float averageCommonality = AverageAnimalCommonality(map.Biome);
 			
-			bool hasPackAnimals = list.GetPackAnimals(out List<Pawn> packAnimals);
+			bool hasPackAnimals = GetPackAnimals(list, out List<Pawn> packAnimals);
+			hasPackAnimals = false;
 			var length = list.Count;
 			for (int i = 0; i < length; i++)
 			{
@@ -278,7 +249,7 @@ namespace GiddyUp
 
 				//Set their training
 				Spawned:
-				animal.playerSettings = new Pawn_PlayerSettings(animal);
+				if (animal.playerSettings == null) animal.playerSettings = new Pawn_PlayerSettings(animal);
 				animal.training.Train(TrainableDefOf.Obedience, pawn);
 
 				//Mount up
@@ -286,10 +257,11 @@ namespace GiddyUp
 			}
 			return true;
 
-			int GetMountChance(IncidentParms parms, int mountChance, int mountChancePreInd)
+			#region embedded methods
+			int GetMountChance(IncidentParms parms, int mountChance)
 			{
 				if (parms.faction == null) return -1;
-				if (parms.faction.def.techLevel < TechLevel.Industrial) return mountChancePreInd;
+				if (parms.faction.def.techLevel < TechLevel.Industrial) return Settings.enemyMountChancePreInd;
 				else if (parms.faction.def != FactionDefOf.Mechanoid) return mountChance;
 				return -1;
 			}
@@ -298,6 +270,38 @@ namespace GiddyUp
 				if (random < foreignWeight) return ListToUse.Local;
 				else if (random >= localWeight && random < foreignWeight) return ListToUse.Foreign;
 				return ListToUse.Domestic;
+			}
+			void GetAnimalArrays(out PawnKindDef[] wildAnimals, out PawnKindDef[] domesticAnimals, out PawnKindDef[] localAnimals)
+			{
+				FactionRestrictions factionRules = parms.faction?.def?.GetModExtension<FactionRestrictions>();
+				if (factionRules != null)
+				{
+					//Override working list
+					wildAnimals = factionRules.allowedWildAnimals;
+					var wildAnimalsReadonly = wildAnimals;
+					domesticAnimals = factionRules.allowedNonWildAnimals;
+					localAnimals = map.Biome.AllWildAnimals.
+						Where(x => wildAnimalsReadonly.Contains(x) && map.mapTemperature.SeasonAcceptableFor(x.race) && 
+						Settings.mountableCache.Contains(x.shortHash) && parms.points > x.combatPower * 2f).ToArray();
+
+					//Override mount chance
+					if (factionRules.mountChance > -1) mountChance = factionRules.mountChance;
+
+					//Apply weights if needed
+					if (wildAnimals.Length == 0) localWeight = foreignWeight = 0;
+					else if (factionRules.wildAnimalWeight >= 0) foreignWeight = factionRules.wildAnimalWeight;
+
+					if (domesticAnimals.Length == 0) domesticWeight = 0;
+					else if (factionRules.nonWildAnimalWeight >= 0) foreignWeight = factionRules.nonWildAnimalWeight;
+				}
+				else
+				{
+					wildAnimals = allWildAnimals.ToArray();
+					domesticAnimals = allDomesticAnimals.ToArray();
+					localAnimals = map.Biome.AllWildAnimals.
+						Where(x => map.mapTemperature.SeasonAcceptableFor(x.race) && Settings.mountableCache.Contains(x.shortHash) && parms.points > x.combatPower * 2f).ToArray();
+				}
+
 			}
 			float AverageAnimalCommonality(BiomeDef biome)
 			{
@@ -327,6 +331,24 @@ namespace GiddyUp
 				//Log.Message("name: " + def.defName + ", commonality: " + commonality + ", pawnHandlingLevel: " + pawnHandlingLevel + ", wildness: " + def.RaceProps.wildness + ", commonalityBonus: " + commonalityAdjusted + ", wildnessPenalty: " + wildnessPenalty + ", result: " + commonalityAdjusted * wildnessPenalty);
 				return commonalityAdjusted * wildnessPenalty;
 			}
+			bool GetPackAnimals(List<Pawn> list, out List<Pawn> packAnimals)
+			{
+				packAnimals = new List<Pawn>();
+				if (list.NullOrEmpty()) return false;
+
+				var length = list.Count;
+				for (int i = 0; i < length; i++)
+				{
+					Pawn pawn = list[i];
+					if (pawn.IsEverMountable(out IsMountableUtility.Reason reason) && pawn.RaceProps.packAnimal && pawn.inventory != null && pawn.inventory.innerContainer.Count > 0)
+					{
+						packAnimals.Add(pawn);
+					}
+					else if (Settings.logging) Log.Message("[Giddy-Up] Skipping " + pawn.def.defName +"-"+ pawn.thingIDNumber.ToString() + ". Reason: " + reason.ToString());
+				}
+				return packAnimals.Count == 0 ? false : true;
+			}
+			#endregion
 		}
 		//Gets animal that'll get the pawn to the target the quickest. Returns null if no animal is found or if walking is faster. 
 		public static bool GetBestAnimal(Pawn pawn, out Pawn bestanimal, IntVec3 firstTarget, IntVec3 secondTarget, float pawnTargetDistance, float firstToSecondTargetDistance)
@@ -455,23 +477,6 @@ namespace GiddyUp
 			}
 			bestanimal = null;
 			return false;
-		}
-		static bool GetPackAnimals(this List<Pawn> list, out List<Pawn> packAnimals)
-		{
-			packAnimals = new List<Pawn>();
-			if (list.NullOrEmpty()) return false;
-
-			var length = list.Count;
-			for (int i = 0; i < length; i++)
-			{
-				Pawn pawn = list[i];
-				if (pawn.IsEverMountable(out IsMountableUtility.Reason reason) && pawn.RaceProps.packAnimal && pawn.inventory != null && pawn.inventory.innerContainer.Count > 0)
-				{
-					packAnimals.Add(pawn);
-				}
-				else if (Settings.logging) Log.Message("[Giddy-Up] Skipping " + pawn.def.defName +"-"+ pawn.thingIDNumber.ToString() + ". Reason: " + reason.ToString());
-			}
-			return packAnimals.Count == 0 ? false : true;
 		}
 	}
 }
