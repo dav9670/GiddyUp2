@@ -28,6 +28,7 @@
 	<GUC_NeedsObedience>Animal requires taming</GUC_NeedsObedience>
 	<GUC_IsRoped>Animal is roped</GUC_IsRoped>
 	<GUC_Mount>Mount</GUC_Mount>
+	<GUC_Mount_GodMode>Mount (god mode)</GUC_Mount_GodMode>
 	<GUC_Dismount>Dismount</GUC_Dismount>
 	
 	<GUC_Mountable_Tab>Mountable animals</GUC_Mountable_Tab>

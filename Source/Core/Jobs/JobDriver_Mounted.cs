@@ -1,7 +1,6 @@
 ﻿using RimWorld;
 using RimWorld.Planet;
 using System.Collections.Generic;
-using GiddyUpRideAndRoll;
 using Verse;
 using Verse.AI;
 using Settings = GiddyUp.ModSettings_GiddyUp;
@@ -13,11 +12,13 @@ namespace GiddyUp.Jobs
 		public static HashSet<JobDef> allowedJobs;
 		public Pawn Rider { get { return job.targetA.Thing as Pawn; } }
 		ExtendedPawnData riderData;
-		public bool interrupted = false;
+		public bool isTrained, interrupted;
 
 		public override IEnumerable<Toil> MakeNewToils()
 		{
 			this.FailOnDespawnedNullOrForbidden(TargetIndex.A);
+			riderData = Rider.GetGUData();
+			isTrained = pawn.training != null && pawn.training.HasLearned(TrainableDefOf.Obedience);
 			yield return WaitForRider();
 			yield return DelegateMovement();
 		}
@@ -29,7 +30,7 @@ namespace GiddyUp.Jobs
 		enum DismountReason { False, Interrupted, BadState, LeftMap, NotSpawned, WrongMount, BadJob };
 		DismountReason ShouldDismount(ExtendedPawnData riderData)
 		{
-			if (interrupted || riderData == null || riderData.mount == null) return DismountReason.Interrupted;
+			if (interrupted || riderData == null || riderData.mount == null || riderData.ID != Rider.thingIDNumber) return DismountReason.Interrupted;
 
 			Pawn rider = Rider;
 			var riderIsDead = rider.Dead;
@@ -57,9 +58,14 @@ namespace GiddyUp.Jobs
 				else return DismountReason.NotSpawned;
 			}
 
+			var riderJobDef = rider.CurJobDef;
+			if (rider.Drafted && !allowedJobs.Contains(riderJobDef) && rider.Position.DistanceTo(rider.pather.Destination.Cell) < 8)
+			{
+				return DismountReason.BadJob;
+			}
+
 			if (rider.Drafted || !pawn.Faction.def.isPlayer) return DismountReason.False;
 			
-			var riderJobDef = rider.CurJobDef;
 			if (Settings.caravansEnabled)
 			{
 				var riderMindstateDef = rider.mindState?.duty?.def;
@@ -103,7 +109,6 @@ namespace GiddyUp.Jobs
 					return;
 				}
 
-				riderData = rider.GetGUData();
 				if (riderData.mount != null && riderData.mount == pawn)
 				{
 					ReadyForNextToil();
@@ -117,7 +122,7 @@ namespace GiddyUp.Jobs
 					curJobDef != JobDefOf.Wait && 
 					riderData.mount == null)
 				{
-					//Log.Message("cancel wait for rider, rider is not mounting, curJob: " + Rider.CurJob.def.defName);                  
+					if (Settings.logging) Log.Message("[Giddy-Up] Animal " + pawn.thingIDNumber + " is no longer waiting for " + Rider.Name.ToString());
 					interrupted = true;
 					ReadyForNextToil();
 				}
@@ -133,7 +138,6 @@ namespace GiddyUp.Jobs
 
 			toil.tickAction = delegate
 			{
-				riderData = rider.GetGUData();
 				if (CheckReason(ShouldDismount(riderData), out DismountReason dismountReason))
 				{
 					if (Settings.logging) Log.Message("[Giddy-Up] Pawn " + pawn.thingIDNumber + " dismounting for reason: " + dismountReason.ToString());
@@ -143,7 +147,7 @@ namespace GiddyUp.Jobs
 				pawn.Drawer.tweener = rider.Drawer.tweener; //Could probably just be set once, but reloading could cause issues?
 				pawn.Position = rider.Position;
 				pawn.Rotation = rider.Rotation;
-				TryAttackEnemy(rider);
+				if (isTrained) TryAttackEnemy(rider);
 			};
 
 			toil.AddFinishAction(delegate
