@@ -4,6 +4,7 @@ using RimWorld;
 using System.Collections.Generic;
 using Verse;
 using System.Reflection;
+using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUpCaravan.Harmony
 {
@@ -12,7 +13,7 @@ namespace GiddyUpCaravan.Harmony
     {
         static bool Prepare()
         {
-            return GiddyUp.ModSettings_GiddyUp.caravansEnabled;
+            return Settings.caravansEnabled;
         }
         static IEnumerable<MethodBase> TargetMethods()
         {
@@ -39,7 +40,7 @@ namespace GiddyUpCaravan.Harmony
     {
         static bool Prepare()
         {
-            return GiddyUp.ModSettings_GiddyUp.caravansEnabled;
+            return Settings.caravansEnabled;
         }
         static void Prefix(List<Pawn> pawns)
         {

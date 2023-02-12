@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Reflection.Emit;
 using UnityEngine;
 using Verse;
+using Settings = GiddyUp.ModSettings_GiddyUp;
 //using Multiplayer.API;
 
 namespace GiddyUpCaravan.Harmony
@@ -15,7 +16,7 @@ namespace GiddyUpCaravan.Harmony
     {
         static bool Prepare()
         {
-            return GiddyUp.ModSettings_GiddyUp.caravansEnabled;
+            return Settings.caravansEnabled;
         }
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {

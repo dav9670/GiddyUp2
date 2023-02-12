@@ -107,7 +107,7 @@ namespace GiddyUp
 			pawnData.mount = null;
 			if (Settings.logging) Log.Message("[Giddy-Up] pawn " + rider.thingIDNumber.ToString() + " no longer riding  " + (animal?.thingIDNumber.ToString() ?? "NULL"));
 
-			//Normally should not happens, come in null from sanity checks. Odd bugs or save/reload conflicts between version changes
+			//Normally should not happen, may come in null from sanity checks. Odd bugs or save/reload conflicts between version changes
 			ExtendedPawnData animalData;
 			if (animal == null) ExtendedDataStorage.GUComp.ReverseLookup(rider.thingIDNumber, out animalData);
 			else animalData = animal.GetGUData();
@@ -125,7 +125,7 @@ namespace GiddyUp
 			animal.pather.ResetToCurrentPosition();
 			
 			//========Post-dismount behavior======
-			//If this is a visitor's animal, kepe it from wandering off
+			//If this is a visitor's animal, keep it from wandering off
 			if (!rider.Faction.def.isPlayer && animal.mindState.duty != null) animal.mindState.duty.focus = new LocalTargetInfo(animal.Position);
 			
 			//If the animal is being dismounted outside of a pen and it's a roamer, hitch it
@@ -387,62 +387,11 @@ namespace GiddyUp
 					continue;
 				}
 			
-				ExtendedPawnData animalData = animal.GetGUData();
-				if (!animalData.automount) continue; //Disallowed
+				if (!pawn.IsAllowed(animal)) continue; //Disallowed
 
-
-				//TODO: Cache the dropoff calculations somehow
-				#region CalculateTime
-				float distanceRiding = 0f;
-				var animalPos = animal.Position;
-				float distancePawnToAnimal = pawn.Position.DistanceTo(animalPos);
-				
-				bool needsPen = (firstTargetInForbiddenArea || secondTargetInForbiddenArea) && (areaNoMount == null || AnimalPenUtility.NeedsToBeManagedByRope(animal));
-				IntVec3 firstDropOffPoint = IntVec3.Zero;
-				/*
-				if (firstTargetInForbiddenArea)
-				{
-					float workingNum = float.MaxValue;
-					if (needsPen)
-					{
-						firstDropOffPoint = DistanceUtility.GetClosestPen(ref workingNum, map, animal, pawn, animalPos, firstTarget);
-					}
-					else if (areaNoMount != null)
-					{
-						firstDropOffPoint = DistanceUtility.GetClosestDropoffPoint(ref workingNum, areaDropCache, animalPos, firstTarget);
-					}
-					distanceRiding = workingNum;
-				}
-				*/
-				distanceRiding += animalPos.DistanceTo(firstTarget);
-
-				/*
-				if (secondTargetInForbiddenArea)
-				{
-					//This assumes that the pawn will go from their pickup point, back to the firt drop off point to return to their animal.
-					if (firstDropOffPoint != IntVec3.Zero) distanceRiding += firstTarget.DistanceTo(firstDropOffPoint);
-					
-					float workingNum = float.MaxValue;
-					if (needsPen)
-					{
-						DistanceUtility.GetClosestPen(ref workingNum, map, animal, pawn, firstTarget, secondTarget);
-					}
-					else if (areaNoMount != null)
-					{
-						DistanceUtility.GetClosestDropoffPoint(ref workingNum, areaDropCache, firstTarget, secondTarget);
-					}
-					distanceRiding += workingNum;
-				}
-				*/
-				distanceRiding += firstToSecondTargetDistance;
-
-				distanceRiding *= 1.05f; //Unassurance compensation due to their being more variables and moving parts, data may become stale by the time the pawn arrives
-				
-				var animalMountedSpeed = StatPart_Riding.GetRidingSpeed(animal.GetStatValue(StatDefOf.MoveSpeed), animal, pawn.skills);
-
-				float timeNeededForThisMount = (distancePawnToAnimal / pawnWalkSpeed) + (distanceRiding / animalMountedSpeed);
-				#endregion
-
+				float distancePawnToAnimal = pawn.Position.DistanceTo(animal.Position);
+				float distanceRiding = (animal.Position.DistanceTo(firstTarget) + firstToSecondTargetDistance) * 1.05f;
+				float timeNeededForThisMount = (distancePawnToAnimal / pawnWalkSpeed) + (distanceRiding / StatPart_Riding.GetRidingSpeed(animal.GetStatValue(StatDefOf.MoveSpeed), animal, pawn.skills));
 				
 				if (timeNeededForThisMount < timeBestRiding)
 				{

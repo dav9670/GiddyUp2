@@ -64,6 +64,7 @@ namespace GiddyUp
 
 			if (noMountedHunting) JobDriver_Mounted.allowedJobs.Add(JobDefOf.Hunt);
 			ProcessPawnKinds(harmony);
+			if (disableSlavePawnColumn) DefDatabase<PawnTableDef>.GetNamed("Animals").columns.RemoveAll(x => x.defName == "MountableBySlaves");
 		}
 		//Responsible for caching which animals are mounted, draw layering behavior, and calling caravan speed bonuses
 		public static void BuildCache()
@@ -226,7 +227,7 @@ namespace GiddyUp
 			DefDatabase<JobDef>.Remove(ResourceBank.JobDefOf.WaitForRider);
 
 			//Remove pawn columns (UI icons in the pawn table)
-			DefDatabase<PawnTableDef>.GetNamed("Animals").columns.RemoveAll(x => x.defName == "MountableByAnyone");
+			DefDatabase<PawnTableDef>.GetNamed("Animals").columns.RemoveAll(x => x.defName == "MountableByColonists" || x.defName == "MountableBySlaves");
 			
 			//Remove area designators
 			var designationCategoryDef = DefDatabase<DesignationCategoryDef>.GetNamed("Zone");
@@ -343,6 +344,7 @@ namespace GiddyUp
 					autoHitchDistance = (int)options.Slider(autoHitchDistance, 0f, 200f);
 
 					options.CheckboxLabeled("GU_RR_NoMountedHunting_Title".Translate(), ref noMountedHunting, "GU_RR_NoMountedHunting_Description".Translate());
+					options.CheckboxLabeled("GU_RR_DisableSlavePawnColumn_Title".Translate(), ref disableSlavePawnColumn, "GU_RR_DisableSlavePawnColumn_Description".Translate());
 					if (Prefs.DevMode) options.CheckboxLabeled("Enable dev mode logging", ref logging);
 				}
 				
@@ -510,6 +512,7 @@ namespace GiddyUp
 			Scribe_Values.Look(ref battleMountsEnabled, "battleMountsEnabled", true);
 			Scribe_Values.Look(ref caravansEnabled, "caravansEnabled", true);
 			Scribe_Values.Look(ref noMountedHunting, "noMountedHunting");
+			Scribe_Values.Look(ref disableSlavePawnColumn, "disableSlavePawnColumn");
 			Scribe_Values.Look(ref giveCaravanSpeed, "giveCaravanSpeed");
 			Scribe_Collections.Look(ref invertMountingRules, "invertMountingRules", LookMode.Value);
 			Scribe_Collections.Look(ref invertDrawRules, "invertDrawRules", LookMode.Value);
@@ -537,7 +540,8 @@ namespace GiddyUp
 			caravansEnabled = true,
 			noMountedHunting,
 			logging,
-			giveCaravanSpeed;
+			giveCaravanSpeed,
+			disableSlavePawnColumn;
 		public static HashSet<string> invertMountingRules, invertDrawRules; //These are only used on game start to setup the below, fast cache collections
 		public static HashSet<ushort> mountableCache, drawRulesCache;
 		public static string tabsHandler;

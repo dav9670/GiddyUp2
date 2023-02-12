@@ -6,7 +6,8 @@
 			<li Class="PatchOperationInsert">
 				<xpath>/Defs/PawnTableDef[defName="Animals"]/columns/li[last()-1]</xpath>
 				<value>
-					<li>MountableByAnyone</li>
+					<li>MountableByColonists</li>
+					<li MayRequire="Ludeon.RimWorld.Ideology">MountableBySlaves</li>
 				</value>
 			</li>
 			<li Class="PatchOperationAdd">

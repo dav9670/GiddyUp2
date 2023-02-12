@@ -2,6 +2,7 @@
 using HarmonyLib;
 using RimWorld;
 using Verse;
+using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUpCaravan.Harmony
 {
@@ -10,7 +11,7 @@ namespace GiddyUpCaravan.Harmony
     {
         static bool Prepare()
         {
-            return GiddyUp.ModSettings_GiddyUp.caravansEnabled;
+            return Settings.caravansEnabled;
         }
         static bool Postfix(bool __result, Thing a, Thing b)
         {

@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using Verse;
 using GiddyUp;
+using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUpCaravan
 {
@@ -9,7 +10,7 @@ namespace GiddyUpCaravan
     {
         static bool Prepare()
         {
-            return GiddyUp.ModSettings_GiddyUp.caravansEnabled || GiddyUp.ModSettings_GiddyUp.rideAndRollEnabled;
+            return Settings.caravansEnabled || Settings.rideAndRollEnabled;
         }
         static bool Postfix(bool __result, Pawn pawn)
         {

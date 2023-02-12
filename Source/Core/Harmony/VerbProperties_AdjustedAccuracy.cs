@@ -2,6 +2,7 @@
 using RimWorld;
 using System;
 using Verse;
+using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUp.Harmony
 {
@@ -26,8 +27,8 @@ namespace GiddyUp.Harmony
             {
                 adjustedLevel = pawn.skills.GetSkill(SkillDefOf.Animals).levelInt - (int)Math.Round(mount.GetStatValue(StatDefOf.MinimumHandlingSkill, true));
             }
-            float animalHandlingOffset = adjustedLevel * ModSettings_GiddyUp.handlingAccuracyImpact;
-            float factor = (100f - ((float)ModSettings_GiddyUp.accuracyPenalty - animalHandlingOffset)) / 100f;
+            float animalHandlingOffset = adjustedLevel * Settings.handlingAccuracyImpact;
+            float factor = (100f - ((float)Settings.accuracyPenalty - animalHandlingOffset)) / 100f;
             return __result *= factor;
         }
     }

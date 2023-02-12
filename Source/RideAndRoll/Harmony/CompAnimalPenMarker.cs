@@ -2,6 +2,7 @@
 using HarmonyLib;
 using RimWorld;
 using Verse;
+using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUpRideAndRoll.Harmony
 {
@@ -10,7 +11,7 @@ namespace GiddyUpRideAndRoll.Harmony
     {
         static bool Prepare()
         {
-            return GiddyUp.ModSettings_GiddyUp.rideAndRollEnabled;
+            return Settings.rideAndRollEnabled;
         }
         static bool Postfix(bool __result, Pawn animal)
         {

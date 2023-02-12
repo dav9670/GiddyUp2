@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Verse;
 using Verse.AI;
+using Settings = GiddyUp.ModSettings_GiddyUp;
 //using Multiplayer.API;
 
 namespace GiddyUpRideAndRoll.Harmony
@@ -12,7 +13,7 @@ namespace GiddyUpRideAndRoll.Harmony
     {
         static bool Prepare()
         {
-            return GiddyUp.ModSettings_GiddyUp.rideAndRollEnabled;
+            return Settings.rideAndRollEnabled;
         }
         static IEnumerable<Gizmo> Postfix(IEnumerable<Gizmo> values, Pawn __instance)
         {

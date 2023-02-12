@@ -2,7 +2,6 @@
 using RimWorld;
 using System;
 using System.Text;
-using UnityEngine;
 using Verse;
 using Settings = GiddyUp.ModSettings_GiddyUp;
 
@@ -31,12 +30,12 @@ namespace GiddyUp
                     {
                         var skill = jobDriver.rider.skills.GetSkill(SkillDefOf.Animals);
                         adjustedLevel = skill.levelInt - (int)Math.Round(pawn.GetStatValue(StatDefOf.MinimumHandlingSkill, true));
-                        float animalHandlingOffset = 1f + (adjustedLevel * ModSettings_GiddyUp.handlingMovementImpact) / 100f;
+                        float animalHandlingOffset = 1f + (adjustedLevel * Settings.handlingMovementImpact) / 100f;
                         sb.AppendLine("    " + "GUC_StatPart_HandlingMultiplier".Translate() + ": " + animalHandlingOffset.ToStringByStyle(ToStringStyle.PercentOne, ToStringNumberSense.Factor));
                         sb.AppendLine("        " + "GUC_StatPart_HandlingSkill".Translate() + ": " + skill.levelInt);
                         sb.AppendLine("        " + "GUC_StatPart_SkillReq".Translate() + ": " + (int)Math.Round(pawn.GetStatValue(StatDefOf.MinimumHandlingSkill, true)));
                         sb.AppendLine("        " + "GUC_StatPart_LevelsAbove".Translate() + ": " + adjustedLevel);
-                        sb.AppendLine("        " + "GUC_StatPart_HandlingMovementImpact".Translate() + ": " + (ModSettings_GiddyUp.handlingMovementImpact / 100f).ToStringByStyle(ToStringStyle.PercentOne));
+                        sb.AppendLine("        " + "GUC_StatPart_HandlingMovementImpact".Translate() + ": " + (Settings.handlingMovementImpact / 100f).ToStringByStyle(ToStringStyle.PercentOne));
                     }
                     var modExt = pawn.def.GetModExtension<CustomStats>();
                     if (modExt != null)
@@ -55,9 +54,9 @@ namespace GiddyUp
                 {
                     val = pawn.GetGUData().mount.GetStatValue(StatDefOf.MoveSpeed);
                 }
-                else if (pawn.jobs != null && pawn.jobs.curDriver is JobDriver_Mounted jdMounted)
+                else if (pawn.IsMountedAnimal(out Thing thing) && thing is Pawn rider)
                 {
-                    val = GetRidingSpeed(val, pawn, jdMounted.rider.skills);
+                    val = GetRidingSpeed(val, pawn, rider.skills);
                 }
             }
             return;

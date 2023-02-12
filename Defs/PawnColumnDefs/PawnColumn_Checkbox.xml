@@ -1,10 +1,18 @@
 <Defs>
 	<PawnColumnDef>
-		<defName>MountableByAnyone</defName>
-		<workerClass>GiddyUpRideAndRoll.PawnColumnWorker_RR_Mountable_Anyone</workerClass>
+		<defName>MountableByColonists</defName>
+		<workerClass>GiddyUpRideAndRoll.PawnColumnWorker_Mountable_Colonists</workerClass>
 		<sortable>true</sortable>
-		<headerIcon>UI/GU_RR_All_Allowed</headerIcon>
-		<headerTip>Can be automatically mounted by any pawn.</headerTip>
+		<headerIcon>UI/GU_All_Colonists</headerIcon>
+		<headerTip>Can be automatically mounted by colonists.</headerTip>
+		<headerIconSize>(24,24)</headerIconSize>
+	</PawnColumnDef>
+	<PawnColumnDef MayRequire="Ludeon.RimWorld.Ideology">
+		<defName>MountableBySlaves</defName>
+		<workerClass>GiddyUpRideAndRoll.PawnColumnWorker_Mountable_Slaves</workerClass>
+		<sortable>true</sortable>
+		<headerIcon>UI/GU_All_Slaves</headerIcon>
+		<headerTip>Can be automatically mounted by slaves.</headerTip>
 		<headerIconSize>(24,24)</headerIconSize>
 	</PawnColumnDef>
 </Defs>

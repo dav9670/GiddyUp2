@@ -15,11 +15,16 @@ namespace GiddyUp
 
 		public static bool IsMountedAnimal(this Pawn animal)
 		{
+			return IsMountedAnimal(animal, out Thing rider);
+		}
+		public static bool IsMountedAnimal(this Pawn animal, out Thing rider)
+		{
 			if (animal.CurJobDef != ResourceBank.JobDefOf.Mounted)
 			{
+				rider = null;
 				return false;
 			}
-			var rider = animal.jobs.curDriver.job.targetA.Thing;
+			rider = animal.jobs.curDriver.job.targetA.Thing;
 			return rider.IsMounted();
 		}
 		public static bool IsEverMountable(this Pawn pawn)
@@ -113,6 +118,18 @@ namespace GiddyUp
 			}
 			
 			return true;
+		}
+		public static bool IsAllowed(this Pawn rider, Pawn animal)
+		{
+			return rider.IsAllowed(animal.GetGUData());
+		}
+		public static bool IsAllowed(this Pawn rider, ExtendedPawnData animalData)
+		{
+			var automount = animalData.automount;
+			if (automount == ExtendedPawnData.Automount.Anyone) return true;
+			else if (automount == ExtendedPawnData.Automount.Colonists && rider.GuestStatus == null) return true;
+			else if (automount == ExtendedPawnData.Automount.Slaves && rider.GuestStatus == GuestStatus.Slave) return true;
+			return false;
 		}
 	}
 }

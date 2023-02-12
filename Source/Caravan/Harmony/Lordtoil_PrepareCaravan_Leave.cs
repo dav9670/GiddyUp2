@@ -4,6 +4,7 @@ using RimWorld;
 using Verse;
 using Verse.AI;
 using System.Linq;
+using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUpCaravan.Harmony
 {
@@ -12,7 +13,7 @@ namespace GiddyUpCaravan.Harmony
     {
         static bool Prepare()
         {
-            return GiddyUp.ModSettings_GiddyUp.caravansEnabled;
+            return Settings.caravansEnabled;
         }
         static void Prefix(LordToil_PrepareCaravan_Leave __instance)
         {

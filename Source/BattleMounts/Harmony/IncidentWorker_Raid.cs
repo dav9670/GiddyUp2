@@ -13,7 +13,7 @@ namespace BattleMounts.Harmony
     {
         static bool Prepare()
         {
-            return GiddyUp.ModSettings_GiddyUp.battleMountsEnabled;
+            return Settings.battleMountsEnabled;
         }
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {

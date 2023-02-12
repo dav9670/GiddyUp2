@@ -6,7 +6,7 @@ using System.Reflection.Emit;
 using GiddyUp;
 using Verse;
 //using Multiplayer.API;
-using Setting = GiddyUp.ModSettings_GiddyUp;
+using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace BattleMounts.Harmony
 {
@@ -15,7 +15,7 @@ namespace BattleMounts.Harmony
     {
         static bool Prepare()
         {
-            return GiddyUp.ModSettings_GiddyUp.battleMountsEnabled;
+            return Settings.battleMountsEnabled;
         }
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
