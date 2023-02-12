@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using RimWorld;
 using Verse;
+using GiddyUp;
 
 namespace GiddyUpRideAndRoll
 {
@@ -24,7 +25,7 @@ namespace GiddyUpRideAndRoll
                 ticker = 20;
                 foreach (Map map in Find.Maps)
                 {
-                    GiddyUp.Area_GU.GetGUAreasFast(map, out Area areaNoMount, out Area areaDropAnimal);
+                    map.GetGUAreas(out Area areaNoMount, out Area areaDropAnimal);
                     var unropablePlayerAnimals = map.mapPawns.SpawnedColonyAnimals.Any(animal => !AnimalPenUtility.NeedsToBeManagedByRope(animal));
 
                     if (unropablePlayerAnimals && areaNoMount != null && areaNoMount.innerGrid.TrueCount != 0 && (areaDropAnimal == null || areaDropAnimal.innerGrid.TrueCount == 0))

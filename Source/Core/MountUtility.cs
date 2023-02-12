@@ -360,7 +360,7 @@ namespace GiddyUp
 			bool firstTargetInForbiddenArea = false;
 			bool secondTargetInForbiddenArea = false;
 			Map map = pawn.Map;
-			Area_GU.GetGUAreasFast(map, out Area areaNoMount, out Area areaDropAnimal);
+			map.GetGUAreas(out Area areaNoMount, out Area areaDropAnimal);
 
 			//This notes that the first destination is in a no-ride zone
 			IntVec3[] areaDropCache = new IntVec3[0];

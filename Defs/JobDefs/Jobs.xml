@@ -41,6 +41,7 @@
 					<li>ReturnedCaravan_PenAnimals</li>
 					<li>RopeToPen</li> 
 					<li>RopeRoamerToUnenclosedPen</li>
+					<li>RopeRoamerToHitchingPost</li>
 					<li>TakeInventory</li> 
 					<li>TakeWoundedPrisonerToBed</li> 
 					<li>Tame</li>

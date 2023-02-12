@@ -27,9 +27,9 @@ namespace GiddyUp
                 {
                     sb.AppendLine("GUC_StatPart_Mounted".Translate());
                     float adjustedLevel = 0;
-                    if (jobDriver.Rider.skills != null)
+                    if (jobDriver.rider.skills != null)
                     {
-                        var skill = jobDriver.Rider.skills.GetSkill(SkillDefOf.Animals);
+                        var skill = jobDriver.rider.skills.GetSkill(SkillDefOf.Animals);
                         adjustedLevel = skill.levelInt - (int)Math.Round(pawn.GetStatValue(StatDefOf.MinimumHandlingSkill, true));
                         float animalHandlingOffset = 1f + (adjustedLevel * ModSettings_GiddyUp.handlingMovementImpact) / 100f;
                         sb.AppendLine("    " + "GUC_StatPart_HandlingMultiplier".Translate() + ": " + animalHandlingOffset.ToStringByStyle(ToStringStyle.PercentOne, ToStringNumberSense.Factor));
@@ -57,7 +57,7 @@ namespace GiddyUp
                 }
                 else if (pawn.jobs != null && pawn.jobs.curDriver is JobDriver_Mounted jdMounted)
                 {
-                    val = GetRidingSpeed(val, pawn, jdMounted.Rider.skills);
+                    val = GetRidingSpeed(val, pawn, jdMounted.rider.skills);
                 }
             }
             return;

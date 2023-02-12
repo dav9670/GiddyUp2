@@ -29,12 +29,49 @@ namespace GiddyUp
         {
             return ExtendedDataStorage.isMounted.Contains(pawn.thingIDNumber);
         }
+
+        //Equiv version of the vanilla GetLabeled method, but it avoids iterating the list twice
+        public static void UpdateAreaCache(this Map map, bool reset = false)
+        {
+            if (reset)
+            {
+                if (Settings.logging) Log.Message("[Giddy-Up] Registering area for map ID " + map.uniqueID.ToString());
+                ExtendedDataStorage.GUComp.areaNoMount.Add(map.uniqueID, null);
+			    ExtendedDataStorage.GUComp.areaDropAnimal.Add(map.uniqueID, null);
+            }
+            var list = map.areaManager.areas;
+            var length = list.Count;
+            Area areaNoMount = null;
+            Area areaDropAnimal = null;
+            for (int i = 0; i < length; i++)
+            {
+                var area = list[i];
+                var label = area.Label;
+                if (label == ResourceBank.AreaNoMount) areaNoMount = area;
+                else if (label == ResourceBank.AreaDropMount) areaDropAnimal = area;
+            }
+            ExtendedDataStorage.GUComp.areaNoMount[map.uniqueID] = areaNoMount;
+			ExtendedDataStorage.GUComp.areaDropAnimal[map.uniqueID] = areaDropAnimal;
+        }
+        public static bool GetGUAreas(this Map map, out Area areaNoMount, out Area areaDropAnimal)
+        {
+            ExtendedDataStorage.GUComp.areaNoMount.TryGetValue(map.uniqueID, out areaNoMount);
+			ExtendedDataStorage.GUComp.areaDropAnimal.TryGetValue(map.uniqueID, out areaDropAnimal);
+
+            return areaNoMount != null;
+        }
+        public static bool CanRideAt(this IntVec3 cell, Area noRideArea)
+        {
+            if (noRideArea == null) return true;
+            return !noRideArea.innerGrid[noRideArea.Map.cellIndices.CellToIndex(cell)];
+        }
     }
     public class ExtendedDataStorage : WorldComponent, IExposable
     {
         public static ExtendedDataStorage GUComp; //Singleton instance creaed on world init
         public static HashSet<int> isMounted = new HashSet<int>(); //This just serves as a cached logic gate
         public Dictionary<int, ExtendedPawnData> _store = new Dictionary<int, ExtendedPawnData>(); //Pawn xData sorted via their thingID
+        public Dictionary<int, Area> areaNoMount = new Dictionary<int, Area>(), areaDropAnimal = new Dictionary<int, Area>();
         public ExtendedDataStorage(World world) : base(world) {}
 
         public override void FinalizeInit()

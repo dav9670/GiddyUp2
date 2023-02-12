@@ -37,7 +37,7 @@ namespace GiddyUp.Harmony
 				{
 					ExtendedPawnData pawnData = pawn.GetGUData();
 					if (pawnData.mount.CurJobDef != ResourceBank.JobDefOf.Mounted ||
-						(pawnData.mount.jobs.curDriver is JobDriver_Mounted driver && driver.Rider != pawn))
+						(pawnData.mount.jobs.curDriver is JobDriver_Mounted driver && driver.rider != pawn))
 					{
 						pawn.Dismount(null, pawnData, true);
 					}

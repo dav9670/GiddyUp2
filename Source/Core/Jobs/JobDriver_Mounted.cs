@@ -1,5 +1,6 @@
 ﻿using RimWorld;
 using RimWorld.Planet;
+using System;
 using System.Collections.Generic;
 using Verse;
 using Verse.AI;
@@ -10,15 +11,22 @@ namespace GiddyUp.Jobs
 	public class JobDriver_Mounted : JobDriver
 	{
 		public static HashSet<JobDef> allowedJobs;
-		public Pawn Rider { get { return job.targetA.Thing as Pawn; } }
+		public Pawn rider;
 		ExtendedPawnData riderData;
-		public bool isTrained, interrupted;
+		Map map;
+		public bool isTrained, interrupted, isParking;
+		IntVec3 dismountingAt;
+		IntVec3 riderOriginalDestinaton;
+		int ticker = 30;
+		enum DismountReason { False, Interrupted, BadState, LeftMap, NotSpawned, WrongMount, BadJob, ForbiddenAreaAndCannotPark, Parking };
 
 		public override IEnumerable<Toil> MakeNewToils()
 		{
 			this.FailOnDespawnedNullOrForbidden(TargetIndex.A);
-			riderData = Rider.GetGUData();
+			rider = job.targetA.Thing as Pawn;
+			riderData = rider.GetGUData();
 			isTrained = pawn.training != null && pawn.training.HasLearned(TrainableDefOf.Obedience);
+			map = Map;
 			yield return WaitForRider();
 			yield return DelegateMovement();
 		}
@@ -26,45 +34,66 @@ namespace GiddyUp.Jobs
 		{
 			return true;
 		}
-		//This method is often responsible for why pawns dismount
-		enum DismountReason { False, Interrupted, BadState, LeftMap, NotSpawned, WrongMount, BadJob };
-		DismountReason ShouldDismount(ExtendedPawnData riderData)
+		DismountReason RiderShouldDismount(ExtendedPawnData riderData)
 		{
-			if (interrupted || riderData == null || riderData.mount == null || riderData.ID != Rider.thingIDNumber) return DismountReason.Interrupted;
+			if (interrupted || riderData == null || riderData.mount == null || riderData.ID != rider.thingIDNumber) return DismountReason.Interrupted;
 
-			Pawn rider = Rider;
-			var riderIsDead = rider.Dead;
+			if (isParking)
+			{
+				if (rider.pather.nextCell == dismountingAt)
+				{
+					rider.pather.StartPath(riderOriginalDestinaton, PathEndMode.OnCell); //Resume original work
+					return DismountReason.Parking;
+				}
+			}
 			
-			if (rider.Downed || riderIsDead || pawn.Downed || pawn.Dead || 
+			if (--ticker != 0) return DismountReason.False;
+			ticker = 30; //Check every twice per second
+			
+			//Check physical and mental health
+			if (rider.Downed || rider.Dead || pawn.Downed || pawn.Dead || 
 				pawn.HasAttachment(ThingDefOf.Fire) || rider.HasAttachment(ThingDefOf.Fire) || rider.GetPosture() != PawnPosture.Standing ||
 				pawn.InMentalState || (rider.InMentalState && rider.MentalState.def != MentalStateDefOf.PanicFlee)
 			)
 			{
 				return DismountReason.BadState;
 			}
+
+			//This will move the mount off the map, assuming their rider left the map as well
 			if (!rider.Spawned)
 			{
 				var riderIsColonist = rider.IsColonist;
-				if (!riderIsColonist && !riderIsDead)
+				if (!riderIsColonist || rider.GetCaravan() != null)
 				{
-					pawn.ExitMap(false, CellRect.WholeMap(base.Map).GetClosestEdge(this.pawn.Position));
-					return DismountReason.NotSpawned;
-				}
-				else if (riderIsColonist && rider.GetCaravan() != null)
-				{
-					pawn.ExitMap(true, CellRect.WholeMap(base.Map).GetClosestEdge(this.pawn.Position));
+					pawn.ExitMap(riderIsColonist, CellRect.WholeMap(map).GetClosestEdge(pawn.Position));
 					return DismountReason.LeftMap;
 				}
 				else return DismountReason.NotSpawned;
 			}
 
-			var riderJobDef = rider.CurJobDef;
-			if (rider.Drafted && !allowedJobs.Contains(riderJobDef) && rider.Position.DistanceTo(rider.pather.Destination.Cell) < 8)
-			{
-				return DismountReason.BadJob;
-			}
+			var allowedJob = allowedJobs.Contains(rider.CurJobDef);
+			var riderDestinaton = rider.pather.Destination.Cell;
+			map.GetGUAreas(out Area areaNoMount, out Area areaDropAnimal);
 
-			if (rider.Drafted || !pawn.Faction.def.isPlayer) return DismountReason.False;
+			if (!rider.Drafted)
+			{
+				//If the mount's non-drafted rider is heading towards a forbidden area, they'll need to dismount
+				if (!isParking && Settings.rideAndRollEnabled && (!allowedJob || !riderDestinaton.CanRideAt(areaNoMount)))
+				{
+					if (FindPlaceToDismount(areaDropAnimal, riderDestinaton, out dismountingAt))
+					{
+						riderOriginalDestinaton = riderDestinaton;
+						rider.pather.StartPath(dismountingAt, PathEndMode.OnCell);
+						isParking = true;
+					}
+					else return DismountReason.ForbiddenAreaAndCannotPark;
+				}
+			}
+			else
+			{
+				if (!allowedJob && rider.Position.DistanceTo(rider.pather.Destination.Cell) < 8) return DismountReason.BadJob;
+				if (!pawn.Faction.def.isPlayer) return DismountReason.False;
+			}
 			
 			if (Settings.caravansEnabled)
 			{
@@ -77,16 +106,8 @@ namespace GiddyUp.Jobs
 					return riderData.reservedMount == pawn ? DismountReason.False : DismountReason.WrongMount;
 				}
 				
-				if (rider.Position.CloseToEdge(rider.Map, 10)) return DismountReason.False; //Caravan just entered map and has not picked a job yet on this tick.
+				if (rider.Position.CloseToEdge(map, 10)) return DismountReason.False; //Caravan just entered map and has not picked a job yet on this tick.
 			}
-
-			//If the job is not on the whitelist...
-			/*
-			if (Settings.rideAndRollEnabled && riderJobDef != null && !allowedJobs.Contains(riderJobDef))
-			{
-				return DismountReason.BadJob;
-			}
-			*/
 			return DismountReason.False;
 		}
 		bool CheckReason(DismountReason dismountReason, out DismountReason reason)
@@ -96,67 +117,63 @@ namespace GiddyUp.Jobs
 		}
 		Toil WaitForRider()
 		{
-			Toil toil = new Toil();
-
-			Pawn rider = Rider;
-			toil.defaultCompleteMode = ToilCompleteMode.Never;
-			toil.tickAction = delegate
+			return new Toil()
 			{
-				if (rider == null || rider.Dead || !rider.Spawned || rider.Downed || rider.InMentalState)
+				defaultCompleteMode = ToilCompleteMode.Never,
+				tickAction = delegate
 				{
-					interrupted = true;
-					ReadyForNextToil();
-					return;
-				}
+					if (rider == null || rider.Dead || !rider.Spawned || rider.Downed || rider.InMentalState)
+					{
+						interrupted = true;
+						ReadyForNextToil();
+						return;
+					}
 
-				if (riderData.mount != null && riderData.mount == pawn)
-				{
-					ReadyForNextToil();
-				}
+					if (riderData.mount != null && riderData.mount == pawn)
+					{
+						ReadyForNextToil();
+					}
 
-				var curJobDef = rider.CurJobDef;
-				if (curJobDef != ResourceBank.JobDefOf.Mount && 
-					curJobDef != JobDefOf.Vomit && 
-					curJobDef != JobDefOf.Wait_MaintainPosture && 
-					curJobDef != JobDefOf.SocialRelax && 
-					curJobDef != JobDefOf.Wait && 
-					riderData.mount == null)
-				{
-					if (Settings.logging) Log.Message("[Giddy-Up] Animal " + pawn.thingIDNumber + " is no longer waiting for " + Rider.Name.ToString());
-					interrupted = true;
-					ReadyForNextToil();
-				}
+					var curJobDef = rider.CurJobDef;
+					if (curJobDef != ResourceBank.JobDefOf.Mount && 
+						curJobDef != JobDefOf.Vomit && 
+						curJobDef != JobDefOf.Wait_MaintainPosture && 
+						curJobDef != JobDefOf.SocialRelax && 
+						curJobDef != JobDefOf.Wait && 
+						riderData.mount == null)
+					{
+						if (Settings.logging) Log.Message("[Giddy-Up] Animal " + pawn.thingIDNumber + " is no longer waiting for " + rider.Name.ToString());
+						interrupted = true;
+						ReadyForNextToil();
+					}
 
+				}
 			};
-			return toil;
 		}
 		Toil DelegateMovement()
 		{
-			Toil toil = new Toil();
-			toil.defaultCompleteMode = ToilCompleteMode.Never;
-			Pawn rider = Rider;
-
-			toil.tickAction = delegate
+			return new Toil()
 			{
-				if (CheckReason(ShouldDismount(riderData), out DismountReason dismountReason))
+				defaultCompleteMode = ToilCompleteMode.Never,
+				tickAction = delegate
 				{
-					if (Settings.logging) Log.Message("[Giddy-Up] Pawn " + pawn.thingIDNumber + " dismounting for reason: " + dismountReason.ToString());
-					ReadyForNextToil();
-					return;
-				}
-				pawn.Drawer.tweener = rider.Drawer.tweener; //Could probably just be set once, but reloading could cause issues?
-				pawn.Position = rider.Position;
-				pawn.Rotation = rider.Rotation;
-				if (isTrained) TryAttackEnemy(rider);
+					if (CheckReason(RiderShouldDismount(riderData), out DismountReason dismountReason))
+					{
+						if (Settings.logging) Log.Message("[Giddy-Up] Pawn " + pawn.thingIDNumber + " dismounting for reason: " + dismountReason.ToString());
+						ReadyForNextToil();
+						return;
+					}
+					pawn.Drawer.tweener = rider.Drawer.tweener; //Could probably just be set once, but reloading could cause issues?
+					pawn.Position = rider.Position;
+					pawn.Rotation = rider.Rotation;
+					if (isTrained) TryAttackEnemy(rider);
+				},
+				finishActions = new List<Action>() { (delegate
+				{
+					//Check mount first. If it's null then they must have dismounted outside the driver's control
+					if (riderData.mount != null) rider.Dismount(pawn, riderData, false, isParking ? dismountingAt : default(IntVec3));
+				})}
 			};
-
-			toil.AddFinishAction(delegate
-			{
-				//Check mount first. If it's null then they must have dismounted outside the driver's control
-				if (riderData.mount != null) rider.Dismount(pawn, riderData, false);
-			});
-			
-			return toil;
 		}
 		void TryAttackEnemy(Pawn rider)
 		{
@@ -184,6 +201,54 @@ namespace GiddyUp.Jobs
 				}
 				else pawn.meleeVerbs.TryMeleeAttack(targetThing);
 			}
+		}
+		bool FindPlaceToDismount(Area areaDropAnimal, IntVec3 riderDestinaton, out IntVec3 parkLoc)
+		{
+			if (areaDropAnimal == null) TryParkAnimalPen(out parkLoc);
+			else parkLoc = areaDropAnimal.GetClosestAreaLoc(riderDestinaton);
+
+			//Invalide the results if not reachable
+			if (!map.reachability.CanReach(rider.Position, parkLoc, PathEndMode.OnCell, TraverseParms.For(TraverseMode.PassDoors, Danger.Deadly, false)))
+			{
+				parkLoc = IntVec3.Invalid;
+			}
+
+			//Dropoff is too far away, setup a hitching point instead
+			if (parkLoc.DistanceTo(riderDestinaton) > Settings.autoHitchDistance)
+			{
+				Predicate<IntVec3> freeCell = delegate(IntVec3 cell)
+				{
+					return (cell.Standable(map) && 
+						cell.GetDangerFor(pawn, map) == Danger.None && 
+						!cell.Fogged(map) &&
+						cell.InBounds(map) &&
+						pawn.CanReserveAndReach(cell, PathEndMode.OnCell, Danger.None, 1, -1, null, false));
+				};
+				if (!CellFinder.TryFindRandomCellNear(riderDestinaton, map, 4, freeCell, out parkLoc, 16))
+				{
+					parkLoc = IntVec3.Invalid;
+				}
+			}
+			//Validate results
+			if (parkLoc == IntVec3.Invalid)
+			{
+				if (Prefs.DevMode) Log.Message("[Giddy-Up] Pawn " + pawn.Name.ToString() + " could not ride their mount to their job but could not find any places to dismount. Immediately dismounting.");
+			}
+			//Looks good, begin pathing
+			else return true;
+			return false;
+
+			#region Embedded methods
+			void TryParkAnimalPen(out IntVec3 parkLoc)
+			{
+				parkLoc = IntVec3.Invalid;
+				var pen = AnimalPenUtility.GetPenAnimalShouldBeTakenTo(rider, pawn, out string failReason, true, true, false, true);
+				if (pen != null)
+				{
+					parkLoc = AnimalPenUtility.FindPlaceInPenToStand(pen, rider);
+				}
+			}
+			#endregion
 		}
 	}
 }
