@@ -100,7 +100,7 @@
 							<graphicDataDefault>
 								<texPath>Things/Pawn/Caribou_overlay_front</texPath>
 								<graphicClass>Graphic_Single</graphicClass>
-								<drawSize>4.38</drawSize>
+								<drawSize>3.5</drawSize>
 								<drawRotated>false</drawRotated>
 							</graphicDataDefault>
 						</overlayFront>
@@ -108,7 +108,7 @@
 							<graphicDataDefault>
 								<texPath>Things/Pawn/Caribou_overlay_side</texPath>
 								<graphicClass>Graphic_Single</graphicClass>
-								<drawSize>4.38</drawSize>
+								<drawSize>3.5</drawSize>
 								<drawRotated>false</drawRotated>
 							</graphicDataDefault>
 						</overlaySide>
@@ -122,13 +122,17 @@
 						<overlayFront>
 							<graphicDataMale>
 								<texPath>Things/Pawn/IbexMale_overlay_front</texPath>
+								<color>(136,100,75)</color>
 								<graphicClass>Graphic_Single</graphicClass>
+								<shaderType>CutoutComplex</shaderType>
 								<drawSize>1.8</drawSize>
 								<drawRotated>false</drawRotated>
 							</graphicDataMale>
 							<graphicDataFemale>
 								<texPath>Things/Pawn/IbexFemale_overlay_front</texPath>
+								<color>(153,129,113)</color>
 								<graphicClass>Graphic_Single</graphicClass>
+								<shaderType>CutoutComplex</shaderType>
 								<drawSize>1.7</drawSize>
 								<drawRotated>false</drawRotated>
 							</graphicDataFemale>

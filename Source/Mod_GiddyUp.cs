@@ -17,7 +17,34 @@ namespace GiddyUp
 		public static ThingDef[] allAnimals; //Only used during setup and for the mod options UI
 		static HashSet<ushort> defEditLedger = new HashSet<ushort>();
 		public const float defaultSizeThreshold = 1.2f;
-
+		static HashSet<int> patchLedger = new HashSet<int>();
+		//TODO: could make these not static to save some memory
+		static SimpleCurve sizeFactor = new SimpleCurve
+		{
+			{ new CurvePoint(1.2f, 0.9f) },
+			{ new CurvePoint(1.5f, 1f) },
+			{ new CurvePoint(2.4f, 1.15f) },
+			{ new CurvePoint(4f, 1.25f) }
+		};
+		static SimpleCurve speedFactor = new SimpleCurve
+		{
+			{ new CurvePoint(4.3f, 1f) },
+			{ new CurvePoint(5.8f, 1.2f) },
+			{ new CurvePoint(8f, 1.4f) }
+		};
+		static SimpleCurve valueFactor = new SimpleCurve
+		{
+			{ new CurvePoint(300f, 1f) },
+			{ new CurvePoint(550f, 1.15f) },
+			{ new CurvePoint(5000f, 1.3f) }
+		};
+		static SimpleCurve wildnessFactor = new SimpleCurve
+		{
+			{ new CurvePoint(0.2f, 1f) },
+			{ new CurvePoint(0.6f, 0.9f) },
+			{ new CurvePoint(1f, 0.85f) }
+		};
+	
 		static Setup()
 		{
 			var harmony = new HarmonyLib.Harmony("GiddyUp");
@@ -36,8 +63,9 @@ namespace GiddyUp
 			else JobDriver_Mounted.allowedJobs = new HashSet<JobDef>();
 
 			if (noMountedHunting) JobDriver_Mounted.allowedJobs.Add(JobDefOf.Hunt);
-			ProcessPawnKinds(false, harmony);
+			ProcessPawnKinds(harmony);
 		}
+		//Responsible for caching which animals are mounted, draw layering behavior, and calling caravan speed bonuses
 		public static void BuildCache()
 		{
 			//Setup collections
@@ -58,7 +86,8 @@ namespace GiddyUp
 					workingList.Add(def);
 
 					bool setting = def.race.baseBodySize > defaultSizeThreshold;
-					setting = def.HasModExtension<NotMountable>() ? false : setting;
+					if (def.HasModExtension<NotMountable>()) setting = false;
+					else if (def.HasModExtension<Mountable>()) setting = true;
 					if (invertMountingRules.Contains(def.defName)) setting = !setting; //Player customization says to invert rule.
 					
 					if (setting)
@@ -79,31 +108,41 @@ namespace GiddyUp
 			workingList.SortBy(x => x.label);
 			allAnimals = workingList.ToArray();
 		}
-		public static void ProcessPawnKinds(bool reset = false, HarmonyLib.Harmony harmony = null)
+		//Responsible for setting up the draw offsets and custom stat overrides
+		public static void ProcessPawnKinds(HarmonyLib.Harmony harmony = null)
 		{
 			bool newEntries = false;
 			bool usingCustomStats = false;
-			if (offsetCache == null || reset) offsetCache = new Dictionary<string, float>();
+			if (offsetCache == null) offsetCache = new Dictionary<string, float>();
 			var list = DefDatabase<PawnKindDef>.AllDefsListForReading;
 			var length = list.Count;
 			for (int i = 0; i < length; i++)
 			{
 				var pawnKindDef = list[i];
 				if (pawnKindDef.race == null) continue;
-				if (pawnKindDef.HasModExtension<CustomStats>()) usingCustomStats = true;
+				if (!usingCustomStats && pawnKindDef.HasModExtension<CustomStats>()) usingCustomStats = true;
+
+				//Only process animals that can be mounted
 				if (mountableCache.Contains(pawnKindDef.race.shortHash))
 				{
+					//Determine which life stages are considered mature enough to ride
 					var lifeStages = pawnKindDef.lifeStages;
 					var lifeIndexes = lifeStages?.Count;
 					AllowedLifeStages customLifeStages;
 					if (lifeIndexes > 0) customLifeStages = pawnKindDef.race.GetModExtension<AllowedLifeStages>();
 					else customLifeStages = null;
 
+					//Go through each life stage for this animal
 					for (int lifeIndex = 0; lifeIndex < lifeIndexes; lifeIndex++)
 					{
+						//Convert the def and age into a key string used for storage between sessions
 						if (lifeIndex != lifeIndexes -1 && (customLifeStages == null || !customLifeStages.IsAllowedAge(lifeIndex))) continue;
-						var key = TextureUtility.FormatKey(pawnKindDef, lifeIndex);
-						if (!reset && offsetCache.ContainsKey(key)) continue;
+						string key = TextureUtility.FormatKey(pawnKindDef, lifeIndex);
+
+						//Skip if already set
+						if (offsetCache.ContainsKey(key)) continue;
+
+						//Build out...
 						var offset = TextureUtility.SetDrawOffset(lifeStages[lifeIndex]);
 						offsetCache.Add(key, offset);
 						newEntries = true;
@@ -111,14 +150,17 @@ namespace GiddyUp
 				}
 			}
 
-			if (newEntries && !reset) LoadedModManager.GetMod<Mod_GiddyUp>().WriteSettings();
+			//Write to settings file
+			if (newEntries) LoadedModManager.GetMod<Mod_GiddyUp>().modSettings.Write();
 		
-			if (usingCustomStats)
+			//Only bother applying this harmony patch if using a mod that utilizes this extension
+			if (usingCustomStats && !patchLedger.Add(1))
 			{
 				harmony.Patch(HarmonyLib.AccessTools.Method(typeof(ArmorUtility), nameof(ArmorUtility.ApplyArmor) ), 
 						postfix: new HarmonyLib.HarmonyMethod(typeof(Harmony.Patch_ApplyArmor), nameof(Harmony.Patch_ApplyArmor.Postfix)));
 			} 
 		}
+		//Processes biome information to determine where animals come from, used for NPC mount spawning
 		static void BuildAnimalBiomeCache()
 		{
 			var biomeDefs = DefDatabase<BiomeDef>.AllDefsListForReading;
@@ -139,6 +181,43 @@ namespace GiddyUp
 				{
 					MountUtility.allDomesticAnimals.Add(pawnKindDef);
 				}
+			}
+		}
+		//ToDo? It may be possible to fold this into th BuildCache method
+		public static void RebuildInversions()
+		{
+			//Reset
+			invertMountingRules = new HashSet<string>();
+			invertDrawRules = new HashSet<string>();
+
+			foreach (var animalDef in Setup.allAnimals)
+			{
+				var hash = animalDef.shortHash;
+				//Search for abnormalities, meaning the player wants to invert the rules
+				if (animalDef.HasModExtension<NotMountable>())
+				{
+					if (mountableCache.Contains(hash)) invertMountingRules.Add(animalDef.defName);
+				}
+				else if (animalDef.HasModExtension<Mountable>())
+				{
+					if (!mountableCache.Contains(hash)) invertMountingRules.Add(animalDef.defName);
+				}
+				else if (animalDef.race.baseBodySize <= Setup.defaultSizeThreshold)
+				{
+					if (mountableCache.Contains(hash)) invertMountingRules.Add(animalDef.defName);
+				}
+				else
+				{
+					if (!mountableCache.Contains(hash)) invertMountingRules.Add(animalDef.defName);
+				}
+
+				//And now draw rules
+				bool drawFront = false;
+				var modExt = animalDef.GetModExtension<DrawInFront>();
+				if (modExt != null) drawFront = true;
+				
+				if (drawFront && !drawRulesCache.Contains(hash)) invertDrawRules.Add(animalDef.defName);
+				else if (!drawFront && drawRulesCache.Contains(hash)) invertDrawRules.Add(animalDef.defName);
 			}
 		}
 		static void RemoveRideAndRoll()
@@ -218,31 +297,6 @@ namespace GiddyUp
 			}
 			StatUtility.SetStatValueInList(ref def.statBases, StatDefOf.CaravanRidingSpeedFactor, speed);
 		}
-		static SimpleCurve sizeFactor = new SimpleCurve
-		{
-			{ new CurvePoint(1.2f, 0.9f) },
-			{ new CurvePoint(1.5f, 1f) },
-			{ new CurvePoint(2.4f, 1.15f) },
-			{ new CurvePoint(4f, 1.25f) }
-		};
-		static SimpleCurve speedFactor = new SimpleCurve
-		{
-			{ new CurvePoint(4.3f, 1f) },
-			{ new CurvePoint(5.8f, 1.2f) },
-			{ new CurvePoint(8f, 1.4f) }
-		};
-		static SimpleCurve valueFactor = new SimpleCurve
-		{
-			{ new CurvePoint(300f, 1f) },
-			{ new CurvePoint(550f, 1.15f) },
-			{ new CurvePoint(5000f, 1.3f) }
-		};
-		static SimpleCurve wildnessFactor = new SimpleCurve
-		{
-			{ new CurvePoint(0.2f, 1f) },
-			{ new CurvePoint(0.6f, 0.9f) },
-			{ new CurvePoint(1f, 0.85f) }
-		};
 	}
 	public class Mod_GiddyUp : Mod
 	{
@@ -419,13 +473,13 @@ namespace GiddyUp
 		{            
 			try
 			{
-				RebuildInversions();
+				Setup.RebuildInversions();
+				Setup.ProcessPawnKinds();
+				if (giveCaravanSpeed) for (int i = 0; i < Setup.allAnimals.Length; i++) Setup.CalculateCaravanSpeed(Setup.allAnimals[i], true);
+
+				//TODO: consider providing a list of all jobdefs users can add/remove to the allowed list
 				if (noMountedHunting) JobDriver_Mounted.allowedJobs.Add(JobDefOf.Hunt);
 				else JobDriver_Mounted.allowedJobs.Remove(JobDefOf.Hunt);
-
-				if (offsetCache == null) Setup.ProcessPawnKinds(true);
-
-				if (giveCaravanSpeed) for (int i = 0; i < Setup.allAnimals.Length; i++) Setup.CalculateCaravanSpeed(Setup.allAnimals[i], true);
 			}
 			catch (System.Exception ex)
 			{
@@ -462,39 +516,6 @@ namespace GiddyUp
 			Scribe_Collections.Look(ref offsetCache, "offsetCache", LookMode.Value);
 			
 			base.ExposeData();
-		}
-		//ToDo? It may be possible to fold this into th Setup.BuildCache method
-		public static void RebuildInversions()
-		{
-			//Reset
-			invertMountingRules = new HashSet<string>();
-			invertDrawRules = new HashSet<string>();
-
-			foreach (var animalDef in Setup.allAnimals)
-			{
-				var hash = animalDef.shortHash;
-				//Search for abnormalities, meaning the player wants to invert the rules
-				if (animalDef.HasModExtension<NotMountable>())
-				{
-					if (mountableCache.Contains(hash)) invertMountingRules.Add(animalDef.defName);
-				}
-				else if (animalDef.race.baseBodySize <= Setup.defaultSizeThreshold)
-				{
-					if (mountableCache.Contains(hash)) invertMountingRules.Add(animalDef.defName);
-				}
-				else
-				{
-					if (!mountableCache.Contains(hash)) invertMountingRules.Add(animalDef.defName);
-				}
-
-				//And now draw rules
-				bool drawFront = false;
-				var modExt = animalDef.GetModExtension<DrawInFront>();
-				if (modExt != null) drawFront = true;
-				
-				if (drawFront && !drawRulesCache.Contains(hash)) invertDrawRules.Add(animalDef.defName);
-				else if (!drawFront && drawRulesCache.Contains(hash)) invertDrawRules.Add(animalDef.defName);
-			}
 		}
 
 		public static float handlingMovementImpact = 2.5f,

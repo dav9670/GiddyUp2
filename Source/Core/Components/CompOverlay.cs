@@ -50,10 +50,6 @@ namespace GiddyUp
 				}
             }
 
-			overlay.offsetFemale.y += 0.2f;
-			overlay.offsetMale.y += 0.2f;
-			overlay.offsetDefault.y += 0.2f;
-
 			graphicCache.Add(rotation, (graphicData, overlay.offsetFemale, overlay.offsetMale, overlay.offsetDefault));
 			valid = true;
 		}
@@ -70,17 +66,16 @@ namespace GiddyUp
 		}
 		public override void PostDraw()
 		{
-			if (valid && pawn.IsMountedAnimal() && graphicCache.TryGetValue(pawn.Rotation, out (GraphicData, Vector3, Vector3, Vector3) cache))
+			if (valid && pawn.IsMountedAnimal() && graphicCache.TryGetValue(pawn.Rotation == Rot4.East ? Rot4.West : pawn.Rotation, out (GraphicData, Vector3, Vector3, Vector3) cache))
 			{	
 				Vector3 drawPos = parent.DrawPos;
 				Vector3 offset = (pawn.gender == Gender.Female) ? cache.Item2 : cache.Item3;
 				if (offset == Vector3.zero) offset = cache.Item4;
 				if (pawn.Rotation == Rot4.West) offset.x = -offset.x;
+				offset.y += pawn.Rotation == Rot4.South ? 0.08f : 0.04375f; //Tries to render above equipment but below the held weapon
 
-				drawPos += offset;
-				
 				//Somehow the rotation is flipped, hence the use of GetOpposite.
-				cache.Item1.Graphic.Draw(drawPos, parent.Rotation, parent, 0f);
+				cache.Item1.Graphic.Draw(drawPos + offset, parent.Rotation, parent, 0f);
 			}
 			else if (!valid && !incompatible) TryCache();
 		}
