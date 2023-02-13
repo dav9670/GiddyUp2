@@ -159,7 +159,8 @@ namespace GiddyUp.Jobs
 				{
 					if (CheckReason(RiderShouldDismount(riderData), out DismountReason dismountReason))
 					{
-						if (Settings.logging) Log.Message("[Giddy-Up] Pawn " + pawn.thingIDNumber + " dismounting for reason: " + dismountReason.ToString());
+						if (Settings.logging) Log.Message("[Giddy-Up] Pawn " + pawn.thingIDNumber + " dismounting for reason: " + 
+							dismountReason.ToString() + " (rider's job was: " + (rider.CurJobDef?.ToString() ?? "NULL" + ")"));
 						ReadyForNextToil();
 						return;
 					}
@@ -194,6 +195,12 @@ namespace GiddyUp.Jobs
 
 			if (targetThing != null && (confirmedHostile || targetThing.HostileTo(rider)))
 			{
+				var modExt = pawn.def.GetModExtension<ResearchRestrictions>();
+				if (modExt != null && modExt.researchProjectDefToAttack != null && !modExt.researchProjectDefToAttack.IsFinished)
+				{
+					return;
+				}
+
 				var verb = pawn.meleeVerbs?.TryGetMeleeVerb(targetThing);
 				if (verb == null || !verb.CanHitTarget(targetThing))
 				{

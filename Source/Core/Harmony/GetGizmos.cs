@@ -7,15 +7,15 @@ using Verse.AI;
 
 namespace GiddyUp.Harmony
 {
+    //This patches the release animals gizmo so that it won't throw the rider off
     [HarmonyPatch(typeof(Pawn_PlayerSettings), nameof(Pawn_PlayerSettings.GetGizmos))]
-    static class Pawn_PlayerSettings_GetGizmos
+    static class Patch_PawnGetGizmos
     {
-        //purpose: Make sure animals don't throw of their rider when released. 
-        static IEnumerable<Gizmo> PostFix(IEnumerable<Gizmo> values, Pawn_PlayerSettings __instance)
+        static IEnumerable<Gizmo> Postfix(IEnumerable<Gizmo> values, Pawn_PlayerSettings __instance)
         {
             foreach (var item in values)
             {
-                if (item is Command_Toggle toggle)
+                if (item is Command_Toggle toggle && toggle.defaultDesc == "CommandReleaseAnimalsDesc".Translate())
                 {
                     toggle.toggleAction = () => UpdateAnimalRelease(__instance.pawn, ref __instance.animalsReleased);
                 }

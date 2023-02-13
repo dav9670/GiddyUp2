@@ -9,7 +9,7 @@ namespace GiddyUp
 {
 	public static class IsMountableUtility
 	{
-		public enum Reason{NotFullyGrown, NotInModOptions, CanMount, IsRoped, NeedsTraining, IsBusy, IsPoorCondition, WrongFaction, NotAnimal, IsReserved};
+		public enum Reason{NotFullyGrown, NotInModOptions, CanMount, IsRoped, NeedsTraining, IsBusy, IsPoorCondition, WrongFaction, NotAnimal, IsReserved, MissingResearch};
 
 		static HashSet<JobDef> busyJobs = new HashSet<JobDef>() {ResourceBank.JobDefOf.Mounted, JobDefOf.LayEgg, JobDefOf.Nuzzle, JobDefOf.Lovin, JobDefOf.Vomit, JobDefOf.Wait_Downed};
 
@@ -92,6 +92,18 @@ namespace GiddyUp
 				{
 					reason = Reason.IsPoorCondition;
 					return false;
+				}
+				var modExt = animal.def.GetModExtension<ResearchRestrictions>();
+				if (modExt != null)
+				{
+					foreach (var researchProjectDef in modExt.researchProjectDefs)
+					{
+						if (!researchProjectDef.IsFinished)
+						{
+							reason = Reason.MissingResearch;
+							return false;
+						}
+					}
 				}
 			}
 			//Check age

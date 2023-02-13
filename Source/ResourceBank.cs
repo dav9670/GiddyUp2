@@ -15,6 +15,7 @@ namespace GiddyUp
         public const string VisitorAreaDropMount = "GU_Car_Area_GU_DropAnimal_NPC",
             AreaDropMount = "Gu_Area_DropMount", 
             AreaNoMount = "Gu_Area_NoMount";
+        public const float defaultSizeThreshold = 1.2f;
 
         [DefOf]
         public class ConceptDefOf

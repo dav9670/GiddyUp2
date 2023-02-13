@@ -30,12 +30,10 @@ namespace GiddyUpRideAndRoll
 
                     if (unropablePlayerAnimals && areaNoMount != null && areaNoMount.innerGrid.TrueCount != 0 && (areaDropAnimal == null || areaDropAnimal.innerGrid.TrueCount == 0))
                     {
-                        cacheResult = true;
-                        return true;
+                        return cacheResult = true;
                     }
                 }
-                cacheResult = false;
-                return false;
+                return cacheResult = false;
             }
             return cacheResult;
         }

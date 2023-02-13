@@ -60,41 +60,61 @@ namespace GiddyUp.Harmony
 
 	static class FloatMenuUtility
 	{
-		public static void AddMountingOptions(Pawn animal, Pawn pawn, List<FloatMenuOption> opts)
+		public static bool AddMountingOptions(Pawn animal, Pawn pawn, List<FloatMenuOption> opts)
 		{
-			if (pawn.IsWorkTypeDisabledByAge(WorkTypeDefOf.Handling, out int ageNeeded)) return;
+			if (pawn.IsWorkTypeDisabledByAge(WorkTypeDefOf.Handling, out int ageNeeded)) return false;
 			var pawnData = pawn.GetGUData();
-			if (pawnData.mount == null)
+			//Right click to dismount...
+			if (animal == pawnData.mount)
+			{
+				return opts.GenerateFloatMenuOption("GUC_Dismount".Translate(), () => pawn.Dismount(animal, pawnData, true));
+			}
+			//Right click to mount...
+			else
 			{
 				if (animal.IsMountable(out Reason reason, pawn, true, true))
 				{
-					opts.Add(new FloatMenuOption("GUC_Mount".Translate() + " " + animal.Name, () => pawn.GoMount(animal, MountUtility.GiveJobMethod.Try), MenuOptionPriority.Low));
+					//New mount
+					if (pawnData.mount == null)
+					{
+						return opts.GenerateFloatMenuOption("GUC_Mount".Translate(), () => pawn.GoMount(animal, MountUtility.GiveJobMethod.Try));
+					}
+					//Switch mount
+					else
+					{
+						return opts.GenerateFloatMenuOption("GUC_SwitchMount".Translate(), delegate
+						{ 
+							pawn.Dismount(pawnData.mount, pawnData, true);
+							pawn.GoMount(animal, MountUtility.GiveJobMethod.Try);
+						});
+					}
 				}
 				else if (DebugSettings.godMode)
 				{
-					opts.Add(new FloatMenuOption("GUC_Mount_GodMode".Translate() + " " + animal.Name, () => pawn.GoMount(animal, MountUtility.GiveJobMethod.Try), MenuOptionPriority.Low));
+					return opts.GenerateFloatMenuOption("GUC_Mount_GodMode".Translate(), () => pawn.GoMount(animal, MountUtility.GiveJobMethod.Try));
 				}
 				else
 				{
 					if (Settings.logging) Log.Message("[Giddy-Up] " + pawn.Name.ToString() + " could not mount " + animal.thingIDNumber.ToString() + " because: " + reason.ToString());
 					switch (reason)
 					{
-						case Reason.NotAnimal: return;
-						case Reason.WrongFaction: return;
-						case Reason.IsBusy: opts.Add(new FloatMenuOption("GUC_AnimalBusy".Translate(), null, MenuOptionPriority.Low)); break;
-						case Reason.NotInModOptions: opts.Add(new FloatMenuOption("GUC_NotInModOptions".Translate(), null, MenuOptionPriority.Low)); break;
-						case Reason.NotFullyGrown: opts.Add(new FloatMenuOption("GUC_NotFullyGrown".Translate(), null, MenuOptionPriority.Low)); break;
-						case Reason.NeedsTraining: opts.Add(new FloatMenuOption("GUC_NeedsObedience".Translate(), null, MenuOptionPriority.Low)); break;
-						case Reason.IsRoped: opts.Add(new FloatMenuOption("GUC_IsRoped".Translate(), null, MenuOptionPriority.Low)); break;
-						default: return;
+						case Reason.NotAnimal: return false;
+						case Reason.WrongFaction: return false;
+						case Reason.IsBusy: return opts.GenerateFloatMenuOption("GUC_AnimalBusy".Translate());
+						case Reason.NotInModOptions: return opts.GenerateFloatMenuOption("GUC_NotInModOptions".Translate());
+						case Reason.NotFullyGrown: return opts.GenerateFloatMenuOption("GUC_NotFullyGrown".Translate());
+						case Reason.NeedsTraining: return opts.GenerateFloatMenuOption("GUC_NeedsObedience".Translate());
+						case Reason.IsRoped: return opts.GenerateFloatMenuOption("GUC_IsRoped".Translate());
+						default: return false;
 					}
 				}
 			}
-			else if (animal == pawnData.mount)
-			{
-				Action action = delegate { pawn.Dismount(animal, pawnData, true); };
-				opts.Add(new FloatMenuOption("GUC_Dismount".Translate(), action, MenuOptionPriority.High));
-			}
+		}
+
+		static bool GenerateFloatMenuOption(this List<FloatMenuOption> list, string text, Action action = null)
+		{
+			list.Add(new FloatMenuOption(text, action, MenuOptionPriority.Low));
+			return true;
 		}
 	}
 }

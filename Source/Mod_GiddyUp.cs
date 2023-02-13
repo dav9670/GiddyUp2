@@ -16,7 +16,6 @@ namespace GiddyUp
 	{
 		public static ThingDef[] allAnimals; //Only used during setup and for the mod options UI
 		static HashSet<ushort> defEditLedger = new HashSet<ushort>();
-		public const float defaultSizeThreshold = 1.2f;
 		static HashSet<int> patchLedger = new HashSet<int>();
 		//TODO: could make these not static to save some memory
 		static SimpleCurve sizeFactor = new SimpleCurve
@@ -86,7 +85,7 @@ namespace GiddyUp
 				{
 					workingList.Add(def);
 
-					bool setting = def.race.baseBodySize > defaultSizeThreshold;
+					bool setting = def.race.baseBodySize > ResourceBank.defaultSizeThreshold;
 					if (def.HasModExtension<NotMountable>()) setting = false;
 					else if (def.HasModExtension<Mountable>()) setting = true;
 					if (invertMountingRules.Contains(def.defName)) setting = !setting; //Player customization says to invert rule.
@@ -203,7 +202,7 @@ namespace GiddyUp
 				{
 					if (!mountableCache.Contains(hash)) invertMountingRules.Add(animalDef.defName);
 				}
-				else if (animalDef.race.baseBodySize <= Setup.defaultSizeThreshold)
+				else if (animalDef.race.baseBodySize <= ResourceBank.defaultSizeThreshold)
 				{
 					if (mountableCache.Contains(hash)) invertMountingRules.Add(animalDef.defName);
 				}
