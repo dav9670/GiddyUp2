@@ -1,13 +1,20 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
+
   <GU_RR_NoMountedHunting_Title>禁止騎乘狩獵</GU_RR_NoMountedHunting_Title>
   <GU_RR_NoMountedHunting_Description>禁止騎乘狩獵，當使用戰鬥擴展時，建議打開，否則動物在玩耍時可能會受到傷害。</GU_RR_NoMountedHunting_Description>
 
-  <GU_RR_MinAutoMountDistance_Title>工作距離-尋找坐騎（範圍：{0}～{1}　默認：{2} 當前：{3}）</GU_RR_MinAutoMountDistance_Title>
+  <GU_RR_DisableSlavePawnColumn_Title>禁用奴隸騎乘</GU_RR_DisableSlavePawnColumn_Title>
+  <GU_RR_DisableSlavePawnColumn_Description>禁用動物選項卡中的奴隸騎乘。在遊戲重啟時應用。</GU_RR_DisableSlavePawnColumn_Description>
+
+  <GU_RR_MinAutoMountDistance_Title>工作距離－尋找坐騎（範圍：{0}～{1}　默認：{2} 當前：{3}）</GU_RR_MinAutoMountDistance_Title>
   <GU_RR_MinAutoMountDistance_Description>如果距離超過設定值，殖民者將尋找坐騎來完成工作。工作距離影響多個步驟，例如進行拖運工作。</GU_RR_MinAutoMountDistance_Description>
 
-  <GU_RR_MinAutoMountDistanceFromAnimal_Title>最大坐騎相距（範圍：{0}～{1}　默認：{2} 當前：{3}）</GU_RR_MinAutoMountDistanceFromAnimal_Title>
-  <GU_RR_MinAutoMountDistanceFromAnimal_Description>如果殖民者和坐騎之間的距離小於此設定，就會考慮騎牠。</GU_RR_MinAutoMountDistanceFromAnimal_Description>
+  <GU_RR_MinAutoMountDistanceFromAnimal_Title>坐騎－最大相距（範圍：{0}～{1}　默認：{2} 當前：{3}）</GU_RR_MinAutoMountDistanceFromAnimal_Title>
+  <GU_RR_MinAutoMountDistanceFromAnimal_Description>如果殖民者和坐騎之間的距離小於此設定，就會考慮騎乘移動。</GU_RR_MinAutoMountDistanceFromAnimal_Description>
+
+  <GU_RR_AutoHitchDistance_Title>自動固定距離（範圍：{0}～{1}　默認：{2} 當前：{3}）</GU_RR_AutoHitchDistance_Title>
+  <GU_RR_AutoHitchDistance_Description>單位會先嘗試把坐騎放在指定點。如果離目的地最近的點比設定值遠，他們將自動綁好他們的坐騎。</GU_RR_AutoHitchDistance_Description>
 
   <GU_RR_Designator_GU_DropAnimal_Expand_Label>釋放點</GU_RR_Designator_GU_DropAnimal_Expand_Label>  <!--Should be short-->
   <GU_RR_Designator_GU_DropAnimal_Expand_Description>當騎乘不需要圍欄的動物時，單位將使用釋放點。如果是家畜，會去附近的飼養圈。</GU_RR_Designator_GU_DropAnimal_Expand_Description>

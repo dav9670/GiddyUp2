@@ -16,7 +16,7 @@
   <BM_EnemyMountChance_Description>襲擊時，敵方生成騎手的機率。</BM_EnemyMountChance_Description>
 
   <BM_EnemyMountChanceTribal_Title>部落騎手突襲－機率 （範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</BM_EnemyMountChanceTribal_Title>
-  <BM_EnemyMountChanceTribal_Description>襲擊時，部落敵方生成騎手的機率。</BM_EnemyMountChanceTribal_Description>
+  <BM_EnemyMountChanceTribal_Description>襲擊時，原始部落、中世紀的敵方派系生成騎手的機率。</BM_EnemyMountChanceTribal_Description>
 
   <BM_SizeOk>可騎乘</BM_SizeOk>
   <BM_SizeNotOk>無法騎乘</BM_SizeNotOk>

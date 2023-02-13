@@ -6,13 +6,13 @@
   <GU_Car_visitorMountChance_Description>訪客騎乘動物的機率。</GU_Car_visitorMountChance_Description>
 
   <GU_Car_visitorMountChanceTribal_Title>部落訪客－騎乘機率 （範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</GU_Car_visitorMountChanceTribal_Title>
-  <GU_Car_visitorMountChanceTribal_Description>友好的部落人騎乘動物的機率</GU_Car_visitorMountChanceTribal_Description>
+  <GU_Car_visitorMountChanceTribal_Description>原始部落、中世紀的派系訪客，騎乘動物的機率</GU_Car_visitorMountChanceTribal_Description>
 
   <GU_Car_Designator_GU_DropAnimal_NPC_Clear_Label>刪除坐騎釋放區</GU_Car_Designator_GU_DropAnimal_NPC_Clear_Label>
   <GU_Car_Designator_GU_DropAnimal_NPC_Clear_Description>刪除坐騎釋放區</GU_Car_Designator_GU_DropAnimal_NPC_Clear_Description>
 
   <GU_Car_Designator_GU_DropAnimal_NPC_Expand_Label>坐騎釋放區</GU_Car_Designator_GU_DropAnimal_NPC_Expand_Label>
-  <GU_Car_Designator_GU_DropAnimal_NPC_Expand_Description>訪客坐騎的釋放點。當商人或訪客來時，會將坐騎暫時留在距離最近的坐騎點。坐騎將留在釋放點附近，直到他們的騎手返回。</GU_Car_Designator_GU_DropAnimal_NPC_Expand_Description>
+  <GU_Car_Designator_GU_DropAnimal_NPC_Expand_Description>訪客坐騎的釋放點。當商人或訪客來時，會將坐騎暫時留在距離最近的坐騎點。坐騎將留在釋放點附近，直到他們離去。</GU_Car_Designator_GU_DropAnimal_NPC_Expand_Description>
 
   <!-- note for translators: The following items need to be really short to fit -->
   <GU_Car_No_Rider>無騎乘者</GU_Car_No_Rider>
