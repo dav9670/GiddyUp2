@@ -83,7 +83,7 @@ namespace GiddyUp
 				}
 				//Check health
 				if (animal.Dead || animal.Downed || animal.InMentalState || !animal.Spawned || 
-					(animal.health != null && animal.health.summaryHealth.SummaryHealthPercent < 1) ||
+					(animal.health != null && animal.health.summaryHealth.SummaryHealthPercent < 0.75f) ||
 					animal.health.HasHediffsNeedingTend() || 
 					animal.HasAttachment(ThingDefOf.Fire) || 
 					animal.needs.food != null && animal.needs.food.CurCategory >= HungerCategory.UrgentlyHungry || 

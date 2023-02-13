@@ -30,6 +30,16 @@ namespace GiddyUp.Jobs
 			yield return WaitForRider();
 			yield return DelegateMovement();
 		}
+		public override void ExposeData()
+		{
+			base.ExposeData();
+			Scribe_Values.Look(ref this.isTrained, "isTrained");
+			Scribe_Values.Look(ref this.interrupted, "interrupted");
+			Scribe_Values.Look(ref this.isParking, "isParking");
+			Scribe_Values.Look(ref this.dismountingAt, "dismountingAt");
+			Scribe_Values.Look(ref this.ticker, "ticker");
+			Scribe_Values.Look(ref this.riderOriginalDestinaton, "riderOriginalDestinaton");
+		}
 		public override bool TryMakePreToilReservations(bool errorOnFailed)
 		{
 			return true;
@@ -157,6 +167,7 @@ namespace GiddyUp.Jobs
 				defaultCompleteMode = ToilCompleteMode.Never,
 				tickAction = delegate
 				{
+					if (map == null) map = Map;
 					if (CheckReason(RiderShouldDismount(riderData), out DismountReason dismountReason))
 					{
 						if (Settings.logging) Log.Message("[Giddy-Up] Pawn " + pawn.thingIDNumber + " dismounting for reason: " + 

@@ -25,6 +25,12 @@ namespace GiddyUp
 			{
 				if (currentJob != null) rider.jobs?.jobQueue?.EnqueueFirst(currentJob);
 				if (thinkResult != null) return new ThinkResult(new Job(ResourceBank.JobDefOf.Mount, animal) {count = 1}, thinkResult.Value.SourceNode, thinkResult.Value.Tag, false);
+				else rider.jobs?.StartJob(new Job(
+					ResourceBank.JobDefOf.Mount, animal) {count = 1}, 
+					lastJobEndCondition: JobCondition.InterruptOptional, 
+					resumeCurJobAfterwards: true, 
+					cancelBusyStances: false, 
+					keepCarryingThingOverride: true);
 			}
 			
 			//This has them mount after they're done doing their current task
@@ -139,20 +145,17 @@ namespace GiddyUp
 				animal.roping.RopeToSpot(parkLoc == default(IntVec3) ? animal.Position : parkLoc);
 			}
 			//Follow the rider for a while to give it an opportunity to take a ride back
-			if (Settings.rideAndRollEnabled)
+			if (Settings.rideAndRollEnabled && !rider.Drafted && animal.Faction.def.isPlayer && animalData.reservedBy != null)
 			{
-				if ((animal.roping == null || !animal.roping.IsRoped) && !rider.Drafted && animal.Faction.def.isPlayer && animalData.reservedBy != null)
+				if (animal.CurJobDef != ResourceBank.JobDefOf.Mounted || animal.jobs.curDriver is not Jobs.JobDriver_Mounted mountJob || !mountJob.interrupted)
 				{
-					if (animal.CurJobDef != ResourceBank.JobDefOf.Mounted || animal.jobs.curDriver is not Jobs.JobDriver_Mounted mountJob || !mountJob.interrupted)
+					animal.jobs.jobQueue.EnqueueFirst(new Job(ResourceBank.JobDefOf.WaitForRider, animalData.reservedBy)
 					{
-						animal.jobs.jobQueue.EnqueueFirst(new Job(ResourceBank.JobDefOf.WaitForRider, animalData.reservedBy)
-						{
-							expiryInterval = 10000,
-							checkOverrideOnExpire = true,
-							followRadius = 8,
-							locomotionUrgency = LocomotionUrgency.Walk
-						});
-					}
+						expiryInterval = 10000,
+						checkOverrideOnExpire = true,
+						followRadius = 8,
+						locomotionUrgency = LocomotionUrgency.Walk
+					});
 				}
 			}
 		}
@@ -181,10 +184,12 @@ namespace GiddyUp
 			
 			//Setup weight ranges
 			float totalWeight = localWeight + foreignWeight + domesticWeight; //EG 100
-			localWeight /= totalWeight * 100f; //EG 20
-			foreignWeight /= totalWeight * 100f; //EG 20+10 = 30
+			localWeight = (localWeight / totalWeight) * 100f; //EG 20
+			foreignWeight = (foreignWeight / totalWeight) * 100f; //EG 20+10 = 30
 			foreignWeight += localWeight;
 			float averageCommonality = AverageAnimalCommonality(map.Biome);
+
+			if (Settings.logging) Log.Message("[Giddy-Up] List weights: localWeight: " + localWeight.ToString() + " foreignWeight: " + foreignWeight.ToString());
 			
 			bool hasPackAnimals = GetPackAnimals(list, out List<Pawn> packAnimals);
 			hasPackAnimals = false;
@@ -211,16 +216,24 @@ namespace GiddyUp
 					if (modExtension.mountChance <= random) continue;
 
 					Rand.PushState();
-					bool found = modExtension.possibleMounts.TryRandomElementByWeight((KeyValuePair<PawnKindDef, int> mount) => mount.Value, out KeyValuePair<PawnKindDef, int> selectedMount);
-					Rand.PopState();
-					if (found) pawnKindDef = selectedMount.Key;
+					if (modExtension.possibleMounts.TryRandomElementByWeight(mount => mount.Value, out KeyValuePair<PawnKindDef, int> selectedMount))
+					{
+						if (Settings.logging)
+						{
+							var report = System.String.Join(", ", modExtension.possibleMounts.Select(x => x.Key.defName));
+							Log.Message("[Giddy-Up] Pawn " + (pawn.Name?.ToString() ?? "NULL") + " had a custom mount extension. The allowed mounts were: " + 
+							report + " and they picked " + selectedMount.Key.defName);
+						}
+						pawnKindDef = selectedMount.Key;
+					}
 					else pawnKindDef = null;
+					Rand.PopState();
 				}
 				else
 				{
 					if (mountChance <= random) continue;
 					int pawnHandlingLevel = pawn.skills.GetSkill(SkillDefOf.Animals).Level;
-					if (pawnHandlingLevel >= Settings.minHandlingLevel) continue;
+					if (pawnHandlingLevel <= Settings.minHandlingLevel) continue;
 
 					PawnKindDef[] workingList;
 					bool domestic = false;

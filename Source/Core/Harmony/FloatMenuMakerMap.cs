@@ -105,6 +105,7 @@ namespace GiddyUp.Harmony
 						case Reason.NotFullyGrown: return opts.GenerateFloatMenuOption("GUC_NotFullyGrown".Translate());
 						case Reason.NeedsTraining: return opts.GenerateFloatMenuOption("GUC_NeedsObedience".Translate());
 						case Reason.IsRoped: return opts.GenerateFloatMenuOption("GUC_IsRoped".Translate());
+						case Reason.IsPoorCondition: return opts.GenerateFloatMenuOption("GUC_IsPoorCondition".Translate());
 						default: return false;
 					}
 				}

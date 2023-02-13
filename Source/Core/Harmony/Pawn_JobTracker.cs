@@ -1,18 +1,14 @@
 ﻿using GiddyUp.Jobs;
-using GiddyUp;
 using HarmonyLib;
 using RimWorld;
-using RimWorld.Planet;
 using Verse;
 using Verse.AI;
-using System.Linq;
 using Verse.AI.Group;
 using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUp.Harmony
 {
 	//This patch prevents animals from starting new jobs if they're currently mounted
-	//TODO check if changing the properties of the Mount job would automatically prevent this
 	[HarmonyPatch(typeof(Pawn_JobTracker), nameof(Pawn_JobTracker.StartJob))]
 	static class Patch_StartJob
 	{    
@@ -21,7 +17,6 @@ namespace GiddyUp.Harmony
 			return !__instance.pawn.IsMountedAnimal();
 	   }
 	}
-	
 	//Postfix, after a job has been determined, inject a job before it to go mount/dismount based on conditions
 	[HarmonyPatch(typeof(Pawn_JobTracker), nameof(Pawn_JobTracker.DetermineNextJob))]
 	static class Patch_DetermineNextJob
@@ -171,6 +166,7 @@ namespace GiddyUp.Harmony
 			}
 		}
 	}
+	//A mount may have a maste, be it the current rider or not. If the rider drafts, the animal will want to go over to them. This patch blocks that, if mounted.
 	[HarmonyPatch(typeof(Pawn_JobTracker), nameof(Pawn_JobTracker.Notify_MasterDraftedOrUndrafted))]
 	static class Pawn_JobTracker_Notify_MasterDraftedOrUndrafted
 	{

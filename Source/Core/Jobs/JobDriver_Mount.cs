@@ -14,8 +14,6 @@ namespace GiddyUp.Jobs
         public Pawn Mount { get { return job.targetA.Thing as Pawn; } }
         public override IEnumerable<Toil> MakeNewToils()
         {
-            job.canBashDoors = true;
-            job.canBashFences = true;
             this.FailOnDespawnedNullOrForbidden(TargetIndex.A);
             this.FailOnDowned(TargetIndex.A);
 

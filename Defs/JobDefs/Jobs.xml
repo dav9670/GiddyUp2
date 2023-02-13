@@ -50,13 +50,14 @@
 					<li>UnloadYourInventory</li> 
 					<li>UseArtifact</li> 
 					<li>UseVerbOnThing</li> 
+					<li MayRequire="OskarPotocki.VanillaFactionsExpanded.Core">VFEA_UseAbility</li> 
 					<li>Vomit</li> 
 					<li>Wait</li> 
 					<li>Wait_Combat</li> 
 					<li>Wait_MaintainPosture</li> 
 					<li>Wait_SafeTemperature</li> 
 					<li>Wait_Wander</li> 
-					<li>Wear</li> 
+					<li>Wear</li>
 				</allowedJobDefs>
 			</li>
 		</modExtensions>

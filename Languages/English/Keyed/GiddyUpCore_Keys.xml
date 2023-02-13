@@ -26,10 +26,12 @@
 	<GUC_AnimalBusy>Animal busy</GUC_AnimalBusy>
 	<GUC_NotFullyGrown>Animal immature</GUC_NotFullyGrown>
 	<GUC_NeedsObedience>Animal requires taming</GUC_NeedsObedience>
+	<GUC_IsPoorCondition>Animal in poor condition</GUC_IsPoorCondition>
 	<GUC_IsRoped>Animal is roped</GUC_IsRoped>
 	<GUC_Mount>Mount</GUC_Mount>
 	<GUC_Mount_GodMode>Mount (god mode)</GUC_Mount_GodMode>
 	<GUC_Dismount>Dismount</GUC_Dismount>
+	<GUC_SwitchMount>Switch mount</GUC_SwitchMount>
 	
 	<GUC_Mountable_Tab>Mountable animals</GUC_Mountable_Tab>
 	<GUC_DrawBehavior_Tab>Draw behavior</GUC_DrawBehavior_Tab>

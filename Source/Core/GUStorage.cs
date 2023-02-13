@@ -70,6 +70,7 @@ namespace GiddyUp
     {
         public static ExtendedDataStorage GUComp; //Singleton instance creaed on world init
         public static HashSet<int> isMounted = new HashSet<int>(); //This just serves as a cached logic gate
+        public static HashSet<Thing> nofleeingAnimals;
         public Dictionary<int, ExtendedPawnData> _store = new Dictionary<int, ExtendedPawnData>(); //Pawn xData sorted via their thingID
         public Dictionary<int, Area> areaNoMount = new Dictionary<int, Area>(), areaDropAnimal = new Dictionary<int, Area>();
         public ExtendedDataStorage(World world) : base(world) {}

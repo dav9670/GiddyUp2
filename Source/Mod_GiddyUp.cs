@@ -64,6 +64,10 @@ namespace GiddyUp
 			if (noMountedHunting) JobDriver_Mounted.allowedJobs.Add(JobDefOf.Hunt);
 			ProcessPawnKinds(harmony);
 			if (disableSlavePawnColumn) DefDatabase<PawnTableDef>.GetNamed("Animals").columns.RemoveAll(x => x.defName == "MountableBySlaves");
+
+			//VE Classical mod support
+			var type = HarmonyLib.AccessTools.TypeByName("AnimalBehaviours.AnimalCollectionClass");
+			if (type != null) ExtendedDataStorage.nofleeingAnimals = HarmonyLib.Traverse.Create(type).Field("nofleeing_animals")?.GetValue<HashSet<Thing>>();
 		}
 		//Responsible for caching which animals are mounted, draw layering behavior, and calling caravan speed bonuses
 		public static void BuildCache()

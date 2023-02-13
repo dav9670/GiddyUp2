@@ -1,5 +1,4 @@
-﻿using GiddyUp;
-using HarmonyLib;
+﻿using HarmonyLib;
 using RimWorld;
 using Verse;
 
@@ -26,6 +25,7 @@ namespace GiddyUp.Harmony
                 ExtendedPawnData pawnData = pawn.GetGUData();
                 if (pawnData.reservedMount != null && !pawnData.reservedMount.Dead && pawnData.reservedMount.Spawned)
                 {
+                    if (ExtendedDataStorage.nofleeingAnimals != null && ExtendedDataStorage.nofleeingAnimals.Contains(pawnData.reservedMount)) return;
                     pawnData.reservedMount.mindState.mentalStateHandler.TryStartMentalState(MentalStateDefOf.PanicFlee);
                 }
             }
@@ -44,6 +44,7 @@ namespace GiddyUp.Harmony
                 ExtendedPawnData pawnData = pawn.GetGUData();
                 if (pawnData.reservedMount != null && !pawnData.reservedMount.Dead && pawnData.reservedMount.Spawned)
                 {
+                    if (ExtendedDataStorage.nofleeingAnimals != null && ExtendedDataStorage.nofleeingAnimals.Contains(pawnData.reservedMount)) return;
                     pawnData.reservedMount.mindState.mentalStateHandler.TryStartMentalState(MentalStateDefOf.PanicFlee);
                 }
             }
