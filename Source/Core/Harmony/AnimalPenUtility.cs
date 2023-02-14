@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using RimWorld;
 using Verse;
 using GiddyUp;
 using Settings = GiddyUp.ModSettings_GiddyUp;

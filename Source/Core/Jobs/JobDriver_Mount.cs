@@ -2,6 +2,7 @@
 using Verse;
 using Verse.AI;
 using RimWorld;
+using RimWorld.Planet;
 
 namespace GiddyUp.Jobs
 {
@@ -19,45 +20,55 @@ namespace GiddyUp.Jobs
 
             yield return LetMountParticipate();
             yield return Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.Touch);
-            if (this.pawn.interactions != null)
-            {
-                yield return Toils_Interpersonal.WaitToBeAbleToInteract(this.pawn);
-            }
+            if (pawn.interactions != null) yield return Toils_Interpersonal.WaitToBeAbleToInteract(pawn);
             yield return TalkToAnimal();
         }
         Toil LetMountParticipate()
         {
-            Toil toil = new Toil();
-
-            toil.defaultCompleteMode = ToilCompleteMode.Never;
-            toil.initAction = delegate
+            return new Toil()
             {
-                Mount.jobs.StopAll();
-                Mount.pather.StopDead();
-                Mount.jobs.TryTakeOrderedJob(new Job(ResourceBank.JobDefOf.Mounted, pawn) { count = 1});
-                ReadyForNextToil();
+                defaultCompleteMode = ToilCompleteMode.Never,
+                initAction = delegate
+                {
+                    Mount.jobs.StopAll();
+                    Mount.pather.StopDead();
+                    Mount.jobs.TryTakeOrderedJob(new Job(ResourceBank.JobDefOf.Mounted, pawn) { count = 1});
+                    ReadyForNextToil();
+                }
             };
-            return toil;
         }
         Toil TalkToAnimal()
         {
-            Toil toil = new Toil();
-            toil.AddFailCondition(delegate { return Mount?.CurJobDef != ResourceBank.JobDefOf.Mounted; });
-            toil.initAction = delegate
+            var mount = Mount;
+            return new Toil()
             {
-                Pawn actor = toil.GetActor();
-                if (actor.interactions != null)
+                defaultCompleteMode = ToilCompleteMode.Delay,
+                defaultDuration = 150,
+                endConditions = new List<System.Func<JobCondition>>()
                 {
-                    actor.interactions.TryInteractWith(Mount, InteractionDefOf.AnimalChat);
-                }
+                    delegate
+                    {
+                        if (mount?.CurJobDef != ResourceBank.JobDefOf.Mounted)
+                        {
+                            return JobCondition.Incompletable;
+                        }
+                        return JobCondition.Ongoing;
+                    }
+                },
+                initAction = delegate
+                {
+                    Pawn actor = GetActor();
+                    if (actor.interactions != null)
+                    {
+                        actor.interactions.TryInteractWith(mount, InteractionDefOf.AnimalChat);
+                    }
+                },
+                finishActions = new List<System.Action>() { delegate
+                {
+                    if (!pawn.CanReserve(mount) || (mount.GetGUData().reservedBy != pawn && mount.IsFormingCaravan())) return;
+                    pawn.GoMount(mount, MountUtility.GiveJobMethod.Instant);
+                }}
             };
-            toil.defaultCompleteMode = ToilCompleteMode.Delay;
-            toil.defaultDuration = 150; //TODO tie into handling skill bonus
-            toil.AddFinishAction(delegate
-            {
-                this.pawn?.GoMount(Mount, MountUtility.GiveJobMethod.Instant);
-            });
-            return toil;
         }
     }
 }

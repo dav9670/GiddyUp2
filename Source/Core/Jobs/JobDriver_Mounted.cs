@@ -44,6 +44,69 @@ namespace GiddyUp.Jobs
 		{
 			return true;
 		}
+		Toil WaitForRider()
+		{
+			return new Toil()
+			{
+				defaultCompleteMode = ToilCompleteMode.Never,
+				tickAction = delegate
+				{
+					if (rider == null || rider.Dead || !rider.Spawned || rider.Downed || rider.InMentalState)
+					{
+						interrupted = true;
+						ReadyForNextToil();
+						return;
+					}
+
+					if (riderData.mount != null && riderData.mount == pawn)
+					{
+						ReadyForNextToil();
+					}
+
+					var curJobDef = rider.CurJobDef;
+					if (curJobDef != ResourceBank.JobDefOf.Mount && 
+						curJobDef != JobDefOf.Vomit && 
+						curJobDef != JobDefOf.Wait_MaintainPosture && 
+						curJobDef != JobDefOf.SocialRelax && 
+						curJobDef != JobDefOf.Wait && 
+						riderData.mount == null)
+					{
+						if (Settings.logging) Log.Message("[Giddy-Up] Animal " + pawn.thingIDNumber + " is no longer waiting for " + rider.Name.ToString());
+						interrupted = true;
+						ReadyForNextToil();
+					}
+
+				}
+			};
+		}
+		Toil DelegateMovement()
+		{
+			return new Toil()
+			{
+				defaultCompleteMode = ToilCompleteMode.Never,
+				tickAction = delegate
+				{
+					if (map == null) map = Map;
+					if (CheckReason(RiderShouldDismount(riderData), out DismountReason dismountReason))
+					{
+						if (Settings.logging) Log.Message("[Giddy-Up] Pawn " + pawn.thingIDNumber + " dismounting for reason: " + 
+							dismountReason.ToString() + " (rider's job was: " + (rider.CurJobDef?.ToString() ?? "NULL" + ")"));
+						ReadyForNextToil();
+						return;
+					}
+					pawn.Drawer.tweener = rider.Drawer.tweener; //Could probably just be set once, but reloading could cause issues?
+					pawn.Position = rider.Position;
+					pawn.Rotation = rider.Rotation;
+					if (isTrained) TryAttackEnemy(rider);
+				},
+				finishActions = new List<Action>() { (delegate
+				{
+					if (isParking) pawn.pather.StopDead();
+					//Check mount first. If it's null then they must have dismounted outside the driver's control
+					if (riderData.mount != null) rider.Dismount(pawn, riderData, false, isParking && pawn.Position.DistanceTo(dismountingAt) < 2f ? dismountingAt : default(IntVec3));
+				})}
+			};
+		}
 		DismountReason RiderShouldDismount(ExtendedPawnData riderData)
 		{
 			if (interrupted || riderData == null || riderData.mount == null || riderData.ID != rider.thingIDNumber) return DismountReason.Interrupted;
@@ -125,67 +188,54 @@ namespace GiddyUp.Jobs
 			reason = dismountReason;
 			return dismountReason != DismountReason.False;
 		}
-		Toil WaitForRider()
+		bool FindPlaceToDismount(Area areaDropAnimal, IntVec3 riderDestinaton, out IntVec3 parkLoc)
 		{
-			return new Toil()
+			if (areaDropAnimal == null) TryParkAnimalPen(out parkLoc);
+			else parkLoc = areaDropAnimal.GetClosestAreaLoc(riderDestinaton);
+
+			//Invalide the results if not reachable
+			if (!map.reachability.CanReach(rider.Position, parkLoc, PathEndMode.OnCell, TraverseParms.For(TraverseMode.PassDoors, Danger.Deadly, false)))
 			{
-				defaultCompleteMode = ToilCompleteMode.Never,
-				tickAction = delegate
+				parkLoc = IntVec3.Invalid;
+			}
+
+			//Dropoff is too far away, setup a hitching point instead
+			if (parkLoc.DistanceTo(riderDestinaton) > Settings.autoHitchDistance)
+			{
+				Predicate<IntVec3> freeCell = delegate(IntVec3 cell)
 				{
-					if (rider == null || rider.Dead || !rider.Spawned || rider.Downed || rider.InMentalState)
-					{
-						interrupted = true;
-						ReadyForNextToil();
-						return;
-					}
-
-					if (riderData.mount != null && riderData.mount == pawn)
-					{
-						ReadyForNextToil();
-					}
-
-					var curJobDef = rider.CurJobDef;
-					if (curJobDef != ResourceBank.JobDefOf.Mount && 
-						curJobDef != JobDefOf.Vomit && 
-						curJobDef != JobDefOf.Wait_MaintainPosture && 
-						curJobDef != JobDefOf.SocialRelax && 
-						curJobDef != JobDefOf.Wait && 
-						riderData.mount == null)
-					{
-						if (Settings.logging) Log.Message("[Giddy-Up] Animal " + pawn.thingIDNumber + " is no longer waiting for " + rider.Name.ToString());
-						interrupted = true;
-						ReadyForNextToil();
-					}
-
+					return (cell.Standable(map) && 
+						cell.GetDangerFor(pawn, map) == Danger.None && 
+						!cell.Fogged(map) &&
+						cell.InBounds(map) &&
+						rider.CanReserveAndReach(cell, PathEndMode.OnCell, Danger.None, 1, -1, null, false));
+				};
+				if (!CellFinder.TryFindRandomCellNear(riderDestinaton, map, 4, freeCell, out parkLoc, 16))
+				{
+					if (Settings.logging) Log.Message("[Giddy-Up] Pawn " + rider.Name.ToString() + " could not find a valid autohitch spot near " + parkLoc.ToString());
+					parkLoc = IntVec3.Invalid;
 				}
-			};
-		}
-		Toil DelegateMovement()
-		{
-			return new Toil()
+			}
+			//Validate results
+			if (parkLoc == IntVec3.Invalid)
 			{
-				defaultCompleteMode = ToilCompleteMode.Never,
-				tickAction = delegate
+				if (Prefs.DevMode) Log.Message("[Giddy-Up] Pawn " + rider.Name.ToString() + " could not ride their mount to their job but could not find any places to dismount. Immediately dismounting.");
+			}
+			//Looks good, begin pathing
+			else return true;
+			return false;
+
+			#region Embedded methods
+			void TryParkAnimalPen(out IntVec3 parkLoc)
+			{
+				parkLoc = IntVec3.Invalid;
+				var pen = AnimalPenUtility.GetPenAnimalShouldBeTakenTo(rider, pawn, out string failReason, true, true, false, true);
+				if (pen != null)
 				{
-					if (map == null) map = Map;
-					if (CheckReason(RiderShouldDismount(riderData), out DismountReason dismountReason))
-					{
-						if (Settings.logging) Log.Message("[Giddy-Up] Pawn " + pawn.thingIDNumber + " dismounting for reason: " + 
-							dismountReason.ToString() + " (rider's job was: " + (rider.CurJobDef?.ToString() ?? "NULL" + ")"));
-						ReadyForNextToil();
-						return;
-					}
-					pawn.Drawer.tweener = rider.Drawer.tweener; //Could probably just be set once, but reloading could cause issues?
-					pawn.Position = rider.Position;
-					pawn.Rotation = rider.Rotation;
-					if (isTrained) TryAttackEnemy(rider);
-				},
-				finishActions = new List<Action>() { (delegate
-				{
-					//Check mount first. If it's null then they must have dismounted outside the driver's control
-					if (riderData.mount != null) rider.Dismount(pawn, riderData, false, isParking ? dismountingAt : default(IntVec3));
-				})}
-			};
+					parkLoc = AnimalPenUtility.FindPlaceInPenToStand(pen, rider);
+				}
+			}
+			#endregion
 		}
 		void TryAttackEnemy(Pawn rider)
 		{
@@ -219,54 +269,6 @@ namespace GiddyUp.Jobs
 				}
 				else pawn.meleeVerbs.TryMeleeAttack(targetThing);
 			}
-		}
-		bool FindPlaceToDismount(Area areaDropAnimal, IntVec3 riderDestinaton, out IntVec3 parkLoc)
-		{
-			if (areaDropAnimal == null) TryParkAnimalPen(out parkLoc);
-			else parkLoc = areaDropAnimal.GetClosestAreaLoc(riderDestinaton);
-
-			//Invalide the results if not reachable
-			if (!map.reachability.CanReach(rider.Position, parkLoc, PathEndMode.OnCell, TraverseParms.For(TraverseMode.PassDoors, Danger.Deadly, false)))
-			{
-				parkLoc = IntVec3.Invalid;
-			}
-
-			//Dropoff is too far away, setup a hitching point instead
-			if (parkLoc.DistanceTo(riderDestinaton) > Settings.autoHitchDistance)
-			{
-				Predicate<IntVec3> freeCell = delegate(IntVec3 cell)
-				{
-					return (cell.Standable(map) && 
-						cell.GetDangerFor(pawn, map) == Danger.None && 
-						!cell.Fogged(map) &&
-						cell.InBounds(map) &&
-						pawn.CanReserveAndReach(cell, PathEndMode.OnCell, Danger.None, 1, -1, null, false));
-				};
-				if (!CellFinder.TryFindRandomCellNear(riderDestinaton, map, 4, freeCell, out parkLoc, 16))
-				{
-					parkLoc = IntVec3.Invalid;
-				}
-			}
-			//Validate results
-			if (parkLoc == IntVec3.Invalid)
-			{
-				if (Prefs.DevMode) Log.Message("[Giddy-Up] Pawn " + pawn.Name.ToString() + " could not ride their mount to their job but could not find any places to dismount. Immediately dismounting.");
-			}
-			//Looks good, begin pathing
-			else return true;
-			return false;
-
-			#region Embedded methods
-			void TryParkAnimalPen(out IntVec3 parkLoc)
-			{
-				parkLoc = IntVec3.Invalid;
-				var pen = AnimalPenUtility.GetPenAnimalShouldBeTakenTo(rider, pawn, out string failReason, true, true, false, true);
-				if (pen != null)
-				{
-					parkLoc = AnimalPenUtility.FindPlaceInPenToStand(pen, rider);
-				}
-			}
-			#endregion
 		}
 	}
 }

@@ -109,8 +109,11 @@ namespace GiddyUpRideAndRoll.Jobs
 		void UnsetOwnership()
 		{
 			ExtendedPawnData animalData = pawn.GetGUData();
-			ExtendedPawnData riderData = animalData.reservedBy.GetGUData();
-			if (riderData.reservedMount == pawn) riderData.ReservedMount = null;
+			if (animalData.reservedBy != null)
+			{
+				ExtendedPawnData riderData = animalData.reservedBy.GetGUData();	
+				if (riderData.reservedMount == pawn) riderData.ReservedMount = null;
+			}
 			animalData.ReservedBy = null;
 		}
 		void WalkRandomNearby()

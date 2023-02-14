@@ -56,7 +56,7 @@ namespace GiddyUp.Harmony
 
 					pawn.GoMount(hostileMount);
 				}
-				else if (Settings.rideAndRollEnabled && pawn.Faction.def.isPlayer) TryAutoMount(__instance, ref __result, pawn);
+				else if (Settings.rideAndRollEnabled && pawn.Faction.def.isPlayer) pawn.TryAutoMount(__instance, ref __result);
 			}
 			if (Settings.caravansEnabled && !pawn.Faction.def.isPlayer)
 			{
@@ -68,47 +68,6 @@ namespace GiddyUp.Harmony
 					if (owner == null || owner.Dead || !owner.Spawned) pawn.roping.BreakAllRopes();
 				}
 				HandleVisitorsMounting(__instance, ref __result, pawn);
-			}
-
-			//This is responsbile for the automount mechanic
-			void TryAutoMount(Pawn_JobTracker jobTracker, ref ThinkResult thinkResult, Pawn pawn)
-			{
-				if (!pawn.IsColonistPlayerControlled ||
-					pawn.def.race.intelligence != Intelligence.Humanlike ||
-					thinkResult.Job == null || 
-					thinkResult.Job.def == ResourceBank.JobDefOf.Mount || 
-					pawn.Drafted || 
-					pawn.InMentalState || 
-					pawn.IsMounted() ||
-					(pawn.mindState != null && pawn.mindState.duty != null && (pawn.mindState.duty.def == DutyDefOf.TravelOrWait || pawn.mindState.duty.def == DutyDefOf.TravelOrLeave)))
-				{
-					return;
-				}
-
-				//Is this a job that cannot be done mounted?
-				var jobDef = thinkResult.Job.def;
-				
-				//Sort out where the targets are. For some jobs the first target is B, and the second A.
-				if (!thinkResult.Job.DetermineTargets(out IntVec3 firstTarget, out IntVec3 secondTarget)) return;
-				
-				//Determine distances
-				float pawnTargetDistance = pawn.Position.DistanceTo(firstTarget);
-				
-				float firstToSecondTargetDistance;
-				if (secondTarget.IsValid && (jobDef == JobDefOf.HaulToCell || jobDef == JobDefOf.HaulToContainer)) firstToSecondTargetDistance = firstTarget.DistanceTo(secondTarget);
-				else firstToSecondTargetDistance = 0;
-
-				if (pawnTargetDistance + firstToSecondTargetDistance > Settings.minAutoMountDistance)
-				{
-					//Do some less performant final check. It's less costly to run these near the end on successful mount attempts than to check constantly
-					if (pawn.IsWorkTypeDisabledByAge(WorkTypeDefOf.Handling, out int ageNeeded) || pawn.IsBorrowedByAnyFaction()) return;
-
-					if (MountUtility.GetBestAnimal(pawn, out Pawn bestAnimal, firstTarget, secondTarget, pawnTargetDistance, firstToSecondTargetDistance))
-					{
-						//Finally, go mount up
-						thinkResult = pawn.GoMount(bestAnimal, MountUtility.GiveJobMethod.Inject, thinkResult, thinkResult.Job).Value;
-					}
-				}
 			}
 			//This is responsible for friendly guests mounting/dismounting their animals they rode in on
 			void HandleVisitorsMounting(Pawn_JobTracker jobTracker, ref ThinkResult thinkResult, Pawn pawn)

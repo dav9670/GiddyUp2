@@ -12,7 +12,7 @@ namespace GiddyUp
 	static class MountUtility
 	{
 		public static HashSet<PawnKindDef> allWildAnimals = new HashSet<PawnKindDef>(), allDomesticAnimals = new HashSet<PawnKindDef>();
-		public enum GiveJobMethod { Inject, Try, Instant, Think };
+		public enum GiveJobMethod { Inject, Try, Instant };
 		enum ListToUse { Local, Foreign, Domestic };
 		
 		public static ThinkResult? GoMount(this Pawn rider, Pawn animal, GiveJobMethod giveJobMethod = GiveJobMethod.Inject, ThinkResult? thinkResult = null, Job currentJob = null)
@@ -40,12 +40,6 @@ namespace GiddyUp
 				animal.jobs.EndCurrentJob(JobCondition.InterruptForced, false, false); //The StopAll above will trigger the WaitForRider job. This will stop it.
 				animal.pather.StopDead();
 				rider.jobs.TryTakeOrderedJob(new Job(ResourceBank.JobDefOf.Mount, animal) {count = 1});
-			}
-			
-			//TODO: May be possible to merge this and Inject together. Also not quite working right. Only used by colonist caravan leaving
-			else if (giveJobMethod == GiveJobMethod.Think)
-			{
-				rider.jobs?.StartJob(new Job(ResourceBank.JobDefOf.Mount, animal) {count = 1}, JobCondition.InterruptOptional, null, true, false);
 			}
 			
 			return null;
@@ -76,6 +70,45 @@ namespace GiddyUp
 				{
 					if (animal.HostileTo(Current.gameInt.worldInt.factionManager.ofPlayer)) animal.mindState.duty = new PawnDuty(DutyDefOf.Defend);
 					animal.jobs.TryTakeOrderedJob(new Job(ResourceBank.JobDefOf.Mounted, rider) { count = 1});
+				}
+			}
+		}
+		public static void TryAutoMount(this Pawn pawn, Pawn_JobTracker jobTracker, ref ThinkResult thinkResult)
+		{
+			if (!pawn.IsColonistPlayerControlled ||
+				pawn.def.race.intelligence != Intelligence.Humanlike ||
+				thinkResult.Job == null || 
+				thinkResult.Job.def == ResourceBank.JobDefOf.Mount || 
+				pawn.Drafted || 
+				pawn.InMentalState || 
+				pawn.IsMounted() ||
+				(pawn.mindState != null && pawn.mindState.duty != null && (pawn.mindState.duty.def == DutyDefOf.TravelOrWait || pawn.mindState.duty.def == DutyDefOf.TravelOrLeave)))
+			{
+				return;
+			}
+
+			//Is this a job that cannot be done mounted?
+			var jobDef = thinkResult.Job.def;
+			
+			//Sort out where the targets are. For some jobs the first target is B, and the second A.
+			if (!thinkResult.Job.DetermineTargets(out IntVec3 firstTarget, out IntVec3 secondTarget)) return;
+			
+			//Determine distances
+			float pawnTargetDistance = pawn.Position.DistanceTo(firstTarget);
+			
+			float firstToSecondTargetDistance;
+			if (secondTarget.IsValid && (jobDef == JobDefOf.HaulToCell || jobDef == JobDefOf.HaulToContainer)) firstToSecondTargetDistance = firstTarget.DistanceTo(secondTarget);
+			else firstToSecondTargetDistance = 0;
+
+			if (pawnTargetDistance + firstToSecondTargetDistance > Settings.minAutoMountDistance)
+			{
+				//Do some less performant final check. It's less costly to run these near the end on successful mount attempts than to check constantly
+				if (pawn.IsWorkTypeDisabledByAge(WorkTypeDefOf.Handling, out int ageNeeded) || pawn.IsBorrowedByAnyFaction() || pawn.IsFormingCaravan()) return;
+
+				if (MountUtility.GetBestAnimal(pawn, out Pawn bestAnimal, firstTarget, secondTarget, pawnTargetDistance, firstToSecondTargetDistance))
+				{
+					//Finally, go mount up
+					thinkResult = pawn.GoMount(bestAnimal, MountUtility.GiveJobMethod.Inject, thinkResult, thinkResult.Job).Value;
 				}
 			}
 		}
