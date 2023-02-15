@@ -86,8 +86,9 @@ namespace GiddyUp
 					(animal.health != null && animal.health.summaryHealth.SummaryHealthPercent < 0.75f) ||
 					animal.health.HasHediffsNeedingTend() || 
 					animal.HasAttachment(ThingDefOf.Fire) || 
-					animal.needs.food != null && animal.needs.food.CurCategory >= HungerCategory.UrgentlyHungry || 
-					animal.needs.rest != null && animal.needs.rest.CurCategory >= RestCategory.VeryTired
+					(animal.Faction.def.isPlayer && //Need checks only apply to colonist animals because guest caravans ride this value down very low before leaving
+					(animal.needs.food != null && animal.needs.food.CurCategory >= HungerCategory.UrgentlyHungry || 
+					animal.needs.rest != null && animal.needs.rest.CurCategory >= RestCategory.VeryTired))
 				)
 				{
 					reason = Reason.IsPoorCondition;

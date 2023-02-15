@@ -82,7 +82,7 @@ namespace GiddyUp
 				pawn.Drafted || 
 				pawn.InMentalState || 
 				pawn.IsMounted() ||
-				(pawn.mindState != null && pawn.mindState.duty != null && (pawn.mindState.duty.def == DutyDefOf.TravelOrWait || pawn.mindState.duty.def == DutyDefOf.TravelOrLeave)))
+				(pawn.mindState.duty != null && (pawn.mindState.duty.def == DutyDefOf.TravelOrWait || pawn.mindState.duty.def == DutyDefOf.TravelOrLeave)))
 			{
 				return;
 			}
@@ -112,7 +112,7 @@ namespace GiddyUp
 				}
 			}
 		}
-		public static bool GoDismount(this Pawn rider, Pawn animal, GiveJobMethod giveJobMethod, IntVec3 target = default(IntVec3))
+		public static bool GoDismount(this Pawn rider, Pawn animal, IntVec3 target = default(IntVec3))
 		{
 			if (animal == null) return false;
 			bool isGuest = animal.Faction == null || !animal.Faction.def.isPlayer;
@@ -120,10 +120,19 @@ namespace GiddyUp
 
 			IntVec3 targetLoc;
 			//Any dismount spots available?
-			if (areaFound != null && areaFound.innerGrid.TrueCount > 0) targetLoc = areaFound.GetClosestAreaLoc(target == default(IntVec3) ? rider.Position : target);
+			if (areaFound != null && areaFound.innerGrid.TrueCount > 0)
+			{
+				targetLoc = areaFound.GetClosestAreaLoc(target == default(IntVec3) ? rider.Position : target);
+				if (isGuest && targetLoc.DistanceTo(rider.Position) > 120f)
+				{
+					var guestData = rider.GetGUData();
+					rider.Dismount(guestData.mount, guestData);
+					return false;
+				}
+			}
 			
 			//If not, use a pen?
-			else 
+			else
 			{
 				var pen = AnimalPenUtility.GetPenAnimalShouldBeTakenTo(rider, animal, out string failReason, true, true, false, true);
 				if (pen != null) targetLoc = AnimalPenUtility.FindPlaceInPenToStand(pen, rider);
@@ -139,7 +148,7 @@ namespace GiddyUp
 
 			return false;
 		}
-		public static void Dismount(this Pawn rider, Pawn animal, ExtendedPawnData pawnData, bool clearReservation = false, IntVec3 parkLoc = default(IntVec3))
+		public static void Dismount(this Pawn rider, Pawn animal, ExtendedPawnData pawnData, bool clearReservation = false, IntVec3 parkLoc = default(IntVec3), bool ropeIfNeeded = true)
 		{
 			ExtendedDataStorage.isMounted.Remove(rider.thingIDNumber);
 			if (pawnData == null) pawnData = rider.GetGUData();
@@ -168,7 +177,7 @@ namespace GiddyUp
 			if (!rider.Faction.def.isPlayer && animal.mindState.duty != null) animal.mindState.duty.focus = new LocalTargetInfo(animal.Position);
 			
 			//If the animal is being dismounted outside of a pen and it's a roamer, hitch it
-			if (AnimalPenUtility.NeedsToBeManagedByRope(animal) && AnimalPenUtility.GetCurrentPenOf(animal, true) == null && //Needs to be roped and not already penned?
+			if (ropeIfNeeded && AnimalPenUtility.NeedsToBeManagedByRope(animal) && AnimalPenUtility.GetCurrentPenOf(animal, true) == null && //Needs to be roped and not already penned?
 				 (animal.roping == null || !animal.roping.IsRoped) && //Skip already roped
 				 !animal.Position.CloseToEdge(animal.Map, ResourceBank.mapEdgeIgnore) && //Skip pawns near the map edge. They may be entering/exiting the map which triggers dismount calls
 				 (animal.Faction.def.isPlayer && animal.inventory != null && animal.inventory.innerContainer.Count == 0)) //Skip guest caravan pack animals
@@ -213,14 +222,12 @@ namespace GiddyUp
 				if (map == null) return false;
 			}
 
-			int mountChance = Settings.enemyMountChance;
+			int mountChance = GetMountChance(parms.faction);
+			if (mountChance == -1) return false; //wrong faction
 			float domesticWeight = Settings.nonWildWeight;
 			float localWeight = Settings.inBiomeWeight;
 			float foreignWeight = Settings.outBiomeWeight;
 			
-			mountChance = GetMountChance(parms, mountChance);
-			if (mountChance == -1) return false; //wrong faction
-
 			//Setup working lists
 			GetAnimalArrays(out PawnKindDef[] wildAnimals, out PawnKindDef[] domesticAnimals, out PawnKindDef[] localAnimals);
 			
@@ -234,7 +241,7 @@ namespace GiddyUp
 			if (Settings.logging) Log.Message("[Giddy-Up] List weights: localWeight: " + localWeight.ToString() + " foreignWeight: " + foreignWeight.ToString());
 			
 			bool hasPackAnimals = GetPackAnimals(list, out List<Pawn> packAnimals);
-			hasPackAnimals = false;
+			//hasPackAnimals = false;
 			var length = list.Count;
 			for (int i = 0; i < length; i++)
 			{
@@ -313,11 +320,20 @@ namespace GiddyUp
 			return true;
 
 			#region embedded methods
-			int GetMountChance(IncidentParms parms, int mountChance)
+			int GetMountChance(Faction faction)
 			{
-				if (parms.faction == null) return -1;
-				if (parms.faction.def.techLevel < TechLevel.Industrial) return Settings.enemyMountChancePreInd;
-				else if (parms.faction.def != FactionDefOf.Mechanoid) return mountChance;
+				if (faction == null) return -1;
+				if (faction.HostileTo(Current.gameInt.worldInt.factionManager.ofPlayer))
+				{
+					if (faction.def.techLevel < TechLevel.Industrial) return Settings.enemyMountChancePreInd;
+					else if (faction.def != FactionDefOf.Mechanoid) return Settings.enemyMountChance;
+				}
+				else if (Settings.caravansEnabled)
+				{
+					if (faction.def.techLevel < TechLevel.Industrial) return Settings.visitorMountChancePreInd;
+					else if (faction.def != FactionDefOf.Mechanoid) return Settings.visitorMountChance;
+				}
+				
 				return -1;
 			}
 			ListToUse DetermineList(float localWeight, float foreignWeight, int random)

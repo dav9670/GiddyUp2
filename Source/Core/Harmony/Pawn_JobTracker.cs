@@ -1,6 +1,7 @@
 ﻿using GiddyUp.Jobs;
 using HarmonyLib;
 using RimWorld;
+using RimWorld.Planet;
 using Verse;
 using Verse.AI;
 using Verse.AI.Group;
@@ -76,7 +77,6 @@ namespace GiddyUp.Harmony
 			if (Settings.caravansEnabled && !pawn.Faction.def.isPlayer)
 			{
 				//Handle failsafe for roped animals belonging to invalid pawns
-				//TODO: Ensure logic, would this be a problem for quest animals you may rope?
 				if (pawn.roping != null && pawn.roping.IsRoped)
 				{
 					var owner = pawn.GetGUData().reservedBy;
@@ -93,7 +93,13 @@ namespace GiddyUp.Harmony
 				if (pawn.RaceProps.Animal && thinkResult.SourceNode is JobGiver_Wander jobGiver_Wander && 
 					(lord.CurLordToil is LordToil_DefendPoint || lord.CurLordToil.GetType() == typeof(LordToil_DefendTraderCaravan)))
 				{
-					jobGiver_Wander.wanderRadius = 5f; //TODO: is this really needed?
+					Pawn trader = TraderCaravanUtility.FindTrader(lord);
+					//Unroped guest animals too far from their owners, go return
+					if (trader != null && pawn.mindState.duty.focus.Cell.DistanceTo(trader.Position) > 150f && (pawn.roping == null || !pawn.roping.IsRoped)) 
+					{
+						pawn.mindState.duty = new PawnDuty(DutyDefOf.Follow, trader, 5f);
+					}
+					else jobGiver_Wander.wanderRadius = 5f;
 				}
 
 				//Filter out anything that is not a guest rider
@@ -117,25 +123,32 @@ namespace GiddyUp.Harmony
 				}
 
 				ExtendedPawnData pawnData = pawn.GetGUData();
-				var curLordToil = lord.CurLordToil;
-				if (curLordToil is LordToil_ExitMapAndEscortCarriers || curLordToil is LordToil_Travel || curLordToil is LordToil_ExitMap || curLordToil is LordToil_ExitMapTraderFighting)
+				var curLordToil = lord.CurLordToil.GetType().Name;
+				
+				//Caravan is headin' out, go mount up, boys
+				if (curLordToil == nameof(LordToil_ExitMapAndEscortCarriers) || curLordToil == nameof(LordToil_Travel) || 
+					curLordToil == nameof(LordToil_ExitMap) || curLordToil == nameof(LordToil_ExitMapTraderFighting))
 				{
-					if (pawnData.reservedMount != null &&
-						pawnData.mount == null && 
-						pawnData.reservedMount.IsMountable(out IsMountableUtility.Reason reason, pawn, true, true))
+					var animal = pawnData.reservedMount;
+					if (animal != null && pawnData.mount == null) 
 					{
-						thinkResult = pawn.GoMount(pawnData.reservedMount, MountUtility.GiveJobMethod.Inject, thinkResult, job).Value;
+						if (animal.IsMountable(out IsMountableUtility.Reason reason, pawn, true, true))
+						{
+							thinkResult = pawn.GoMount(animal, MountUtility.GiveJobMethod.Inject, thinkResult).Value;
+						}
+						else if (Settings.logging) Log.Message("[Giddy-Up] " + (pawn.Name.ToString() ?? "NULL") + " could not mount: " + reason.ToString());
 					}
+					else if (Settings.logging) Log.Message("[Giddy-Up] " + (pawn.Name.ToString() ?? "NULL") + " has no mount");
 				}
-				else if (lord.CurLordToil.GetType() == typeof(LordToil_DefendTraderCaravan) || lord.CurLordToil is LordToil_DefendPoint) //first option is internal class, hence this way of accessing. 
+
+				//Caravan just arrived dismount
+				else if (pawnData.mount != null && 
+				(curLordToil == nameof(LordToil_DefendTraderCaravan) || curLordToil == nameof(LordToil_DefendPoint))) //first option is internal class, hence this way of accessing. 
 				{
-					if (pawnData.mount != null) 
-					{
-						//Dismount on-the-top if it's a pack animal, the guards want to keep it nearby
-						if (pawnData.mount.inventory != null && pawnData.mount.inventory.innerContainer.Count > 0) pawn.Dismount(pawnData.mount, pawnData);
-						//Other animals go to the assigned dismount spot.
-						else pawn.GoDismount(pawnData.mount, MountUtility.GiveJobMethod.Try);
-					}
+					//Dismount on-the-spot if it's a pack animal, the guards want to keep it nearby
+					if (pawnData.mount.inventory != null && pawnData.mount.inventory.innerContainer.Count > 0) pawn.Dismount(pawnData.mount, pawnData);
+					//Other animals go to the assigned dismount spot.
+					else pawn.GoDismount(pawnData.mount);
 				}
 			}
 		}

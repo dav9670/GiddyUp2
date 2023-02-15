@@ -187,7 +187,7 @@ namespace GiddyUp
 				}
 			}
 		}
-		//ToDo? It may be possible to fold this into th BuildCache method
+		//TODO: It may be possible to fold this into th BuildCache method
 		public static void RebuildInversions()
 		{
 			//Reset

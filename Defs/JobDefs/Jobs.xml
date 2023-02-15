@@ -25,6 +25,8 @@
 					<li>ExtinguishSelf</li> 
 					<li>Flee</li> 
 					<li>FleeAndCower</li> 
+					<li>Follow</li> 
+					<li>FollowClose</li> 
 					<li>Goto</li> 
 					<li>GotoSafeTemperature</li> 
 					<li>GotoWander</li> 
