@@ -72,11 +72,7 @@ namespace GiddyUp
             float animalHandlingOffset = 1f + (adjustedLevel * Settings.handlingMovementImpact) / 100f;
             baseValue *= animalHandlingOffset;
             var modExt = animal.def.GetModExtension<CustomStats>();
-            if (modExt != null)
-            {
-                float customSpeedModifier = modExt.speedModifier;
-                baseValue *= customSpeedModifier;
-            }
+            if (modExt != null) baseValue *= modExt.speedModifier;
             return baseValue;
         }
     }
@@ -99,13 +95,10 @@ namespace GiddyUp
         }
         public override void TransformValue(StatRequest req, ref float val)
         {
-            if (req.Thing is Pawn pawn && pawn.jobs != null && pawn.jobs.curDriver is JobDriver_Mounted)
+            if (req.Thing is Pawn pawn && pawn.IsMountedAnimal())
             {
                 var modExt = pawn.def.GetModExtension<CustomStats>();
-                if (modExt != null && modExt.armorModifier != 1.0f)
-                {
-                    val *= modExt.armorModifier;
-                }
+                if (modExt != null) val *= modExt.armorModifier;
             }
         }
     }

@@ -35,7 +35,8 @@
 					<li>Ignite</li> 
 					<li>Insult</li> 
 					<li>Kidnap</li> 
-					<li>Open</li> 
+					<li>Open</li>
+					<li>PrepareCaravan_CollectAnimals</li>
 					<li>RemoveApparel</li> 
 					<li>Rescue</li> 
 					<li>ReturnedCaravan_PenAnimals</li>

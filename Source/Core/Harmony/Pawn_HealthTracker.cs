@@ -10,24 +10,16 @@ namespace GiddyUp.Harmony
         static void Postfix(Pawn_HealthTracker __instance)
         {
             Pawn pawn = __instance.pawn;
-            if (pawn.Faction == null) return;
+            if (pawn.Faction == null || ExtendedDataStorage.GUComp == null) return; //Null checking the GUcomp 'cause this could happen before the world sets up.
 
-            //If an enemy animal is downed, make it a wild animal so it can be rescued. 
-            if (pawn.RaceProps.Animal && pawn.HostileTo(Current.gameInt.worldInt.factionManager.ofPlayer))
+            ExtendedPawnData pawnData = pawn.GetGUData();
+            if (pawn.RaceProps.Humanlike)
             {
-                pawn.SetFaction(null);
-                return;
+                pawn.InvoluntaryDismount(pawnData.reservedMount, pawnData);
             }
-
-            //If the owner of an NPC mount is downed, let the animal flee. Null checking the GUcomp 'cause this could happen before the world sets up.
-            if (pawn.RaceProps.Humanlike && !pawn.Faction.def.isPlayer && ExtendedDataStorage.GUComp != null)
+            else if (pawnData.reservedBy != null && pawn.HostileTo(Current.gameInt.worldInt.factionManager.ofPlayer))
             {
-                ExtendedPawnData pawnData = pawn.GetGUData();
-                if (pawnData.reservedMount != null && !pawnData.reservedMount.Dead && pawnData.reservedMount.Spawned)
-                {
-                    if (ExtendedDataStorage.nofleeingAnimals != null && ExtendedDataStorage.nofleeingAnimals.Contains(pawnData.reservedMount)) return;
-                    pawnData.reservedMount.mindState.mentalStateHandler.TryStartMentalState(MentalStateDefOf.PanicFlee);
-                }
+                pawn.SetFaction(null); //If an enemy animal is downed, make it a wild animal so it can be rescued.
             }
         }
     }
@@ -37,16 +29,10 @@ namespace GiddyUp.Harmony
         static void Postfix(Pawn_HealthTracker __instance)
         {
             Pawn pawn = __instance.pawn;
-            if (pawn.Faction == null) return;
-            //If the owner of an NPC mount is downed, let the animal flee
-            if (pawn.RaceProps.Humanlike && !pawn.Faction.def.isPlayer)
+            if (pawn.Faction != null && pawn.RaceProps.Humanlike)
             {
                 ExtendedPawnData pawnData = pawn.GetGUData();
-                if (pawnData.reservedMount != null && !pawnData.reservedMount.Dead && pawnData.reservedMount.Spawned)
-                {
-                    if (ExtendedDataStorage.nofleeingAnimals != null && ExtendedDataStorage.nofleeingAnimals.Contains(pawnData.reservedMount)) return;
-                    pawnData.reservedMount.mindState.mentalStateHandler.TryStartMentalState(MentalStateDefOf.PanicFlee);
-                }
+                pawn.InvoluntaryDismount(pawnData.reservedMount, pawnData);
             }
         }
     }

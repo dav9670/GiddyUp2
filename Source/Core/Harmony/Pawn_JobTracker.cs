@@ -4,6 +4,7 @@ using RimWorld;
 using Verse;
 using Verse.AI;
 using Verse.AI.Group;
+using System.Collections.Generic;
 using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUp.Harmony
@@ -16,6 +17,20 @@ namespace GiddyUp.Harmony
 	   {
 			return !__instance.pawn.IsMountedAnimal();
 	   }
+	}
+	[HarmonyPatch(typeof(TransitionAction_EndAllJobs), nameof(TransitionAction_EndAllJobs.DoAction))]
+	static class Patch_DoAction
+	{    
+	   static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            return instructions.MethodReplacer(AccessTools.Method(typeof(Pawn_JobTracker), nameof(Pawn_JobTracker.EndCurrentJob)),
+				AccessTools.Method(typeof(Patch_DoAction), nameof(Patch_DoAction.EndCurrentJob)));
+        }
+		public static void EndCurrentJob(this Pawn_JobTracker job, JobCondition condition, bool startNewJob = true, bool canReturnToPool = true)
+		{
+			if (job.pawn.IsMountedAnimal()) return;
+			job.EndCurrentJob(condition, startNewJob, canReturnToPool);
+		}
 	}
 	//Postfix, after a job has been determined, inject a job before it to go mount/dismount based on conditions
 	[HarmonyPatch(typeof(Pawn_JobTracker), nameof(Pawn_JobTracker.DetermineNextJob))]
@@ -125,7 +140,7 @@ namespace GiddyUp.Harmony
 			}
 		}
 	}
-	//A mount may have a maste, be it the current rider or not. If the rider drafts, the animal will want to go over to them. This patch blocks that, if mounted.
+	//A mount may have a master, be it the current rider or not. If the rider drafts, the animal will want to go over to them. This patch blocks that, if mounted.
 	[HarmonyPatch(typeof(Pawn_JobTracker), nameof(Pawn_JobTracker.Notify_MasterDraftedOrUndrafted))]
 	static class Pawn_JobTracker_Notify_MasterDraftedOrUndrafted
 	{

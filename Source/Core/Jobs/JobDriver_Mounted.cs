@@ -164,7 +164,7 @@ namespace GiddyUp.Jobs
 			}
 			else
 			{
-				if (!allowedJob && rider.Position.DistanceTo(rider.pather.Destination.Cell) < 8) return DismountReason.BadJob;
+				if (!allowedJob && rider.Position.DistanceTo(rider.pather.Destination.Cell) < ResourceBank.autoHitchDistance) return DismountReason.BadJob;
 				if (!pawn.Faction.def.isPlayer) return DismountReason.False;
 			}
 			
@@ -179,7 +179,7 @@ namespace GiddyUp.Jobs
 					return riderData.reservedMount == pawn ? DismountReason.False : DismountReason.WrongMount;
 				}
 				
-				if (rider.Position.CloseToEdge(map, 10)) return DismountReason.False; //Caravan just entered map and has not picked a job yet on this tick.
+				if (rider.Position.CloseToEdge(map, ResourceBank.mapEdgeIgnore)) return DismountReason.False; //Caravan just entered map and has not picked a job yet on this tick.
 			}
 			return DismountReason.False;
 		}

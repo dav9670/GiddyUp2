@@ -170,7 +170,7 @@ namespace GiddyUp
 			//If the animal is being dismounted outside of a pen and it's a roamer, hitch it
 			if (AnimalPenUtility.NeedsToBeManagedByRope(animal) && AnimalPenUtility.GetCurrentPenOf(animal, true) == null && //Needs to be roped and not already penned?
 				 (animal.roping == null || !animal.roping.IsRoped) && //Skip already roped
-				 !animal.Position.CloseToEdge(animal.Map, 8) && //Skip pawns near the map edge. They may be entering/exiting the map which triggers dismount calls
+				 !animal.Position.CloseToEdge(animal.Map, ResourceBank.mapEdgeIgnore) && //Skip pawns near the map edge. They may be entering/exiting the map which triggers dismount calls
 				 (animal.Faction.def.isPlayer && animal.inventory != null && animal.inventory.innerContainer.Count == 0)) //Skip guest caravan pack animals
 			{
 				if (animal.roping == null) animal.roping = new Pawn_RopeTracker(animal); //Not needed, but changes to modded animals could maybe cause issues
@@ -191,6 +191,15 @@ namespace GiddyUp
 					});
 				}
 			}
+		}
+		public static void InvoluntaryDismount(this Pawn rider, Pawn animal, ExtendedPawnData pawnData)
+		{
+			if (!rider.Faction.def.isPlayer && animal != null && !animal.Dead && animal.Spawned &&
+				(ExtendedDataStorage.nofleeingAnimals == null || !ExtendedDataStorage.nofleeingAnimals.Contains(animal)))
+			{
+				animal.mindState.mentalStateHandler.TryStartMentalState(MentalStateDefOf.PanicFlee);
+			}
+			pawnData.ReservedBy = null;
 		}
 		public static bool GenerateMounts(ref List<Pawn> list, IncidentParms parms)
 		{
@@ -279,7 +288,7 @@ namespace GiddyUp
 
 					if (domestic) workingList.Where(x => Settings.mountableCache.Contains(x.shortHash)).
 						TryRandomElementByWeight(def => def.race.BaseMarketValue / def.race.GetStatValueAbstract(StatDefOf.CaravanRidingSpeedFactor), out pawnKindDef);
-					else workingList.Where(x => map.mapTemperature.SeasonAcceptableFor(x.race) && Settings.mountableCache.Contains(x.shortHash) && parms.points > x.combatPower * 2f).
+					else workingList.Where(x => map.mapTemperature.SeasonAcceptableFor(x.race) && Settings.mountableCache.Contains(x.shortHash) && parms.points > x.combatPower * ResourceBank.combatPowerFactor).
 						TryRandomElementByWeight(def => CalculateCommonality(def, map.Biome, pawnHandlingLevel, averageCommonality), out pawnKindDef);
 				}
 

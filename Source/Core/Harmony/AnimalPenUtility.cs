@@ -1,5 +1,5 @@
 ﻿using HarmonyLib;
-using RimWorld;
+using RimWorld.Planet;
 using Verse;
 using GiddyUp;
 using Settings = GiddyUp.ModSettings_GiddyUp;
@@ -15,7 +15,15 @@ namespace GiddyUpCaravan
         }
         static bool Postfix(bool __result, Pawn pawn)
         {
-            if (__result) return !pawn.IsMountedAnimal();
+            if (__result)
+            {
+                if (pawn.IsMountedAnimal()) return false;
+                else
+                {
+                    var reservedBy = pawn.GetGUData().reservedBy;
+                    if (reservedBy != null && reservedBy.IsFormingCaravan()) return false;
+                }
+            }
             return __result;
         }
     }
