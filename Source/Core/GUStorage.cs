@@ -20,7 +20,7 @@ namespace GiddyUp
             }
             else if (pawnID == -1) Log.Warning("[Giddy-Up] Invalid pawnID sent.");
 
-            var newExtendedData = new ExtendedPawnData(pawnID);
+            var newExtendedData = new ExtendedPawnData(pawn);
 
             _store[pawnID] = newExtendedData;
             return newExtendedData;
@@ -104,13 +104,10 @@ namespace GiddyUp
             Scribe_Collections.Look(ref _store, "store", LookMode.Value, LookMode.Deep, ref _idWorkingList, ref _extendedPawnDataWorkingList);
             
             //Validate data
-            if (Scribe.mode == LoadSaveMode.PostLoadInit)
+            if (Scribe.mode == LoadSaveMode.Saving)
             {
                 var workingList = new List<int>();
-                foreach (var item in _store)
-                {
-                    if (item.Value == null || item.Value.ID == 0) workingList.Add(item.Key);
-                }
+                foreach (var (key, value) in _store) if (value == null) workingList.Add(key);
                 _store.RemoveAll(x => workingList.Contains(x.Key));
             }
         }
@@ -126,24 +123,26 @@ namespace GiddyUp
                     return true;
                 }
             }
-            pawnData = null;
+            pawnData = new ExtendedPawnData(null);
+            Log.Warning("[Giddy-up] A reverse lookup request failed to find anything. Returning fallback instance...");
             return false;
         }
     }
     public class ExtendedPawnData : IExposable
 	{
-		public int ID;
+		public Pawn pawn;
+        public int ID;
 		public Pawn mount;
 		public Pawn reservedMount, reservedBy; //Used by the rider and mount respectively. This creates a short-term association, like for example of a rider hops off for a few moments.
 		public bool selectedForCaravan = false;
 		public float drawOffset;
-		public enum Automount { False, Anyone, Colonists, Slaves };
-        public Automount automount = Automount.Anyone;
+        public Automount automount = Automount.Anyone; public enum Automount { False, Anyone, Colonists, Slaves };
 		
 		public ExtendedPawnData() { }
-		public ExtendedPawnData(int ID)
+		public ExtendedPawnData(Pawn pawn)
 		{
-			this.ID = ID;
+			this.pawn = pawn;
+            this.ID = pawn?.thingIDNumber ?? -1;
 		}
 		public Pawn ReservedMount
 		{
@@ -165,7 +164,8 @@ namespace GiddyUp
 		}
 		public void ExposeData()
 		{
-			Scribe_References.Look(ref mount, "mount");
+			Scribe_References.Look(ref pawn, "pawn");
+            Scribe_References.Look(ref mount, "mount");
 			Scribe_References.Look(ref reservedBy, "reservedBy");
 			Scribe_References.Look(ref reservedMount, "reservedMount");
 			
@@ -177,6 +177,15 @@ namespace GiddyUp
 			{
 				if (mount != null) ExtendedDataStorage.isMounted.Add(ID);
                 if (Settings.disableSlavePawnColumn && automount == Automount.Slaves) automount = Automount.False;
+
+                //Remove any invalid entries that somehow slipped into the store.
+                if (ID == 0) ExtendedDataStorage.GUComp._store.Remove(0);
+                else if (ID == -1) ExtendedDataStorage.GUComp._store.Remove(-1);
+                else if (pawn == null || pawn.Dead)
+                {
+                    if (Settings.logging) Log.Message("[Giddy-up] clean up... removed ID: " + ID.ToString());
+                    ExtendedDataStorage.GUComp._store.Remove(ID);
+                }
 			}
 		}
 	}

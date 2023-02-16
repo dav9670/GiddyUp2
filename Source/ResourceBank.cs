@@ -17,7 +17,8 @@ namespace GiddyUp
             AreaNoMount = "Gu_Area_NoMount";
         public const float defaultSizeThreshold = 1.2f,
             combatPowerFactor = 2.0f,
-            autoHitchDistance = 8.0f;
+            autoHitchDistance = 8.0f,
+            guestSpotCheckRange = 120f;
         public const int mapEdgeIgnore = 8;
 
         [DefOf]

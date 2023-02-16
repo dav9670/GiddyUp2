@@ -76,7 +76,6 @@ namespace GiddyUp
             return baseValue;
         }
     }
-
     class StatPart_Armor : StatPart
     {
         public override string ExplanationPart(StatRequest req)

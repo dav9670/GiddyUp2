@@ -123,7 +123,7 @@ namespace GiddyUp
 			if (areaFound != null && areaFound.innerGrid.TrueCount > 0)
 			{
 				targetLoc = areaFound.GetClosestAreaLoc(target == default(IntVec3) ? rider.Position : target);
-				if (isGuest && targetLoc.DistanceTo(rider.Position) > 120f)
+				if (isGuest && targetLoc.DistanceTo(rider.Position) > ResourceBank.guestSpotCheckRange)
 				{
 					var guestData = rider.GetGUData();
 					rider.Dismount(guestData.mount, guestData);

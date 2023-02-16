@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HarmonyLib;
+using System;
 using UnityEngine;
 using Verse;
 
@@ -44,6 +45,28 @@ namespace GiddyUp
             base.ExposeData();
             Scribe_Values.Look<string>(ref this.label, "label", null, false);
             Scribe_Values.Look<Color>(ref this.color, "color", default(Color), false);
+        }
+    }
+    
+    [HarmonyPatch(typeof(Area), nameof(Area.Set))]
+    static class Patch_AreaSet
+    {
+        static void Postfix(Area __instance)
+        {
+			var label = __instance.Label;
+			if (label == ResourceBank.AreaDropMount || label == ResourceBank.AreaDropMount)
+			{
+				var map = __instance.Map;
+            	__instance.Map.UpdateAreaCache();
+			}
+        }
+    }
+	[HarmonyPatch(typeof(Map), nameof(Map.FinalizeInit))]
+    static class Patch_MapFinalizeInit
+    {
+        static void Postfix(Map __instance)
+        {
+			__instance.UpdateAreaCache(true);
         }
     }
 }
