@@ -10,6 +10,59 @@
 					<li MayRequire="Ludeon.RimWorld.Ideology">MountableBySlaves</li>
 				</value>
 			</li>
+			<!-- When a pawn checks to see if they should dismount, one condition is to check if their current job is allowed while mounted. This is the whitelist -->
+			<li Class="PatchOperationAddModExtension">
+				<success>Always</success>
+				<xpath>Defs/JobDef[defName="Arrest" or 
+					defName="AttackMelee" or  
+					defName="AttackStatic" or  
+					defName="Capture" or  
+					defName="Dismount" or 
+					defName="DropEquipment" or  
+					defName="EscortPrisonerToBed" or  
+					defName="ExtinguishSelf" or  
+					defName="Flee" or  
+					defName="FleeAndCower" or  
+					defName="Follow" or  
+					defName="FollowClose" or  
+					defName="Goto" or  
+					defName="GotoSafeTemperature" or  
+					defName="GotoWander" or  
+					defName="HaulToCell" or  
+					defName="HaulToContainer" or 
+					defName="HaulToInventory" or 
+					defName="UnloadYourHauledInventory" or 
+					defName="Ignite" or  
+					defName="Insult" or  
+					defName="Kidnap" or  
+					defName="Open" or 
+					defName="PrepareCaravan_CollectAnimals" or 
+					defName="RemoveApparel" or  
+					defName="Rescue" or  
+					defName="ReturnedCaravan_PenAnimals" or 
+					defName="RopeToPen" or  
+					defName="RopeRoamerToUnenclosedPen" or 
+					defName="RopeRoamerToHitchingPost" or 
+					defName="TakeInventory" or  
+					defName="TakeWoundedPrisonerToBed" or  
+					defName="Tame" or 
+					defName="TradeWithPawn" or  
+					defName="UnloadInventory" or  
+					defName="UnloadYourInventory" or  
+					defName="UseArtifact" or  
+					defName="UseVerbOnThing" or  
+					defName="VFEA_UseAbility" or  
+					defName="Vomit" or  
+					defName="Wait" or  
+					defName="Wait_Combat" or  
+					defName="Wait_MaintainPosture" or  
+					defName="Wait_SafeTemperature" or  
+					defName="Wait_Wander" or  
+					defName="Wear"]</xpath>
+				<value>
+					<li Class="GiddyUp.CanDoMounted" />
+				</value>
+			</li>
 			<li Class="PatchOperationAdd">
 				<success>Always</success>
 				<xpath>Defs/ThingDef[defName="Ostrich" or 

@@ -124,7 +124,7 @@ namespace GiddyUp
                 }
             }
             pawnData = new ExtendedPawnData(null);
-            Log.Warning("[Giddy-up] A reverse lookup request failed to find anything. Returning fallback instance...");
+            Log.Warning("[Giddy-Up] A reverse lookup request failed to find anything. Returning fallback instance...");
             return false;
         }
     }
@@ -183,7 +183,7 @@ namespace GiddyUp
                 else if (ID == -1) ExtendedDataStorage.GUComp._store.Remove(-1);
                 else if (pawn == null || pawn.Dead)
                 {
-                    if (Settings.logging) Log.Message("[Giddy-up] clean up... removed ID: " + ID.ToString());
+                    if (Settings.logging) Log.Message("[Giddy-Up] clean up... removed ID: " + ID.ToString());
                     ExtendedDataStorage.GUComp._store.Remove(ID);
                 }
 			}
