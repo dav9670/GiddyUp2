@@ -65,7 +65,7 @@ namespace GiddyUp.Harmony
 						return;
 					}
 					QueuedJob qJob = pawn.jobs.jobQueue.FirstOrFallback(null);
-					if (qJob?.job.def == ResourceBank.JobDefOf.Mount || __result.Job.def == ResourceBank.JobDefOf.Mount)
+					if (qJob?.job.def == ResourceBank.JobDefOf.Mount || __result.Job?.def == ResourceBank.JobDefOf.Mount)
 					{
 						return;
 					}
@@ -109,7 +109,7 @@ namespace GiddyUp.Harmony
 				}
 
 				var job = thinkResult.Job;
-				if (!job.GetFirstTarget(TargetIndex.A).IsValid) return;
+				if (job == null || !job.GetFirstTarget(TargetIndex.A).IsValid) return;
 
 				if (job.def == ResourceBank.JobDefOf.Dismount || job.def == ResourceBank.JobDefOf.Mount)
 				{
