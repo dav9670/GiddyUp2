@@ -7,6 +7,9 @@
 
   <GU_Car_visitorMountChanceTribal_Title>部落訪客－騎乘機率 （範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</GU_Car_visitorMountChanceTribal_Title>
   <GU_Car_visitorMountChanceTribal_Description>原始部落、中世紀的派系訪客，騎乘動物的機率</GU_Car_visitorMountChanceTribal_Description>
+  
+  <GU_Car_GiveCaravanSpeed_Title>旅隊速度加成－特殊動物</GU_Car_GiveCaravanSpeed_Title>
+  <GU_Car_GiveCaravanSpeed_Description>原版旅隊默認部分動物能騎乘並增加行走效率。啟用後，所有動物將依照體型、速度、野性與價格計算後附加旅隊加成。</GU_Car_GiveCaravanSpeed_Description>
 
   <GU_Car_Designator_GU_DropAnimal_NPC_Clear_Label>刪除坐騎釋放區</GU_Car_Designator_GU_DropAnimal_NPC_Clear_Label>
   <GU_Car_Designator_GU_DropAnimal_NPC_Clear_Description>刪除坐騎釋放區</GU_Car_Designator_GU_DropAnimal_NPC_Clear_Description>
