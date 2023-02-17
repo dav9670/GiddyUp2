@@ -14,7 +14,7 @@
   <GU_RR_MinAutoMountDistanceFromAnimal_Description>如果殖民者和坐騎之間的距離小於此設定，就會考慮騎乘移動。</GU_RR_MinAutoMountDistanceFromAnimal_Description>
 
   <GU_RR_AutoHitchDistance_Title>自動固定距離（範圍：{0}～{1}　默認：{2} 當前：{3}）</GU_RR_AutoHitchDistance_Title>
-  <GU_RR_AutoHitchDistance_Description>單位會先嘗試把坐騎放在指定點。如果離目的地最近的點比設定值遠，他們將自動綁好他們的坐騎。</GU_RR_AutoHitchDistance_Description>
+  <GU_RR_AutoHitchDistance_Description>單位會先嘗試把坐騎放在指定點。如果離目的地最近的點比設定值遠，將自動綁好坐騎。</GU_RR_AutoHitchDistance_Description>
 
   <GU_RR_Designator_GU_DropAnimal_Expand_Label>釋放點</GU_RR_Designator_GU_DropAnimal_Expand_Label>  <!--Should be short-->
   <GU_RR_Designator_GU_DropAnimal_Expand_Description>當騎乘不需要圍欄的動物時，單位將使用釋放點。如果是家畜，會去附近的飼養圈。</GU_RR_Designator_GU_DropAnimal_Expand_Description>
