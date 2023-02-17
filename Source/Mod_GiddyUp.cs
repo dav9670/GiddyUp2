@@ -49,19 +49,12 @@ namespace GiddyUp
 			var harmony = new HarmonyLib.Harmony("GiddyUp");
 			harmony.PatchAll();
 
-			BuildCache();
+			BuildAllowedJobsCache();
+			BuildMountCache();
 			BuildAnimalBiomeCache();
 			if (!rideAndRollEnabled) RemoveRideAndRoll();
 			if (!caravansEnabled) RemoveCaravans();
 
-			var modExt = ResourceBank.JobDefOf.Mounted.GetModExtension<AllowedJobDefs>();
-			if (modExt != null)
-			{
-				JobDriver_Mounted.allowedJobs = modExt.allowedJobDefs.ToHashSet();
-			}
-			else JobDriver_Mounted.allowedJobs = new HashSet<JobDef>();
-
-			if (noMountedHunting) JobDriver_Mounted.allowedJobs.Add(JobDefOf.Hunt);
 			ProcessPawnKinds(harmony);
 			if (disableSlavePawnColumn) DefDatabase<PawnTableDef>.GetNamed("Animals").columns.RemoveAll(x => x.defName == "MountableBySlaves");
 
@@ -69,8 +62,20 @@ namespace GiddyUp
 			var type = HarmonyLib.AccessTools.TypeByName("AnimalBehaviours.AnimalCollectionClass");
 			if (type != null) ExtendedDataStorage.nofleeingAnimals = HarmonyLib.Traverse.Create(type).Field("nofleeing_animals")?.GetValue<HashSet<Thing>>();
 		}
+		public static void BuildAllowedJobsCache()
+		{
+			JobDriver_Mounted.allowedJobs = new HashSet<JobDef>();
+			var list = DefDatabase<JobDef>.AllDefsListForReading;
+			var length = list.Count;
+			for (int i = 0; i < length; i++)
+			{
+				var def = list[i];
+				if (def.HasModExtension<CanDoMounted>()) JobDriver_Mounted.allowedJobs.Add(def);
+			}
+			if (noMountedHunting) JobDriver_Mounted.allowedJobs.Add(JobDefOf.Hunt);
+		}
 		//Responsible for caching which animals are mounted, draw layering behavior, and calling caravan speed bonuses
-		public static void BuildCache()
+		public static void BuildMountCache()
 		{
 			//Setup collections
 			List<ThingDef> workingList = new List<ThingDef>();

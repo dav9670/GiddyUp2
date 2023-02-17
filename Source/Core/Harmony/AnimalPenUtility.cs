@@ -17,7 +17,7 @@ namespace GiddyUpCaravan
         {
             if (__result)
             {
-                if (pawn.IsMountedAnimal()) return false;
+                if (pawn.IsMountedAnimal() || pawn.CurJobDef == ResourceBank.JobDefOf.WaitForRider) return false;
                 else
                 {
                     var reservedBy = pawn.GetGUData().reservedBy;

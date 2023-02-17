@@ -51,31 +51,30 @@ namespace GiddyUp.Jobs
 				defaultCompleteMode = ToilCompleteMode.Never,
 				tickAction = delegate
 				{
-					if (rider == null || rider.Dead || !rider.Spawned || rider.Downed || rider.InMentalState)
-					{
-						interrupted = true;
-						ReadyForNextToil();
-						return;
-					}
+					//Rider just mounted up, finish toil
+					if (riderData.mount == pawn) ReadyForNextToil();
 
-					if (riderData.mount != null && riderData.mount == pawn)
+					//Something interrupted the rider, abort
+					if (--ticker != 0)
 					{
-						ReadyForNextToil();
+						ticker = 15; //Check 4 times per second
+						var curJobDef = rider.CurJobDef;
+						if ((rider == null || rider.Dead || !rider.Spawned || rider.Downed || rider.InMentalState) ||
+							//Rider changed their mind
+							(curJobDef != ResourceBank.JobDefOf.Mount && 
+							curJobDef != JobDefOf.Vomit && 
+							curJobDef != JobDefOf.Wait_MaintainPosture && 
+							curJobDef != JobDefOf.SocialRelax && 
+							curJobDef != JobDefOf.Wait && 
+							riderData.mount == null) ||
+							//Rider is cheating on this mount and went with another
+							(rider.CurJobDef == ResourceBank.JobDefOf.Mount && rider.jobs.curDriver is JobDriver_Mount mountDriver && mountDriver.Mount != pawn))
+						{
+							if (Settings.logging) Log.Message("[Giddy-Up] Animal " + pawn.thingIDNumber + " is no longer waiting for " + rider.Name.ToString());
+							interrupted = true;
+							ReadyForNextToil();
+						}
 					}
-
-					var curJobDef = rider.CurJobDef;
-					if (curJobDef != ResourceBank.JobDefOf.Mount && 
-						curJobDef != JobDefOf.Vomit && 
-						curJobDef != JobDefOf.Wait_MaintainPosture && 
-						curJobDef != JobDefOf.SocialRelax && 
-						curJobDef != JobDefOf.Wait && 
-						riderData.mount == null)
-					{
-						if (Settings.logging) Log.Message("[Giddy-Up] Animal " + pawn.thingIDNumber + " is no longer waiting for " + rider.Name.ToString());
-						interrupted = true;
-						ReadyForNextToil();
-					}
-
 				}
 			};
 		}
@@ -103,7 +102,7 @@ namespace GiddyUp.Jobs
 				{
 					if (isParking) pawn.pather.StopDead();
 					//Check mount first. If it's null then they must have dismounted outside the driver's control
-					if (riderData.mount != null) rider.Dismount(pawn, riderData, false, isParking && pawn.Position.DistanceTo(dismountingAt) < 2f ? dismountingAt : default(IntVec3));
+					if (riderData.mount != null) rider.Dismount(pawn, riderData, false, isParking && pawn.Position.DistanceTo(dismountingAt) < 3f ? dismountingAt : default(IntVec3));
 				})}
 			};
 		}
@@ -117,6 +116,10 @@ namespace GiddyUp.Jobs
 				{
 					rider.pather.StartPath(riderOriginalDestinaton, PathEndMode.OnCell); //Resume original work
 					return DismountReason.Parking;
+				}
+				else if (rider.pather.destination.Cell != dismountingAt)
+				{
+					isParking = false;
 				}
 			}
 			

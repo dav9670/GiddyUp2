@@ -22,7 +22,6 @@ namespace GiddyUpRideAndRoll.Jobs
 		{
 			base.ExposeData();
 			Scribe_Values.Look(ref this.riderReturning, "riderReturning");
-			Scribe_Values.Look(ref this.initialJob, "initialJob");
 			Scribe_Values.Look(ref this.ticker, "ticker");
 			Scribe_Defs.Look<JobDef>(ref this.initialJob, "initialJob");
 		}
@@ -46,6 +45,7 @@ namespace GiddyUpRideAndRoll.Jobs
 						waitingFor.CurJobDef == ResourceBank.JobDefOf.Mount ||
 						waitingFor.InBed() ||
 						pawn.health.HasHediffsNeedingTend() ||
+						(pawn.roping != null && pawn.roping.IsRopedByPawn) ||
 						(pawn.needs.food != null && pawn.needs.food.CurCategory >= HungerCategory.UrgentlyHungry) ||
 						(pawn.needs.rest != null && pawn.needs.rest.CurCategory >= RestCategory.VeryTired))
 						{

@@ -240,7 +240,7 @@ namespace GiddyUp
 
 			if (Settings.logging) Log.Message("[Giddy-Up] List weights: localWeight: " + localWeight.ToString() + " foreignWeight: " + foreignWeight.ToString());
 			
-			bool hasPackAnimals = GetPackAnimals(list, out List<Pawn> packAnimals);
+			bool hasUnmountedPackAnimals = GetPackAnimals(list, out List<Pawn> packAnimals);
 			//hasPackAnimals = false;
 			var length = list.Count;
 			for (int i = 0; i < length; i++)
@@ -253,17 +253,19 @@ namespace GiddyUp
 				PawnKindDef pawnKindDef;
 				Pawn animal;
 				CustomMounts modExtension = pawn.kindDef.GetModExtension<CustomMounts>();
-				if (hasPackAnimals)
+				if (hasUnmountedPackAnimals)
 				{
 					animal = packAnimals.Pop();
 					animal.Position = pawn.Position; //Avoids the pop-in glitch
-					hasPackAnimals = packAnimals.Count != 0;
+					hasUnmountedPackAnimals = packAnimals.Count != 0;
 					goto Spawned;
 				}
-				else if (modExtension != null)
-				{
-					if (modExtension.mountChance <= random) continue;
+				
+				if (modExtension != null && modExtension.mountChance != 0) mountChance = modExtension.mountChance;
+				if (mountChance <= random) continue;
 
+				if (modExtension != null && modExtension.possibleMounts.Count > 0)
+				{
 					Rand.PushState();
 					if (modExtension.possibleMounts.TryRandomElementByWeight(mount => mount.Value, out KeyValuePair<PawnKindDef, int> selectedMount))
 					{
@@ -280,7 +282,6 @@ namespace GiddyUp
 				}
 				else
 				{
-					if (mountChance <= random) continue;
 					int pawnHandlingLevel = pawn.skills.GetSkill(SkillDefOf.Animals).Level;
 					if (pawnHandlingLevel <= Settings.minHandlingLevel) continue;
 
