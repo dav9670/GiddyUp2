@@ -25,7 +25,7 @@
   <GUC_NotInModOptions>無法騎乘</GUC_NotInModOptions>
   <GUC_AnimalBusy>處於任務中</GUC_AnimalBusy>
   <GUC_NotFullyGrown>未完全長大</GUC_NotFullyGrown>
-  <GUC_NeedsObedience>未接受“服從”訓練</GUC_NeedsObedience>
+  <GUC_NeedsObedience>未訓練“服從”</GUC_NeedsObedience>
   <GUC_IsPoorCondition>狀態不佳</GUC_IsPoorCondition>
   <GUC_IsRoped>被繩索束縛</GUC_IsRoped>
   <GUC_Mount>坐上</GUC_Mount>
