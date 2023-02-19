@@ -12,7 +12,7 @@ namespace GiddyUpCaravan.Harmony
     //This patch makes sure that mounted animals won't attempt to follow the caravan after they are parked
     //TODO: There's probably a more elegant way to handle this, investigate further
     [HarmonyPatch]
-    static class Patch_JobGiver_AIFollowPawn
+    static class Patch_TradeCaravanAI
     {
         static bool Prepare()
         {

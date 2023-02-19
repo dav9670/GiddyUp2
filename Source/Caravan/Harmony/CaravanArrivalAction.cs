@@ -12,7 +12,7 @@ namespace GiddyUpCaravan.Harmony
 {
     [HarmonyPatch(typeof(CaravanEnterMapUtility), nameof(CaravanEnterMapUtility.Enter), 
         new Type[] { typeof(Caravan), typeof(Map), typeof(Func<Pawn, IntVec3>), typeof(CaravanDropInventoryMode), typeof(bool) })]
-    class CaravanEnterMapUtility_Enter
+    class Patch_CaravanEnterMapUtility
     {
         static bool Prepare()
         {
@@ -24,11 +24,12 @@ namespace GiddyUpCaravan.Harmony
             foreach (CodeInstruction instruction in instructions)
             {
                 yield return instruction;
-                if (!done && instruction.OperandIs(AccessTools.Method(typeof(Caravan), nameof(Caravan.RemoveAllPawns) ) ) )
+                if (!done && instruction.opcode == OpCodes.Call && instruction.OperandIs(AccessTools.Method(typeof(Caravan), nameof(Caravan.RemoveAllPawns) ) ) )
                 {
                     yield return new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(CaravanEnterMapUtility), nameof(CaravanEnterMapUtility.tmpPawns)));
-                    yield return new CodeInstruction(OpCodes.Call, typeof(CaravanEnterMapUtility_Enter).GetMethod(nameof(CaravanEnterMapUtility_Enter.MountCaravanMounts)));
+                    yield return new CodeInstruction(OpCodes.Call, typeof(Patch_CaravanEnterMapUtility).GetMethod(nameof(Patch_CaravanEnterMapUtility.MountCaravanMounts)));
                     done = true;
+                    Log.Warning("AAAAAA");
                 }
             }
 
@@ -38,10 +39,7 @@ namespace GiddyUpCaravan.Harmony
         {
             foreach (Pawn pawn in pawns)
             {
-                if (pawn.IsColonist && pawn.Spawned)
-                {
-                    pawn.GoMount(null, MountUtility.GiveJobMethod.Instant);
-                }
+                if (pawn.IsColonist && pawn.Spawned) pawn.GoMount(null, MountUtility.GiveJobMethod.Instant);
             }
         }
     }

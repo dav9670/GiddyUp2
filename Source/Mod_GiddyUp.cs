@@ -353,6 +353,7 @@ namespace GiddyUp
 
 					options.CheckboxLabeled("GU_RR_NoMountedHunting_Title".Translate(), ref noMountedHunting, "GU_RR_NoMountedHunting_Description".Translate());
 					options.CheckboxLabeled("GU_RR_DisableSlavePawnColumn_Title".Translate(), ref disableSlavePawnColumn, "GU_RR_DisableSlavePawnColumn_Description".Translate());
+					options.CheckboxLabeled("GU_RR_AutomountDisabledByDefault_Title".Translate(), ref automountDisabledByDefault, "GU_RR_AutomountDisabledByDefault_Description".Translate());
 					if (Prefs.DevMode) options.CheckboxLabeled("Enable dev mode logging", ref logging);
 				}
 				
@@ -521,6 +522,7 @@ namespace GiddyUp
 			Scribe_Values.Look(ref caravansEnabled, "caravansEnabled", true);
 			Scribe_Values.Look(ref noMountedHunting, "noMountedHunting");
 			Scribe_Values.Look(ref disableSlavePawnColumn, "disableSlavePawnColumn");
+			Scribe_Values.Look(ref automountDisabledByDefault, "automountDisabledByDefault");
 			Scribe_Values.Look(ref giveCaravanSpeed, "giveCaravanSpeed");
 			Scribe_Collections.Look(ref invertMountingRules, "invertMountingRules", LookMode.Value);
 			Scribe_Collections.Look(ref invertDrawRules, "invertDrawRules", LookMode.Value);
@@ -549,6 +551,7 @@ namespace GiddyUp
 			noMountedHunting,
 			logging,
 			giveCaravanSpeed,
+			automountDisabledByDefault,
 			disableSlavePawnColumn;
 		public static HashSet<string> invertMountingRules, invertDrawRules; //These are only used on game start to setup the below, fast cache collections
 		public static HashSet<ushort> mountableCache, drawRulesCache;

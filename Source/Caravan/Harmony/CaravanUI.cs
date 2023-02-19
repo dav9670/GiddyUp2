@@ -7,12 +7,13 @@ using System.Reflection.Emit;
 using UnityEngine;
 using Verse;
 using Settings = GiddyUp.ModSettings_GiddyUp;
+using static GiddyUp.IsMountableUtility;
 //using Multiplayer.API;
 
 namespace GiddyUpCaravan.Harmony
 {
     [HarmonyPatch(typeof(TransferableOneWayWidget), nameof(TransferableOneWayWidget.DoRow))]
-    static class TransferableOneWayWidget_DoRow
+    static class Patch_TransferableOneWayWidget
     {
         static bool Prepare()
         {
@@ -31,11 +32,12 @@ namespace GiddyUpCaravan.Harmony
                 }
                 if (flag && code.opcode == OpCodes.Stloc_0)
                 {
+                    //TODO: Improve this to be less fragile
                     yield return new CodeInstruction(OpCodes.Ldarg_0); //Load instance
                     yield return new CodeInstruction(OpCodes.Ldloc_0); //load count local variable
                     yield return new CodeInstruction(OpCodes.Ldarg_1); //Load rectangle
                     yield return new CodeInstruction(OpCodes.Ldarg_2); //Load trad
-                    yield return new CodeInstruction(OpCodes.Call, typeof(TransferableOneWayWidget_DoRow).GetMethod(nameof(AddMountSelector)));
+                    yield return new CodeInstruction(OpCodes.Call, typeof(Patch_TransferableOneWayWidget).GetMethod(nameof(AddMountSelector)));
                     yield return new CodeInstruction(OpCodes.Stloc_0); //store count local variable
                     flag = false;
                 }
@@ -101,29 +103,29 @@ namespace GiddyUpCaravan.Harmony
 
             List<FloatMenuOption> list = new List<FloatMenuOption>();
 
-            string buttonText = "GU_Car_Set_Rider".Translate();
+            string buttonText;
+            bool canMount;
 
-            bool canMount = true;
-
-            if (!animalData.selectedForCaravan)
+            if (!animalData.selectedForCaravan || 
+                (!animal.IsMountable(out Reason reason, null) && (reason == Reason.NotInModOptions || reason == Reason.NotFullyGrown)))
             {
                 buttonText = "";
                 canMount = false;
             }
-
-            bool isMountable = animal.IsMountable(out IsMountableUtility.Reason reason, null);
-            if (!isMountable && (reason == IsMountableUtility.Reason.NotInModOptions || reason == IsMountableUtility.Reason.NotFullyGrown))
+            else
             {
-                buttonText = "";
-                canMount = false;
+                buttonText = animalData.reservedBy != null && animalData.reservedBy.GetGUData().selectedForCaravan ? 
+                    animalData.reservedBy.Name.ToStringShort : "GU_Car_Set_Rider".Translate();
+                canMount = true;
             }
 
-            if (animalData.reservedBy != null && animalData.reservedBy.GetGUData().selectedForCaravan) buttonText = animalData.reservedBy.Name.ToStringShort;
             if (!canMount) Widgets.ButtonText(buttonRect, buttonText, false, false, false);
             else if (Widgets.ButtonText(buttonRect, buttonText, true, false, true))
             {
-                foreach (Pawn pawn in pawns)
+                var length = pawns.Count;
+                for (int i = 0; i < length; i++)
                 {
+                    var pawn = pawns[i];
                     if (pawn.IsColonist)
                     {
                         ExtendedPawnData pawnData = pawn.GetGUData();
@@ -146,7 +148,7 @@ namespace GiddyUpCaravan.Harmony
                         {
                             {
                                 SelectMountRider(animalData, pawnData, animal, pawn);
-                                trad.CountToTransfer = 1; //Setting this to -1 will make sure total weight is calculated again. it's set back to 1 shortly after
+                                trad.CountToTransfer = 1;
                             }
                         }, MenuOptionPriority.High, null, null, 0f, null, null));
                     }
@@ -155,7 +157,7 @@ namespace GiddyUpCaravan.Harmony
                 {
                     {
                         ClearMountRider(animalData);
-                        trad.CountToTransfer = 1; //Setting this to -1 will make sure total weight is calculated again. it's set back to 1 shortly after
+                        trad.CountToTransfer = 1;
                     }
                 }, MenuOptionPriority.Low, null, null, 0f, null, null));
                 Find.WindowStack.Add(new FloatMenu(list));
@@ -179,9 +181,25 @@ namespace GiddyUpCaravan.Harmony
                 ExtendedPawnData riderData = animalData.reservedBy.GetGUData();
                 riderData.ReservedMount = null;
             }
-            animalData.ReservedMount = null;
-
+            animalData.ReservedBy = null;
             animalData.selectedForCaravan = true;
+        }
+    }
+    [HarmonyPatch(typeof(TransferableUtility), nameof(TransferableUtility.TransferAsOne))]
+    static class Patch_TransferableUtility
+    {
+        static bool Prepare()
+        {
+            return Settings.caravansEnabled;
+        }
+        static bool Postfix(bool __result, Thing a, Thing b)
+        {
+            if (__result && a.def.category == ThingCategory.Pawn && b.def.category == ThingCategory.Pawn &&
+                (IsMountableUtility.IsEverMountable(a as Pawn) || IsMountableUtility.IsEverMountable(b as Pawn)) )
+            {
+                return false;
+            }
+            return __result;
         }
     }
 }

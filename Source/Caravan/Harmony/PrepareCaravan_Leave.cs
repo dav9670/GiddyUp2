@@ -12,7 +12,7 @@ using Settings = GiddyUp.ModSettings_GiddyUp;
 namespace GiddyUpCaravan.Harmony
 {	
 	[HarmonyPatch(typeof(LordToil_PrepareCaravan_Leave), nameof(LordToil_PrepareCaravan_Leave.UpdateAllDuties))]
-	static class Lordtoil_PrepareCaravan_Leave_UpdateAllDuties
+	static class Patch_PrepareCaravan_Leave
 	{
 		static bool Prepare()
 		{

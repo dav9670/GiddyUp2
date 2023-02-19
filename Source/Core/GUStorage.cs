@@ -143,6 +143,7 @@ namespace GiddyUp
 		{
 			this.pawn = pawn;
             this.ID = pawn?.thingIDNumber ?? -1;
+            if (Settings.automountDisabledByDefault) automount = Automount.False;
 		}
 		public Pawn ReservedMount
 		{

@@ -129,7 +129,8 @@ namespace GiddyUp.Jobs
 			//Check physical and mental health
 			if (rider.Downed || rider.Dead || pawn.Downed || pawn.Dead || 
 				pawn.HasAttachment(ThingDefOf.Fire) || rider.HasAttachment(ThingDefOf.Fire) || rider.GetPosture() != PawnPosture.Standing ||
-				pawn.InMentalState || (rider.InMentalState && rider.MentalState.def != MentalStateDefOf.PanicFlee)
+				pawn.InMentalState || (rider.InMentalState && rider.MentalState.def != MentalStateDefOf.PanicFlee) ||
+				pawn.Faction != rider.Faction //Quests can cause faction flips mid-mount
 			)
 			{
 				return DismountReason.BadState;

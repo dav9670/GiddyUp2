@@ -86,7 +86,14 @@ namespace GiddyUp.Jobs
                 },
                 finishActions = new List<System.Action>() { delegate
                 {
-                    if (!pawn.CanReserve(mount) || (mount.GetGUData().reservedBy != pawn && mount.IsFormingCaravan())) return;
+                    //Final checks
+                    if (!pawn.CanReserve(mount) || //Can reserve?
+                    (mount.GetGUData().reservedBy != pawn && mount.IsFormingCaravan()) || //Involved in someone else's caravan?
+                    mount.Faction != pawn.Faction) //Switched factions mid-step? (quests)
+                    {
+                        return;
+                    }
+
                     pawn.GoMount(mount, MountUtility.GiveJobMethod.Instant);
                 }}
             };

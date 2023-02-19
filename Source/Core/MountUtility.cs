@@ -79,6 +79,7 @@ namespace GiddyUp
 				pawn.def.race.intelligence != Intelligence.Humanlike ||
 				thinkResult.Job == null || 
 				thinkResult.Job.def == ResourceBank.JobDefOf.Mount || 
+				pawn.CurJobDef == ResourceBank.JobDefOf.Mount ||
 				pawn.Drafted || 
 				pawn.InMentalState || 
 				pawn.IsMounted() ||
@@ -100,12 +101,20 @@ namespace GiddyUp
 			if (secondTarget.IsValid && (jobDef == JobDefOf.HaulToCell || jobDef == JobDefOf.HaulToContainer)) firstToSecondTargetDistance = firstTarget.DistanceTo(secondTarget);
 			else firstToSecondTargetDistance = 0;
 
-			if (pawnTargetDistance + firstToSecondTargetDistance > Settings.minAutoMountDistance)
+			
+			ExtendedPawnData pawnData = pawn.GetGUData();
+
+			//Bias nearby waiting animals first
+			if (pawnData.reservedMount != null && pawnData.reservedMount.CurJobDef == ResourceBank.JobDefOf.WaitForRider && pawnData.reservedMount.Position.DistanceTo(pawn.Position) < 30f)
+			{
+				thinkResult = pawn.GoMount(pawnData.reservedMount, MountUtility.GiveJobMethod.Inject, thinkResult, thinkResult.Job).Value;
+			}
+			else if (pawnTargetDistance + firstToSecondTargetDistance > Settings.minAutoMountDistance)
 			{
 				//Do some less performant final check. It's less costly to run these near the end on successful mount attempts than to check constantly
 				if (pawn.IsWorkTypeDisabledByAge(WorkTypeDefOf.Handling, out int ageNeeded) || pawn.IsBorrowedByAnyFaction() || pawn.IsFormingCaravan()) return;
 
-				if (MountUtility.GetBestAnimal(pawn, out Pawn bestAnimal, firstTarget, secondTarget, pawnTargetDistance, firstToSecondTargetDistance))
+				if (MountUtility.GetBestAnimal(pawn, out Pawn bestAnimal, firstTarget, secondTarget, pawnTargetDistance, firstToSecondTargetDistance, pawnData))
 				{
 					//Finally, go mount up
 					thinkResult = pawn.GoMount(bestAnimal, MountUtility.GiveJobMethod.Inject, thinkResult, thinkResult.Job).Value;
@@ -187,7 +196,7 @@ namespace GiddyUp
 				animal.roping.RopeToSpot(parkLoc == default(IntVec3) ? animal.Position : parkLoc);
 			}
 			//Follow the rider for a while to give it an opportunity to take a ride back
-			if (Settings.rideAndRollEnabled && !rider.Drafted && animal.Faction.def.isPlayer && animalData.reservedBy != null)
+			if (Settings.rideAndRollEnabled && !rider.Drafted && rider.Faction.def.isPlayer && animalData.reservedBy != null)
 			{
 				if (animal.CurJobDef != ResourceBank.JobDefOf.Mounted || animal.jobs.curDriver is not Jobs.JobDriver_Mounted mountJob || !mountJob.interrupted)
 				{
@@ -423,12 +432,11 @@ namespace GiddyUp
 			#endregion
 		}
 		//Gets animal that'll get the pawn to the target the quickest. Returns null if no animal is found or if walking is faster. 
-		public static bool GetBestAnimal(Pawn pawn, out Pawn bestanimal, IntVec3 firstTarget, IntVec3 secondTarget, float pawnTargetDistance, float firstToSecondTargetDistance)
+		public static bool GetBestAnimal(Pawn pawn, out Pawn bestanimal, IntVec3 firstTarget, IntVec3 secondTarget, float pawnTargetDistance, float firstToSecondTargetDistance, ExtendedPawnData pawnData)
 		{
 			//Prepare locals
 			float pawnWalkSpeed = pawn.GetStatValue(StatDefOf.MoveSpeed);
 			float timeNormalWalking = (pawnTargetDistance + firstToSecondTargetDistance) / pawnWalkSpeed;
-			ExtendedPawnData pawnData = pawn.GetGUData();
 			bool firstTargetInForbiddenArea = false;
 			bool secondTargetInForbiddenArea = false;
 			Map map = pawn.Map;

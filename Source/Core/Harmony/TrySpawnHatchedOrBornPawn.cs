@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using RimWorld;
 using Verse;
+using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUp.Harmony
 {
@@ -9,7 +10,8 @@ namespace GiddyUp.Harmony
     {
         static void Postfix(Pawn pawn, Thing motherOrEgg)
         {
-            if (motherOrEgg is Pawn mother)
+            if (Settings.automountDisabledByDefault) pawn.GetGUData().automount = ExtendedPawnData.Automount.False;
+            else if (motherOrEgg is Pawn mother)
             {
                 var pawnData = pawn.GetGUData();
                 var motherData = mother.GetGUData();
