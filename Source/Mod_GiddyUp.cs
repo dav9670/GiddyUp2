@@ -163,7 +163,7 @@ namespace GiddyUp
 			if (newEntries) LoadedModManager.GetMod<Mod_GiddyUp>().modSettings.Write();
 		
 			//Only bother applying this harmony patch if using a mod that utilizes this extension
-			if (usingCustomStats && !patchLedger.Add(1))
+			if (usingCustomStats && harmony!= null && !patchLedger.Add(1))
 			{
 				harmony.Patch(HarmonyLib.AccessTools.Method(typeof(ArmorUtility), nameof(ArmorUtility.ApplyArmor) ), 
 						postfix: new HarmonyLib.HarmonyMethod(typeof(Harmony.Patch_ApplyArmor), nameof(Harmony.Patch_ApplyArmor.Postfix)));
