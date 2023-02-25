@@ -10,6 +10,9 @@
   
   <GU_Car_GiveCaravanSpeed_Title>旅隊速度加成－特殊動物</GU_Car_GiveCaravanSpeed_Title>
   <GU_Car_GiveCaravanSpeed_Description>原版旅隊默認部分動物能騎乘並增加行走效率。啟用後，所有動物將依照體型、速度、野性與價格計算後附加旅隊加成。</GU_Car_GiveCaravanSpeed_Description>
+  
+  <GU_Car_RidePackAnimals_Title>商人騎著馱獸</GU_Car_RidePackAnimals_Title>
+  <GU_Car_RidePackAnimals_Description>貿易商隊可以騎著他們的馱獸進入地圖。如果遇到某種模組衝突，可以關閉此選項。</GU_Car_RidePackAnimals_Description>
 
   <GU_Car_Designator_GU_DropAnimal_NPC_Clear_Label>刪除坐騎釋放區</GU_Car_Designator_GU_DropAnimal_NPC_Clear_Label>
   <GU_Car_Designator_GU_DropAnimal_NPC_Clear_Description>刪除坐騎釋放區</GU_Car_Designator_GU_DropAnimal_NPC_Clear_Description>
