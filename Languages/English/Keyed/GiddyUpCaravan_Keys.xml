@@ -11,6 +11,9 @@
 	<GU_Car_GiveCaravanSpeed_Title>Give caravan speed bonus to unusual mounts</GU_Car_GiveCaravanSpeed_Title>
 	<GU_Car_GiveCaravanSpeed_Description>By default, the vanilla rules apply to which animals grant a caravan riding speed bonus. Use this toggle to bestow a riding speed bonus to any other animals that wouldn't normally be rideable. The bonus they are given depends on their size, speed, wildness and value.</GU_Car_GiveCaravanSpeed_Description>
 	
+	<GU_Car_RidePackAnimals_Title>Traders ride pack animals</GU_Car_RidePackAnimals_Title>
+	<GU_Car_RidePackAnimals_Description>Trade caravans may enter the map riding their pack animals. You can turn this behavior off in the event you encounter a mod conflict of some kind.</GU_Car_RidePackAnimals_Description>
+	
 	<GU_Car_Designator_GU_DropAnimal_NPC_Clear_Label>Clear visitor mount spot</GU_Car_Designator_GU_DropAnimal_NPC_Clear_Label>
 	<GU_Car_Designator_GU_DropAnimal_NPC_Clear_Description>Clear designated guest mount spots</GU_Car_Designator_GU_DropAnimal_NPC_Clear_Description>
 	
@@ -24,6 +27,5 @@
 	<GU_Car_NotFullyGrown> </GU_Car_NotFullyGrown>
 	<GU_Car_NeedsObedience> </GU_Car_NeedsObedience>
 	<GU_Car_AnimalNotSelected> </GU_Car_AnimalNotSelected>
-	<GU_Car_TooYoung>Too young</GU_Car_TooYoung>
 	<GU_Car_PawnNotSelected>not selected</GU_Car_PawnNotSelected>
 </LanguageData>

@@ -3,6 +3,9 @@
 	<GU_RR_NoMountedHunting_Title>No mounted hunting</GU_RR_NoMountedHunting_Title>
 	<GU_RR_NoMountedHunting_Description>Forbid mounted hunting, when using Combat Extended it is recommended to turn this on, as otherwise animals may get harmed while playing the game.</GU_RR_NoMountedHunting_Description>
 	
+	<GU_RR_AutomountDisabledByDefault_Title>Automount disabled by default</GU_RR_AutomountDisabledByDefault_Title>
+	<GU_RR_AutomountDisabledByDefault_Description>Newly acquired animals' automount setting will be disabled.</GU_RR_AutomountDisabledByDefault_Description>
+	
 	<GU_RR_DisableSlavePawnColumn_Title>No slave allowance column</GU_RR_DisableSlavePawnColumn_Title>
 	<GU_RR_DisableSlavePawnColumn_Description>Disables the column in the animal tab used to control whether or not slaves are allowed to automount. Will apply next game restart.</GU_RR_DisableSlavePawnColumn_Description>
 	
@@ -14,6 +17,9 @@
 	
 	<GU_RR_AutoHitchDistance_Title>Autohitch threshold (Min: {0} Max: {1} Default: {2} Current: {3})</GU_RR_AutoHitchDistance_Title>
 	<GU_RR_AutoHitchDistance_Description>A pawn will try to drop a mount off at a designated spot first. If the closest one from their destination is farther than this threshold, they will autohitch their mount instead.</GU_RR_AutoHitchDistance_Description>
+	
+	<GU_RR_InjuredThreshold_Title>Too injured threshold (Default: {2}% Current: {3}%)</GU_RR_InjuredThreshold_Title>
+	<GU_RR_InjuredThreshold_Description>An animal cannot mounted when their health falls below this threshold.</GU_RR_InjuredThreshold_Description>
 	
 	<GU_RR_Designator_GU_DropAnimal_Expand_Label>Place mount spot</GU_RR_Designator_GU_DropAnimal_Expand_Label> <!--Should be short-->
 	<GU_RR_Designator_GU_DropAnimal_Expand_Description>Pawns will use mount spots when riding an animal that does not need to be penned. If it does, they will just go to a nearby pen instead.</GU_RR_Designator_GU_DropAnimal_Expand_Description>

@@ -351,6 +351,9 @@ namespace GiddyUp
 					options.Label("GU_RR_AutoHitchDistance_Title".Translate("0", "200", "50", autoHitchDistance.ToString()), -1f, "GU_RR_AutoHitchDistance_Description".Translate());
 					autoHitchDistance = (int)options.Slider(autoHitchDistance, 0f, 200f);
 
+					options.Label("GU_RR_InjuredThreshold_Title".Translate("0", "100", "75", Math.Round(injuredThreshold * 100f).ToString()), -1f, "GU_RR_InjuredThreshold_Description".Translate());
+					injuredThreshold = options.Slider(injuredThreshold, 0f, 1f);
+
 					options.CheckboxLabeled("GU_RR_NoMountedHunting_Title".Translate(), ref noMountedHunting, "GU_RR_NoMountedHunting_Description".Translate());
 					options.CheckboxLabeled("GU_RR_DisableSlavePawnColumn_Title".Translate(), ref disableSlavePawnColumn, "GU_RR_DisableSlavePawnColumn_Description".Translate());
 					options.CheckboxLabeled("GU_RR_AutomountDisabledByDefault_Title".Translate(), ref automountDisabledByDefault, "GU_RR_AutomountDisabledByDefault_Description".Translate());
@@ -526,6 +529,7 @@ namespace GiddyUp
 			Scribe_Values.Look(ref automountDisabledByDefault, "automountDisabledByDefault");
 			Scribe_Values.Look(ref giveCaravanSpeed, "giveCaravanSpeed");
 			Scribe_Values.Look(ref ridePackAnimals, "ridePackAnimals", true);
+			Scribe_Values.Look(ref injuredThreshold, "injuredThreshold", 0.75f);
 			Scribe_Collections.Look(ref invertMountingRules, "invertMountingRules", LookMode.Value);
 			Scribe_Collections.Look(ref invertDrawRules, "invertDrawRules", LookMode.Value);
 			Scribe_Collections.Look(ref offsetCache, "offsetCache", LookMode.Value);
@@ -538,7 +542,8 @@ namespace GiddyUp
 			handlingAccuracyImpact = 0.5f,
 			inBiomeWeight = 20f, 
 			outBiomeWeight = 10f,
-			nonWildWeight = 70f;
+			nonWildWeight = 70f,
+			injuredThreshold = 0.75f;
 		public static int accuracyPenalty = 10,
 			minAutoMountDistance = 120,
 			minHandlingLevel = 3,

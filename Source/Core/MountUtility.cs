@@ -115,7 +115,7 @@ namespace GiddyUp
 			if (pawnTargetDistance + firstToSecondTargetDistance > Settings.minAutoMountDistance)
 			{
 				//Do some less performant final check. It's less costly to run these near the end on successful mount attempts than to check constantly
-				if (pawn.IsWorkTypeDisabledByAge(WorkTypeDefOf.Handling, out int ageNeeded) || pawn.IsBorrowedByAnyFaction() || pawn.IsFormingCaravan()) return;
+				if (!pawn.IsCapableOfRiding(out IsMountableUtility.Reason reason) || pawn.IsBorrowedByAnyFaction() || pawn.IsFormingCaravan()) return;
 
 				if (MountUtility.GetBestAnimal(pawn, out Pawn bestAnimal, firstTarget, secondTarget, pawnTargetDistance, firstToSecondTargetDistance, pawnData))
 				{

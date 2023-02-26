@@ -9,8 +9,8 @@ namespace GiddyUp
 {
 	public static class IsMountableUtility
 	{
-		public enum Reason{NotFullyGrown, NotInModOptions, CanMount, IsRoped, NeedsTraining, MountedByAnother, IsBusy, IsBusyWithCaravan,
-			IsPoorCondition, WrongFaction, NotAnimal, IsReserved, MissingResearch};
+		public enum Reason{ False, NotFullyGrown, NotInModOptions, CanMount, IsRoped, NeedsTraining, MountedByAnother, IsBusy, IsBusyWithCaravan,
+			IsPoorCondition, WrongFaction, NotAnimal, IsReserved, MissingResearch, TooYoung, IncompatibleEquipment, TooHeavy};
 
 		static HashSet<JobDef> busyJobs = new HashSet<JobDef>() {ResourceBank.JobDefOf.Mounted, JobDefOf.LayEgg, JobDefOf.Nuzzle, JobDefOf.Lovin, JobDefOf.Vomit, JobDefOf.Wait_Downed};
 
@@ -60,15 +60,19 @@ namespace GiddyUp
 			//Check animal's jobs to see if busy
 			if (checkState)
 			{
+				//Animal is busy with a job?
 				if (busyJobs.Contains(animal.CurJobDef))
 				{
+					//Is that job mounted?
 					if (animal.CurJobDef == ResourceBank.JobDefOf.Mounted)
 					{
+						//Is the rider of this mounted job this same pawn? Skip
 						var animalData = animal.GetGUData();
 						if (animalData.reservedBy != null && animalData.reservedBy.CurJobDef == ResourceBank.JobDefOf.Mount && animalData.reservedBy.GetGUData().reservedMount == animal)
 						{
 							goto RiderSkip;
 						}
+						//If its another pawn, fail
 						else
 						{
 							reason = Reason.MountedByAnother;
@@ -101,7 +105,7 @@ namespace GiddyUp
 				}
 				//Check health
 				if (animal.Dead || animal.Downed || animal.InMentalState || !animal.Spawned || 
-					(animal.health != null && animal.health.summaryHealth.SummaryHealthPercent < 0.75f) ||
+					(animal.health != null && animal.health.summaryHealth.SummaryHealthPercent < Settings.injuredThreshold) ||
 					animal.health.HasHediffsNeedingTend() || 
 					animal.HasAttachment(ThingDefOf.Fire) || 
 					(animal.Faction.def.isPlayer && //Need checks only apply to colonist animals because guest caravans ride this value down very low before leaving
@@ -141,11 +145,21 @@ namespace GiddyUp
 				reason = Reason.NeedsTraining;
 				return false;
 			}
-			//Can reserve? Null check as this may be a non-specific check like the UI
-			if (rider != null && !rider.CanReserve(animal))
+			
+			if (rider != null)
 			{
-				reason = Reason.IsReserved;
-				return false;
+				//Is the pawn too much of a hefty lad?
+				if (rider.IsTooHeavy(animal))
+				{
+					reason = Reason.TooHeavy;
+					return false;
+				}
+				//Can reserve? Null check as this may be a non-specific check like the UI
+				if (!rider.CanReserve(animal))
+				{
+					reason = Reason.IsReserved;
+					return false;
+				}
 			}
 			
 			return true;
@@ -175,6 +189,25 @@ namespace GiddyUp
 			else if (automount == ExtendedPawnData.Automount.Colonists && rider.GuestStatus == null) return true;
 			else if (automount == ExtendedPawnData.Automount.Slaves && rider.GuestStatus == GuestStatus.Slave) return true;
 			return false;
+		}
+		public static bool IsCapableOfRiding(this Pawn pawn, out Reason reason)
+		{
+			if (pawn.IsWorkTypeDisabledByAge(WorkTypeDefOf.Handling, out int ageNeeded)) 
+			{
+				reason = Reason.TooYoung;
+				return false;
+			}
+			if (pawn.apparel.WornApparel.Any(x => x.def.defName == "Wheelchair"))
+			{
+				reason = Reason.IncompatibleEquipment;
+				return false;
+			}
+			reason = Reason.False;
+			return true;
+		}
+		public static bool IsTooHeavy(this Pawn rider, Pawn animal)
+		{
+			return rider.GetStatValue(StatDefOf.Mass) > animal.GetStatValue(StatDefOf.CarryingCapacity);
 		}
 	}
 }

@@ -22,6 +22,7 @@
 	<GUC_BodySizeFilter_Title>Filter by body size (Min: {0} Max: {1} Default: {2} Current: {3})</GUC_BodySizeFilter_Title>
 	<GUC_BodySizeFilter_Description>Filter mountable animals by body size</GUC_BodySizeFilter_Description>
 		
+	<GUC_CannotMount>Cannot mount: </GUC_CannotMount>
 	<GUC_NotInModOptions>Not a mountable species</GUC_NotInModOptions>
 	<GUC_AnimalBusy>Animal busy</GUC_AnimalBusy>
 	<GUC_NotFullyGrown>Animal immature</GUC_NotFullyGrown>
@@ -52,4 +53,9 @@
 	<GU_Enable_Caravans_Description>Disabling this module will remove functionality related to pawns (both colonists and friendlies) riding animals when they exit and enter the map. Changing this setting requires a restart.</GU_Enable_Caravans_Description>
 	
 	<GU_Reset_Cache>Reset offset cache</GU_Reset_Cache>
+	
+	<GU_Car_TooYoung>Too young</GU_Car_TooYoung>
+	<GU_IncompatibleEquipment>Incompatible equipment</GU_IncompatibleEquipment>
+	<GU_CannotRide>Rider incapable</GU_CannotRide>
+	<GUC_TooHeavy>Too heavy</GUC_TooHeavy>
 </LanguageData>
