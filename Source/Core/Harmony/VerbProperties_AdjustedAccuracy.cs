@@ -11,8 +11,8 @@ namespace GiddyUp.Harmony
     {
         static float Postfix(float __result, VerbProperties __instance, Thing equipment)
         {
-            var holdingOwner = equipment.holdingOwner;
-            if (equipment == null || holdingOwner == null || holdingOwner.Owner == null || !(holdingOwner.Owner is Pawn_EquipmentTracker eqt))
+            var holdingOwner = equipment?.holdingOwner;
+            if (holdingOwner == null || holdingOwner.Owner == null || !(holdingOwner.Owner is Pawn_EquipmentTracker eqt))
             {
                 return __result;
             }

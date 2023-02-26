@@ -1,6 +1,7 @@
 using RimWorld;
 using RimWorld.Planet;
 using System.Collections.Generic;
+using System;
 using System.Linq;
 //using Multiplayer.API;
 using Verse;
@@ -100,16 +101,18 @@ namespace GiddyUp
 			float firstToSecondTargetDistance;
 			if (secondTarget.IsValid && (jobDef == JobDefOf.HaulToCell || jobDef == JobDefOf.HaulToContainer)) firstToSecondTargetDistance = firstTarget.DistanceTo(secondTarget);
 			else firstToSecondTargetDistance = 0;
-
 			
 			ExtendedPawnData pawnData = pawn.GetGUData();
 
+			/*
 			//Bias nearby waiting animals first
+			//Disabling for now, this is probably the cause of the mount/dismount loop problem.
 			if (pawnData.reservedMount != null && pawnData.reservedMount.CurJobDef == ResourceBank.JobDefOf.WaitForRider && pawnData.reservedMount.Position.DistanceTo(pawn.Position) < 30f)
 			{
 				thinkResult = pawn.GoMount(pawnData.reservedMount, MountUtility.GiveJobMethod.Inject, thinkResult, thinkResult.Job).Value;
 			}
-			else if (pawnTargetDistance + firstToSecondTargetDistance > Settings.minAutoMountDistance)
+			*/
+			if (pawnTargetDistance + firstToSecondTargetDistance > Settings.minAutoMountDistance)
 			{
 				//Do some less performant final check. It's less costly to run these near the end on successful mount attempts than to check constantly
 				if (pawn.IsWorkTypeDisabledByAge(WorkTypeDefOf.Handling, out int ageNeeded) || pawn.IsBorrowedByAnyFaction() || pawn.IsFormingCaravan()) return;
@@ -219,6 +222,56 @@ namespace GiddyUp
 			}
 			pawnData.ReservedBy = null;
 		}
+		public static bool FindPlaceToDismount(this Pawn rider, Area areaDropAnimal, IntVec3 riderDestinaton, out IntVec3 parkLoc, Pawn animal)
+		{
+			Map map = rider.Map;
+			if (areaDropAnimal == null) TryParkAnimalPen(out parkLoc);
+			else parkLoc = areaDropAnimal.GetClosestAreaLoc(riderDestinaton);
+
+			//Invalide the results if not reachable
+			if (!map.reachability.CanReach(rider.Position, parkLoc, PathEndMode.OnCell, TraverseParms.For(TraverseMode.PassDoors, Danger.Deadly, false)))
+			{
+				parkLoc = IntVec3.Invalid;
+			}
+
+			//Dropoff is too far away, setup a hitching point instead
+			if (parkLoc.DistanceTo(riderDestinaton) > Settings.autoHitchDistance)
+			{
+				Predicate<IntVec3> freeCell = delegate(IntVec3 cell)
+				{
+					return (cell.Standable(map) && 
+						cell.GetDangerFor(animal, map) == Danger.None && 
+						!cell.Fogged(map) &&
+						cell.InBounds(map) &&
+						rider.CanReserveAndReach(cell, PathEndMode.OnCell, Danger.None));
+				};
+				if (!CellFinder.TryFindRandomCellNear(riderDestinaton, map, 4, freeCell, out parkLoc, 16))
+				{
+					if (Settings.logging) Log.Message("[Giddy-Up] Pawn " + rider.Label + " could not find a valid autohitch spot near " + parkLoc.ToString());
+					parkLoc = IntVec3.Invalid;
+				}
+			}
+			//Validate results
+			if (parkLoc == IntVec3.Invalid)
+			{
+				if (Prefs.DevMode) Log.Message("[Giddy-Up] Pawn " + rider.Label + " could not ride their mount to their job because they could not find any places to dismount. Immediately dismounting.");
+			}
+			//Looks good, begin pathing
+			else return true;
+			return false;
+
+			#region Embedded methods
+			void TryParkAnimalPen(out IntVec3 parkLoc)
+			{
+				parkLoc = IntVec3.Invalid;
+				var pen = AnimalPenUtility.GetPenAnimalShouldBeTakenTo(rider, animal, out string failReason, true, true, false, true);
+				if (pen != null)
+				{
+					parkLoc = AnimalPenUtility.FindPlaceInPenToStand(pen, rider);
+				}
+			}
+			#endregion
+		}
 		public static bool GenerateMounts(ref List<Pawn> list, IncidentParms parms)
 		{
 			//if (MP.enabled) return false; // Best we can do for now
@@ -249,7 +302,8 @@ namespace GiddyUp
 
 			if (Settings.logging) Log.Message("[Giddy-Up] List weights: localWeight: " + localWeight.ToString() + " foreignWeight: " + foreignWeight.ToString());
 			
-			bool hasUnmountedPackAnimals = GetPackAnimals(list, out List<Pawn> packAnimals);
+			List<Pawn> packAnimals = new List<Pawn>();
+			bool hasUnmountedPackAnimals = Settings.ridePackAnimals && GetPackAnimals(list, packAnimals);
 			//hasPackAnimals = false;
 			var length = list.Count;
 			for (int i = 0; i < length; i++)
@@ -281,7 +335,7 @@ namespace GiddyUp
 						if (Settings.logging)
 						{
 							var report = System.String.Join(", ", modExtension.possibleMounts.Select(x => x.Key.defName));
-							Log.Message("[Giddy-Up] Pawn " + (pawn.Name?.ToString() ?? "NULL") + " had a custom mount extension. The allowed mounts were: " + 
+							Log.Message("[Giddy-Up] Pawn " + (pawn.Label ?? "NULL") + " had a custom mount extension. The allowed mounts were: " + 
 							report + " and they picked " + selectedMount.Key.defName);
 						}
 						pawnKindDef = selectedMount.Key;
@@ -412,9 +466,8 @@ namespace GiddyUp
 				//Log.Message("name: " + def.defName + ", commonality: " + commonality + ", pawnHandlingLevel: " + pawnHandlingLevel + ", wildness: " + def.RaceProps.wildness + ", commonalityBonus: " + commonalityAdjusted + ", wildnessPenalty: " + wildnessPenalty + ", result: " + commonalityAdjusted * wildnessPenalty);
 				return commonalityAdjusted * wildnessPenalty;
 			}
-			bool GetPackAnimals(List<Pawn> list, out List<Pawn> packAnimals)
+			bool GetPackAnimals(List<Pawn> list, List<Pawn> packAnimals)
 			{
-				packAnimals = new List<Pawn>();
 				if (list.NullOrEmpty()) return false;
 
 				var length = list.Count;
@@ -432,7 +485,7 @@ namespace GiddyUp
 			#endregion
 		}
 		//Gets animal that'll get the pawn to the target the quickest. Returns null if no animal is found or if walking is faster. 
-		public static bool GetBestAnimal(Pawn pawn, out Pawn bestanimal, IntVec3 firstTarget, IntVec3 secondTarget, float pawnTargetDistance, float firstToSecondTargetDistance, ExtendedPawnData pawnData)
+		public static bool GetBestAnimal(Pawn pawn, out Pawn bestAnimal, IntVec3 firstTarget, IntVec3 secondTarget, float pawnTargetDistance, float firstToSecondTargetDistance, ExtendedPawnData pawnData)
 		{
 			//Prepare locals
 			float pawnWalkSpeed = pawn.GetStatValue(StatDefOf.MoveSpeed);
@@ -463,7 +516,8 @@ namespace GiddyUp
 
 				if (!animal.IsMountable(out IsMountableUtility.Reason reason, pawn, true, true)) 
 				{
-					if (Settings.logging) Log.Message("[Giddy-Up] Pawn " + pawn.Name.ToString() + " will not ride " + animal.thingIDNumber + " because: " + reason.ToString());
+					if (Settings.logging && reason != IsMountableUtility.Reason.WrongFaction && reason != IsMountableUtility.Reason.NotInModOptions && 
+						reason != IsMountableUtility.Reason.NotAnimal) Log.Message("[Giddy-Up] Pawn " + pawn.Label + " will not ride " + animal.Label + " because: " + reason.ToString());
 					continue;
 				}
 			
@@ -483,9 +537,9 @@ namespace GiddyUp
 			
 			if (Settings.logging)
 			{
-				if (closestAnimal == null) Log.Message("[Giddy-Up] " + (pawn.Name?.ToString() ?? "NULL") + " tried to find an animal but couldn't fnid any.");
-				else Log.Message("[Giddy-Up] report for " + (pawn.Name?.ToString() ?? "NULL") + ":\n" +
-				"Animal: " + (closestAnimal.Name?.ToString() ?? closestAnimal.thingIDNumber.ToString()) + "\n" +
+				if (closestAnimal == null) Log.Message("[Giddy-Up] " + (pawn.Label ?? "NULL") + " tried to find an animal but couldn't fnid any.");
+				else Log.Message("[Giddy-Up] report for " + (pawn.Label ?? "NULL") + ":\n" +
+				"Animal: " + (closestAnimal.Label ?? closestAnimal.thingIDNumber.ToString()) + "\n" +
 				"First target: " + (firstTarget.ToString()) + "\n" + 
 				"Second target: " + (secondTarget.ToString()) + "\n" + 
 				"Normal walking speed: " + ((int)(pawnWalkSpeed)).ToString() + "\n" + 
@@ -501,10 +555,22 @@ namespace GiddyUp
 
 			if (timeBestRiding < timeNormalWalking)
 			{
-				bestanimal = closestAnimal;
+				bestAnimal = closestAnimal;
+
+				//Known dead zones
+				if (ExtendedDataStorage.GUComp.badSpots.Contains(firstTarget))
+				{
+					//Check if this blacklisting is still valid
+					if (pawn.FindPlaceToDismount(areaDropAnimal, firstTarget, out IntVec3 dismountingAt, bestAnimal))
+					{
+						ExtendedDataStorage.GUComp.badSpots.Remove(firstTarget);
+					}
+					else return false;
+				}
+
 				return true;
 			}
-			bestanimal = null;
+			bestAnimal = null;
 			return false;
 		}
 	}

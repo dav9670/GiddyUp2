@@ -89,8 +89,7 @@ namespace GiddyUp.Harmony
 				Lord lord = pawn.GetLord();
 				if (lord == null) return;
 				
-				if (pawn.RaceProps.Animal && thinkResult.SourceNode is JobGiver_Wander jobGiver_Wander && 
-					(lord.CurLordToil is LordToil_DefendPoint || lord.CurLordToil.GetType() == typeof(LordToil_DefendTraderCaravan)))
+				if (pawn.RaceProps.Animal && thinkResult.SourceNode is JobGiver_Wander jobGiver_Wander && lord.CurLordToil is LordToil_DefendPoint)
 				{
 					Pawn trader = TraderCaravanUtility.FindTrader(lord);
 					//Unroped guest animals too far from their owners, go return
@@ -122,11 +121,11 @@ namespace GiddyUp.Harmony
 				}
 
 				ExtendedPawnData pawnData = pawn.GetGUData();
-				var curLordToil = lord.CurLordToil.GetType().Name;
+				var curLordToil = lord.CurLordToil;
 				
 				//Caravan is headin' out, go mount up, boys
-				if (curLordToil == nameof(LordToil_ExitMapAndEscortCarriers) || curLordToil == nameof(LordToil_Travel) || 
-					curLordToil == nameof(LordToil_ExitMap) || curLordToil == nameof(LordToil_ExitMapTraderFighting))
+				if (curLordToil is LordToil_ExitMapAndEscortCarriers || curLordToil is LordToil_Travel || 
+					curLordToil is LordToil_ExitMap || curLordToil is LordToil_ExitMapTraderFighting)
 				{
 					var animal = pawnData.reservedMount;
 					if (animal != null && pawnData.mount == null) 
@@ -135,14 +134,13 @@ namespace GiddyUp.Harmony
 						{
 							thinkResult = pawn.GoMount(animal, MountUtility.GiveJobMethod.Inject, thinkResult).Value;
 						}
-						else if (Settings.logging) Log.Message("[Giddy-Up] " + (pawn.Name.ToString() ?? "NULL") + " could not mount: " + reason.ToString());
+						else if (Settings.logging) Log.Message("[Giddy-Up] " + (pawn.Label ?? "NULL") + " could not mount: " + reason.ToString());
 					}
-					else if (Settings.logging) Log.Message("[Giddy-Up] " + (pawn.Name.ToString() ?? "NULL") + " has no mount");
+					else if (Settings.logging) Log.Message("[Giddy-Up] " + (pawn.Label ?? "NULL") + " has no mount");
 				}
 
 				//Caravan just arrived dismount
-				else if (pawnData.mount != null && 
-				(curLordToil == nameof(LordToil_DefendTraderCaravan) || curLordToil == nameof(LordToil_DefendPoint))) //first option is internal class, hence this way of accessing. 
+				else if (pawnData.mount != null && curLordToil is LordToil_DefendPoint) //first option is internal class, hence this way of accessing. 
 				{
 					//Dismount on-the-spot if it's a pack animal, the guards want to keep it nearby
 					if (pawnData.mount.inventory != null && pawnData.mount.inventory.innerContainer.Count > 0) pawn.Dismount(pawnData.mount, pawnData);

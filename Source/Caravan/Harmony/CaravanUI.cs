@@ -50,7 +50,13 @@ namespace GiddyUpCaravan.Harmony
             if (trad.AnyThing is not Pawn pawn) return num; //not an animal, return; 
             
             Rect buttonRect = new Rect(num - buttonWidth, 0f, buttonWidth, rect.height);
-            List<TransferableOneWay> cachedTransferables = widget.sections[0].cachedTransferables;
+            List<TransferableOneWay> cachedTransferables = new List<TransferableOneWay>();
+            foreach (var section in widget.sections)
+            {
+                var title = section.title;
+                //This is mainly for mods that add new sections such as Colony Groups
+                if (title != "Capture" && title != "Prisoners" && title != "Animals" && title != "Mechanoids") cachedTransferables.AddRange(section.cachedTransferables);
+            }
             List<Pawn> pawns = new List<Pawn>();
 
             if (cachedTransferables != null)

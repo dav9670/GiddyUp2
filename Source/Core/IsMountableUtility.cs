@@ -9,7 +9,8 @@ namespace GiddyUp
 {
 	public static class IsMountableUtility
 	{
-		public enum Reason{NotFullyGrown, NotInModOptions, CanMount, IsRoped, NeedsTraining, IsBusy, IsPoorCondition, WrongFaction, NotAnimal, IsReserved, MissingResearch};
+		public enum Reason{NotFullyGrown, NotInModOptions, CanMount, IsRoped, NeedsTraining, MountedByAnother, IsBusy, IsBusyWithCaravan,
+			IsPoorCondition, WrongFaction, NotAnimal, IsReserved, MissingResearch};
 
 		static HashSet<JobDef> busyJobs = new HashSet<JobDef>() {ResourceBank.JobDefOf.Mounted, JobDefOf.LayEgg, JobDefOf.Nuzzle, JobDefOf.Lovin, JobDefOf.Vomit, JobDefOf.Wait_Downed};
 
@@ -61,9 +62,26 @@ namespace GiddyUp
 			{
 				if (busyJobs.Contains(animal.CurJobDef))
 				{
-					reason = Reason.IsBusy;
-					return false;
+					if (animal.CurJobDef == ResourceBank.JobDefOf.Mounted)
+					{
+						var animalData = animal.GetGUData();
+						if (animalData.reservedBy != null && animalData.reservedBy.CurJobDef == ResourceBank.JobDefOf.Mount && animalData.reservedBy.GetGUData().reservedMount == animal)
+						{
+							goto RiderSkip;
+						}
+						else
+						{
+							reason = Reason.MountedByAnother;
+							return false;
+						}
+					}
+					else
+					{
+						reason = Reason.IsBusy;
+						return false;
+					}
 				}
+				RiderSkip:
 				//Check if roped
 				if (animal.roping?.IsRopedByPawn ?? false)
 				{
@@ -74,9 +92,9 @@ namespace GiddyUp
 				var animalLord = animal.GetLord();
 				if (animalLord != null)
 				{
-					if (animalLord.LordJob != null && animalLord.LordJob is LordJob_FormAndSendCaravan)
+					if (animalLord.LordJob != null && animalLord.LordJob is LordJob_FormAndSendCaravan && animal.GetGUData().reservedBy != rider)
 					{
-						reason = Reason.IsBusy;
+						reason = Reason.IsBusyWithCaravan;
 						return false;
 					}
 					//TODO maybe add some logic to check if involved with a ritual
@@ -130,6 +148,20 @@ namespace GiddyUp
 				return false;
 			}
 			
+			return true;
+		}
+		public static bool IsStillMountable(this Pawn animal, Pawn rider, out Reason reason)
+		{
+			if (!animal.IsMountable(out reason, rider))
+			{
+				var animalData = animal.GetGUData();
+				if (animalData.reservedBy != null)
+				{
+					animalData.reservedBy.GetGUData().ReservedMount = null;
+					animalData.ReservedBy = null;
+				}
+				return false;
+			}
 			return true;
 		}
 		public static bool IsAllowed(this Pawn rider, Pawn animal)
