@@ -346,10 +346,13 @@ namespace GiddyUp
 					options.Gap();
 					
 					options.Label("GU_RR_MinAutoMountDistance_Title".Translate("0", "500", "16", minAutoMountDistance.ToString()), -1f, "GU_RR_MinAutoMountDistance_Description".Translate());
-					minAutoMountDistance = (int)options.Slider(minAutoMountDistance, 0f, 500f);
+					minAutoMountDistance = (int)options.Slider(minAutoMountDistance, 20f, 500f);
 
 					options.Label("GU_RR_AutoHitchDistance_Title".Translate("0", "200", "50", autoHitchDistance.ToString()), -1f, "GU_RR_AutoHitchDistance_Description".Translate());
 					autoHitchDistance = (int)options.Slider(autoHitchDistance, 0f, 200f);
+
+					options.Label("GU_RR_InjuredThreshold_Title".Translate("0", "100", "75", Math.Round(injuredThreshold * 100f).ToString()), -1f, "GU_RR_InjuredThreshold_Description".Translate());
+					injuredThreshold = options.Slider(injuredThreshold, 0f, 1f);
 
 					options.CheckboxLabeled("GU_RR_NoMountedHunting_Title".Translate(), ref noMountedHunting, "GU_RR_NoMountedHunting_Description".Translate());
 					options.CheckboxLabeled("GU_RR_DisableSlavePawnColumn_Title".Translate(), ref disableSlavePawnColumn, "GU_RR_DisableSlavePawnColumn_Description".Translate());
@@ -411,6 +414,7 @@ namespace GiddyUp
 					visitorMountChancePreInd = (int)options.Slider(visitorMountChancePreInd, 0f, 100f);
 
 					options.CheckboxLabeled("GU_Car_GiveCaravanSpeed_Title".Translate(), ref giveCaravanSpeed, "GU_Car_GiveCaravanSpeed_Description".Translate());
+					options.CheckboxLabeled("GU_Car_RidePackAnimals_Title".Translate(), ref ridePackAnimals, "GU_Car_RidePackAnimals_Description".Translate());
 				}
 				
 				options.End();
@@ -471,7 +475,7 @@ namespace GiddyUp
 				Rect mountableFilterInnerRect = new Rect(0f, 0f, mountableFilterRect.width - 30f, (OptionsDrawUtility.lineNumber + 2) * 22f);
 				Widgets.BeginScrollView(mountableFilterRect, ref scrollPos, mountableFilterInnerRect , true);
 					options.Begin(mountableFilterInnerRect);
-					options.DrawList(inRect);
+					options.DrawList();
 					options.End();
 				Widgets.EndScrollView();   
 			}
@@ -494,7 +498,7 @@ namespace GiddyUp
 			}
 			catch (System.Exception ex)
 			{
-				Log.Error("[Giddy-Up] Error writing Giddy-Up settings. Skipping...\n" + ex);   
+				Log.Error("[Giddy-Up] Error writing Giddy-Up settings. Skipping...\n" + ex);
 			}
 			base.WriteSettings();
 		}   
@@ -524,6 +528,8 @@ namespace GiddyUp
 			Scribe_Values.Look(ref disableSlavePawnColumn, "disableSlavePawnColumn");
 			Scribe_Values.Look(ref automountDisabledByDefault, "automountDisabledByDefault");
 			Scribe_Values.Look(ref giveCaravanSpeed, "giveCaravanSpeed");
+			Scribe_Values.Look(ref ridePackAnimals, "ridePackAnimals", true);
+			Scribe_Values.Look(ref injuredThreshold, "injuredThreshold", 0.75f);
 			Scribe_Collections.Look(ref invertMountingRules, "invertMountingRules", LookMode.Value);
 			Scribe_Collections.Look(ref invertDrawRules, "invertDrawRules", LookMode.Value);
 			Scribe_Collections.Look(ref offsetCache, "offsetCache", LookMode.Value);
@@ -536,7 +542,8 @@ namespace GiddyUp
 			handlingAccuracyImpact = 0.5f,
 			inBiomeWeight = 20f, 
 			outBiomeWeight = 10f,
-			nonWildWeight = 70f;
+			nonWildWeight = 70f,
+			injuredThreshold = 0.75f;
 		public static int accuracyPenalty = 10,
 			minAutoMountDistance = 120,
 			minHandlingLevel = 3,
@@ -552,7 +559,8 @@ namespace GiddyUp
 			logging,
 			giveCaravanSpeed,
 			automountDisabledByDefault,
-			disableSlavePawnColumn;
+			disableSlavePawnColumn,
+			ridePackAnimals = true;
 		public static HashSet<string> invertMountingRules, invertDrawRules; //These are only used on game start to setup the below, fast cache collections
 		public static HashSet<ushort> mountableCache, drawRulesCache;
 		public static string tabsHandler;

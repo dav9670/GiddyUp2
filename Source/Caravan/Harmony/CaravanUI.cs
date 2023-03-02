@@ -50,7 +50,13 @@ namespace GiddyUpCaravan.Harmony
             if (trad.AnyThing is not Pawn pawn) return num; //not an animal, return; 
             
             Rect buttonRect = new Rect(num - buttonWidth, 0f, buttonWidth, rect.height);
-            List<TransferableOneWay> cachedTransferables = widget.sections[0].cachedTransferables;
+            List<TransferableOneWay> cachedTransferables = new List<TransferableOneWay>();
+            foreach (var section in widget.sections)
+            {
+                var title = section.title;
+                //This is mainly for mods that add new sections such as Colony Groups
+                if (title != "Capture" && title != "Prisoners" && title != "Animals" && title != "Mechanoids") cachedTransferables.AddRange(section.cachedTransferables);
+            }
             List<Pawn> pawns = new List<Pawn>();
 
             if (cachedTransferables != null)
@@ -125,13 +131,13 @@ namespace GiddyUpCaravan.Harmony
                 var length = pawns.Count;
                 for (int i = 0; i < length; i++)
                 {
-                    var pawn = pawns[i];
-                    if (pawn.IsColonist)
+                    var rider = pawns[i];
+                    if (rider.IsColonist)
                     {
-                        ExtendedPawnData pawnData = pawn.GetGUData();
+                        ExtendedPawnData pawnData = rider.GetGUData();
                         if (!pawnData.selectedForCaravan)
                         {
-                            list.Add(new FloatMenuOption(pawn.Name.ToStringShort + " (" + "GU_Car_PawnNotSelected".Translate() + ")", null, MenuOptionPriority.Default, null, null, 0f, null, null));
+                            list.Add(new FloatMenuOption(rider.Name.ToStringShort + " (" + "GU_Car_PawnNotSelected".Translate() + ")", null, MenuOptionPriority.Default, null, null, 0f, null, null));
                             continue;
                         }
 
@@ -139,20 +145,32 @@ namespace GiddyUpCaravan.Harmony
                         {
                             continue;
                         }
-                        if (pawn.IsWorkTypeDisabledByAge(WorkTypeDefOf.Handling, out int age))
+                        if (!rider.IsCapableOfRiding(out IsMountableUtility.Reason riderReason))
                         {
-                            list.Add(new FloatMenuOption(pawn.Name.ToStringShort + " (" + "GU_Car_TooYoung".Translate() + ")", null, MenuOptionPriority.Default, null, null, 0f, null, null));
+                            string cannotRideReason;
+                            if (riderReason == Reason.TooYoung) cannotRideReason = rider.Name.ToStringShort + " (" + "GU_TooYoung".Translate() + ")";
+                            else cannotRideReason = rider.Name.ToStringShort + " (" + "GU_CannotRide".Translate() + ")";
+
+                            list.Add(new FloatMenuOption(cannotRideReason, null, MenuOptionPriority.Default, null, null, 0f, null, null));
                             continue;
                         }
-                        list.Add(new FloatMenuOption(pawn.Name.ToStringShort, delegate
+                        if (rider.IsTooHeavy(animal))
+                        {
+                            list.Add(new FloatMenuOption(rider.Name.ToStringShort + " (" + "GUC_TooHeavy".Translate() + ")", null, MenuOptionPriority.Default, null, null, 0f, null, null));
+                            continue;
+                        }
+
+                        list.Add(new FloatMenuOption(rider.Name.ToStringShort, delegate
                         {
                             {
-                                SelectMountRider(animalData, pawnData, animal, pawn);
+                                SelectMountRider(animalData, pawnData, animal, rider);
                                 trad.CountToTransfer = 1;
                             }
                         }, MenuOptionPriority.High, null, null, 0f, null, null));
                     }
                 }
+
+                //Selected created without rider
                 list.Add(new FloatMenuOption("GU_Car_No_Rider".Translate(), delegate
                 {
                     {
@@ -160,6 +178,8 @@ namespace GiddyUpCaravan.Harmony
                         trad.CountToTransfer = 1;
                     }
                 }, MenuOptionPriority.Low, null, null, 0f, null, null));
+
+                //Print list
                 Find.WindowStack.Add(new FloatMenu(list));
             }
         }

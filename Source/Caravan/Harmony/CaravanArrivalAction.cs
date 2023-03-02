@@ -29,7 +29,6 @@ namespace GiddyUpCaravan.Harmony
                     yield return new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(CaravanEnterMapUtility), nameof(CaravanEnterMapUtility.tmpPawns)));
                     yield return new CodeInstruction(OpCodes.Call, typeof(Patch_CaravanEnterMapUtility).GetMethod(nameof(Patch_CaravanEnterMapUtility.MountCaravanMounts)));
                     done = true;
-                    Log.Warning("AAAAAA");
                 }
             }
 
@@ -37,10 +36,7 @@ namespace GiddyUpCaravan.Harmony
         //[SyncMethod]
         public static void MountCaravanMounts(List<Pawn> pawns)
         {
-            foreach (Pawn pawn in pawns)
-            {
-                if (pawn.IsColonist && pawn.Spawned) pawn.GoMount(null, MountUtility.GiveJobMethod.Instant);
-            }
+            foreach (Pawn pawn in pawns) if (pawn.IsColonist && pawn.Spawned) pawn.GoMount(null, MountUtility.GiveJobMethod.Instant);
         }
     }
 }

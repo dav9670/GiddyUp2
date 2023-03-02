@@ -11,9 +11,8 @@ namespace GiddyUp
 	{
 		public static int lineNumber, cellPosition;
 		public const int lineHeight = 22; //Text.LineHeight + options.verticalSpacing;
-		public static void DrawList(this Listing_Standard options, Rect rect)
+		public static void DrawList(this Listing_Standard options)
 		{
-			Rect container = rect;
 			lineNumber = cellPosition = 0; //Reset
 			//List out all the unremoved defs from the compiled database
 			for (int i = 0; i < allAnimals.Length; i++)
@@ -52,7 +51,6 @@ namespace GiddyUp
 			}
 
 			//Handle row coloring and spacing
-			options.Gap(options.verticalSpacing);
 			if (lineNumber % 2 != 0) Widgets.DrawLightHighlight(rect);
 			Widgets.DrawHighlightIfMouseover(rect);
 			

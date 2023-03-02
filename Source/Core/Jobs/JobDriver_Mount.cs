@@ -60,7 +60,7 @@ namespace GiddyUp.Jobs
             var mount = Mount;
             int mountComplexity = (int)(bodySizeFactor.Evaluate(mount.BodySize) * wildnessFactor.Evaluate(mount.RaceProps.wildness) * 
                 skillFactor.Evaluate(pawn.skills?.GetSkill(SkillDefOf.Animals).Level ?? 0));
-            if (Settings.logging) Log.Message("[Giddy-Up] Number of ticks for " + pawn.Name.ToString() + " to mount " + mount.def.defName + " : " + mountComplexity.ToString());
+            if (Settings.logging) Log.Message("[Giddy-Up] Number of ticks for " + pawn.Label + " to mount " + mount.def.defName + " : " + mountComplexity.ToString());
             return new Toil()
             {
                 defaultCompleteMode = ToilCompleteMode.Delay,

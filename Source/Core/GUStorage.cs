@@ -73,6 +73,7 @@ namespace GiddyUp
         public static HashSet<Thing> nofleeingAnimals;
         public Dictionary<int, ExtendedPawnData> _store = new Dictionary<int, ExtendedPawnData>(); //Pawn xData sorted via their thingID
         public Dictionary<int, Area> areaNoMount = new Dictionary<int, Area>(), areaDropAnimal = new Dictionary<int, Area>();
+        public HashSet<IntVec3> badSpots = new HashSet<IntVec3>();
         public ExtendedDataStorage(World world) : base(world) {}
 
         public override void FinalizeInit()
@@ -102,6 +103,7 @@ namespace GiddyUp
             
             base.ExposeData();
             Scribe_Collections.Look(ref _store, "store", LookMode.Value, LookMode.Deep, ref _idWorkingList, ref _extendedPawnDataWorkingList);
+            Scribe_Collections.Look(ref badSpots, "badSpots", LookMode.Value);
             
             //Validate data
             if (Scribe.mode == LoadSaveMode.Saving)
@@ -109,6 +111,11 @@ namespace GiddyUp
                 var workingList = new List<int>();
                 foreach (var (key, value) in _store) if (value == null) workingList.Add(key);
                 _store.RemoveAll(x => workingList.Contains(x.Key));
+            }
+            else if (Scribe.mode == LoadSaveMode.PostLoadInit)
+            {
+                if (_store == null) _store = new Dictionary<int, ExtendedPawnData>();
+                if (badSpots == null) badSpots = new HashSet<IntVec3>();
             }
         }
         
