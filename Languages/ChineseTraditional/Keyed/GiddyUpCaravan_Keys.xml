@@ -1,33 +1,62 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
-  
-  <GU_Car_NotReachable_DropAnimal_NPC_Message>訪客無法到達坐騎釋放區，請確保所有的坐騎釋放區都可到達</GU_Car_NotReachable_DropAnimal_NPC_Message>
 
-  <GU_Car_visitorMountChance_Title>訪客－騎乘機率（範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</GU_Car_visitorMountChance_Title>
-  <GU_Car_visitorMountChance_Description>訪客騎乘動物的機率。</GU_Car_visitorMountChance_Description>
+  <GUC_StatPart_Mounted>騎乘</GUC_StatPart_Mounted>
+  <GUC_StatPart_MountMoveSpeed>坐騎移動速度</GUC_StatPart_MountMoveSpeed>
+  <GUC_StatPart_HandlingMultiplier>騎手－騎術倍率</GUC_StatPart_HandlingMultiplier>
+  <GUC_StatPart_HandlingSkill>騎手－馴獸技能</GUC_StatPart_HandlingSkill>
+  <GUC_StatPart_SkillReq>動物等級要求</GUC_StatPart_SkillReq>
+  <GUC_StatPart_LevelsAbove>高於等級要求</GUC_StatPart_LevelsAbove>
+  <GUC_StatPart_HandlingMovementImpact>動物等級－速度影響</GUC_StatPart_HandlingMovementImpact>
+  <GUC_StatPart_MountTypeMultiplier>騎獸類型－倍率</GUC_StatPart_MountTypeMultiplier>
 
-  <GU_Car_visitorMountChanceTribal_Title>部落訪客－騎乘機率（範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</GU_Car_visitorMountChanceTribal_Title>
-  <GU_Car_visitorMountChanceTribal_Description>原始部落、中世紀的派系訪客，騎乘動物的機率</GU_Car_visitorMountChanceTribal_Description>
+  <GUC_HandlingAccuracyImpact_Title>馴獸技能－命中率（範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</GUC_HandlingAccuracyImpact_Title>
+  <GUC_HandlingAccuracyImpact_Description>如果騎手技能高/低於所需等級時，會有增益/減益。</GUC_HandlingAccuracyImpact_Description>
 
-  <GU_Car_GiveCaravanSpeed_Title>旅隊速度加成－特殊動物</GU_Car_GiveCaravanSpeed_Title>
-  <GU_Car_GiveCaravanSpeed_Description>原版旅隊默認部分動物能騎乘並增加行走效率。啟用後，所有動物將依照體型、速度、野性與價格計算後附加旅隊加成。</GU_Car_GiveCaravanSpeed_Description>
+  <GUC_HandlingMovementImpact_Title>馴獸等級－移速（範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</GUC_HandlingMovementImpact_Title>
+  <GUC_HandlingMovementImpact_Description>如果騎手技能高/低於所需等級時，會有增益/減益。</GUC_HandlingMovementImpact_Description>
 
-  <GU_Car_RidePackAnimals_Title>商人騎著馱獸</GU_Car_RidePackAnimals_Title>
-  <GU_Car_RidePackAnimals_Description>友方商隊可以騎著他們的馱畜進入地圖。如果您遇到某種模組衝突，可以關閉此行為。</GU_Car_RidePackAnimals_Description>
+  <GUC_AccuracyPenalty_Title>騎乘－命中率減益（範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</GUC_AccuracyPenalty_Title>
+  <GUC_AccuracyPenalty_Description>騎乘時，命中率受到的減益</GUC_AccuracyPenalty_Description>
 
-  <GU_Car_Designator_GU_DropAnimal_NPC_Clear_Label>刪除坐騎釋放區</GU_Car_Designator_GU_DropAnimal_NPC_Clear_Label>
-  <GU_Car_Designator_GU_DropAnimal_NPC_Clear_Description>刪除坐騎釋放區</GU_Car_Designator_GU_DropAnimal_NPC_Clear_Description>
+  <GUC_BodySizeFilter_Title>按體型篩選（範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</GUC_BodySizeFilter_Title>
+  <GUC_BodySizeFilter_Description>按體型篩選可騎乘的動物</GUC_BodySizeFilter_Description>
 
-  <GU_Car_Designator_GU_DropAnimal_NPC_Expand_Label>坐騎釋放區</GU_Car_Designator_GU_DropAnimal_NPC_Expand_Label>
-  <GU_Car_Designator_GU_DropAnimal_NPC_Expand_Description>訪客坐騎的釋放點。當商人或訪客來時，會將坐騎暫時留在距離最近的坐騎點。坐騎將留在釋放點附近，直到他們離去。</GU_Car_Designator_GU_DropAnimal_NPC_Expand_Description>
+  <GUC_CannotMount>無法騎乘: </GUC_CannotMount>
+  <GUC_NotInModOptions>物種無法</GUC_NotInModOptions>
+  <GUC_AnimalBusy>處於任務中</GUC_AnimalBusy>
+  <GUC_NotFullyGrown>未完全長大</GUC_NotFullyGrown>
+  <GUC_NeedsObedience>未訓練“服從”</GUC_NeedsObedience>
+  <GUC_IsPoorCondition>狀態不佳</GUC_IsPoorCondition>
+  <GUC_IsRoped>被繩索束縛</GUC_IsRoped>
+  <GUC_Mount>坐上</GUC_Mount>
+  <GUC_Mount_GodMode>坐上 (上帝模式)</GUC_Mount_GodMode>
+  <GUC_Dismount>翻下</GUC_Dismount>
+  <GUC_SwitchMount>切換</GUC_SwitchMount>
 
-  <!-- note for translators: The following items need to be really short to fit -->
-  <GU_Car_No_Rider>無騎乘者</GU_Car_No_Rider>
-  <GU_Car_Set_Rider>設置騎乘者</GU_Car_Set_Rider>
-  <GU_Car_NotInModOptions>禁止騎乘</GU_Car_NotInModOptions>
-  <GU_Car_NotFullyGrown>未完全成熟</GU_Car_NotFullyGrown>
-  <GU_Car_NeedsObedience>需要訓練服從</GU_Car_NeedsObedience>
-  <GU_Car_AnimalNotSelected>未選擇</GU_Car_AnimalNotSelected>
-  <GU_Car_PawnNotSelected>未選擇</GU_Car_PawnNotSelected>
-  
+  <GUC_Mountable_Tab>可騎乘</GUC_Mountable_Tab>
+  <GUC_DrawBehavior_Tab>圖層</GUC_DrawBehavior_Tab>
+  <GUC_DrawBehavior_Description>勾選的動物，更改圖層渲染的優先級（優先於單位，脖子長的動物建議勾選）。</GUC_DrawBehavior_Description>
+
+  <GUC_Core_Tab>核心</GUC_Core_Tab>
+  <GUC_RnR_Tab>騎行</GUC_RnR_Tab>
+  <GUC_BattleMounts_Tab>騎兵</GUC_BattleMounts_Tab>
+  <GUC_Caravans_Tab>旅商</GUC_Caravans_Tab>
+
+  <GU_Enable_RnR>啟用 騎行</GU_Enable_RnR>
+  <GU_Enable_RnR_Description>禁用此模塊，將刪除殖民者出於方便或工作需要而使用坐騎在地圖上行走的相關功能。更改此設置需要重新啟動。</GU_Enable_RnR_Description>
+
+  <GU_Enable_BattleMounts>啟用 騎兵</GU_Enable_BattleMounts>
+  <GU_Enable_BattleMounts_Description>禁用此模塊，將刪除使用動物作為戰鬥坐騎的單位（殖民者和敵人）的相關功能。更改此設置需要重新啟動。</GU_Enable_BattleMounts_Description>
+
+  <GU_Enable_Caravans>啟用 旅商</GU_Enable_Caravans>
+  <GU_Enable_Caravans_Description>禁用此模塊，將刪除單位（包括殖民者和友軍）在進出地圖時騎乘動物的相關功能。更改此設置需要重新啟動。</GU_Enable_Caravans_Description>
+
+  <GU_Reset_Cache>重置</GU_Reset_Cache>
+
+  <GU_Car_TooYoung>太年輕</GU_Car_TooYoung>
+  <GU_IncompatibleEquipment>裝備妨礙</GU_IncompatibleEquipment>
+  <GU_CannotRide>騎手無法</GU_CannotRide>
+  <GUC_TooHeavy>過重</GUC_TooHeavy>
+
 </LanguageData>
