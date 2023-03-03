@@ -4,19 +4,19 @@
   <GUC_StatPart_Mounted>騎乘</GUC_StatPart_Mounted>
   <GUC_StatPart_MountMoveSpeed>坐騎移速</GUC_StatPart_MountMoveSpeed>
   <GUC_StatPart_HandlingMultiplier>騎手－騎術倍率</GUC_StatPart_HandlingMultiplier>
-  <GUC_StatPart_HandlingSkill>騎手－馴獸技能</GUC_StatPart_HandlingSkill>
-  <GUC_StatPart_SkillReq>動物等級要求</GUC_StatPart_SkillReq>
+  <GUC_StatPart_HandlingSkill>騎手－馴獸等級</GUC_StatPart_HandlingSkill>
+  <GUC_StatPart_SkillReq>等級要求</GUC_StatPart_SkillReq>
   <GUC_StatPart_LevelsAbove>高於等級要求</GUC_StatPart_LevelsAbove>
-  <GUC_StatPart_HandlingMovementImpact>動物等級－速度影響</GUC_StatPart_HandlingMovementImpact>
+  <GUC_StatPart_HandlingMovementImpact>等級－速度影響</GUC_StatPart_HandlingMovementImpact>
   <GUC_StatPart_MountTypeMultiplier>騎獸類型－倍率</GUC_StatPart_MountTypeMultiplier>
 
-  <GUC_HandlingAccuracyImpact_Title>馴獸技能－命中率（範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</GUC_HandlingAccuracyImpact_Title>
-  <GUC_HandlingAccuracyImpact_Description>如果騎手技能高/低於所需等級時，會有增益/減益。</GUC_HandlingAccuracyImpact_Description>
+  <GUC_HandlingAccuracyImpact_Title>馴獸等級－ＨＩＴ（範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</GUC_HandlingAccuracyImpact_Title>
+  <GUC_HandlingAccuracyImpact_Description>如果騎手技能高/低於所需等級時，會有增益/減益影響命中率。</GUC_HandlingAccuracyImpact_Description>
 
   <GUC_HandlingMovementImpact_Title>馴獸等級－移速（範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</GUC_HandlingMovementImpact_Title>
-  <GUC_HandlingMovementImpact_Description>如果騎手技能高/低於所需等級時，會有增益/減益。</GUC_HandlingMovementImpact_Description>
+  <GUC_HandlingMovementImpact_Description>如果騎手技能高/低於所需等級時，會有增益/減益影響移動速度。</GUC_HandlingMovementImpact_Description>
 
-  <GUC_AccuracyPenalty_Title>騎乘－命中率減益（範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</GUC_AccuracyPenalty_Title>
+  <GUC_AccuracyPenalty_Title>騎乘－ＨＩＴ減益（範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</GUC_AccuracyPenalty_Title>
   <GUC_AccuracyPenalty_Description>騎乘時，命中率受到的減益</GUC_AccuracyPenalty_Description>
 
   <GUC_BodySizeFilter_Title>按體型篩選（範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</GUC_BodySizeFilter_Title>
