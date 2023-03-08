@@ -40,7 +40,7 @@ namespace GiddyUp
 		{
 			reason = Reason.CanMount;
 			//Is even an animal?
-			if (!animal.RaceProps.Animal)
+			if (!animal.RaceProps.Animal || animal == rider)
 			{
 				reason = Reason.NotAnimal;
 				return false;
@@ -197,7 +197,7 @@ namespace GiddyUp
 				reason = Reason.TooYoung;
 				return false;
 			}
-			if (pawn.apparel.WornApparel.Any(x => x.def.defName == "Wheelchair"))
+			if (pawn.apparel != null && pawn.apparel.WornApparel.Any(x => x.def.defName == "Wheelchair"))
 			{
 				reason = Reason.IncompatibleEquipment;
 				return false;

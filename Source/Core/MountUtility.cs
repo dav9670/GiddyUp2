@@ -345,7 +345,7 @@ namespace GiddyUp
 				}
 				else
 				{
-					int pawnHandlingLevel = pawn.skills.GetSkill(SkillDefOf.Animals).Level;
+					int pawnHandlingLevel = pawn.skills?.GetSkill(SkillDefOf.Animals).Level ?? 8;
 					if (pawnHandlingLevel <= Settings.minHandlingLevel) continue;
 
 					PawnKindDef[] workingList;
@@ -357,9 +357,15 @@ namespace GiddyUp
 						default: workingList = domesticAnimals; domestic = true; break;
 					}
 
-					if (domestic) workingList.Where(x => Settings.mountableCache.Contains(x.shortHash)).
+					Predicate<PawnKindDef> commonPredicate = pawnKindDef => Settings.mountableCache.Contains(pawnKindDef.race.shortHash) && //Is mountable?
+						parms.points > pawnKindDef.combatPower * ResourceBank.combatPowerFactor && //Is not too powerful for this particular raid?
+						(pawnKindDef.combatPower * ResourceBank.combatPowerFactor > pawn.kindDef.combatPower || //Rider considers this a worthy creature, or...
+						pawnKindDef.race.GetStatValueAbstract(StatDefOf.MoveSpeed) >= pawn.GetStatValue(StatDefOf.MoveSpeed)); //Rider sees this as a faster creature?
+
+					if (domestic) workingList.Where(x => commonPredicate(x)).
 						TryRandomElementByWeight(def => def.race.BaseMarketValue / def.race.GetStatValueAbstract(StatDefOf.CaravanRidingSpeedFactor), out pawnKindDef);
-					else workingList.Where(x => map.mapTemperature.SeasonAcceptableFor(x.race) && Settings.mountableCache.Contains(x.shortHash) && parms.points > x.combatPower * ResourceBank.combatPowerFactor).
+
+					else workingList.Where(x => map.mapTemperature.SeasonAcceptableFor(x.race) && commonPredicate(x)).
 						TryRandomElementByWeight(def => CalculateCommonality(def, map.Biome, pawnHandlingLevel, averageCommonality), out pawnKindDef);
 				}
 
@@ -539,7 +545,7 @@ namespace GiddyUp
 			{
 				if (closestAnimal == null) Log.Message("[Giddy-Up] " + (pawn.Label ?? "NULL") + " tried to find an animal but couldn't fnid any.");
 				else Log.Message("[Giddy-Up] report for " + (pawn.Label ?? "NULL") + ":\n" +
-				"Animal: " + (closestAnimal.Label ?? closestAnimal.thingIDNumber.ToString()) + "\n" +
+				"Animal: " + (closestAnimal.Label) + "\n" +
 				"First target: " + (firstTarget.ToString()) + "\n" + 
 				"Second target: " + (secondTarget.ToString()) + "\n" + 
 				"Normal walking speed: " + ((int)(pawnWalkSpeed)).ToString() + "\n" + 
