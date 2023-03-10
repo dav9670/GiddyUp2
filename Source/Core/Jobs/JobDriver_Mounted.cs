@@ -17,6 +17,7 @@ namespace GiddyUp.Jobs
 		public bool isTrained, interrupted, isParking;
 		IntVec3 dismountingAt;
 		IntVec3 riderOriginalDestinaton;
+		int parkingFailures = 0;
 		int ticker = 30;
 		enum DismountReason { False, Interrupted, BadState, LeftMap, NotSpawned, WrongMount, BadJob, ForbiddenAreaAndCannotPark, Parking };
 
@@ -121,6 +122,7 @@ namespace GiddyUp.Jobs
 				else if (rider.pather.destination.Cell != dismountingAt)
 				{
 					isParking = false;
+					if (parkingFailures++ == 3) return DismountReason.Parking; //Some sorta job is interferring with the parking, so just dismount.
 				}
 			}
 			

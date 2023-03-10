@@ -339,7 +339,7 @@ namespace GiddyUp
 					options.GapLine(); //=============================
 					options.Gap();
 					
-					options.Label("GU_RR_MinAutoMountDistance_Title".Translate("0", "500", "16", minAutoMountDistance.ToString()), -1f, "GU_RR_MinAutoMountDistance_Description".Translate());
+					options.Label("GU_RR_MinAutoMountDistance_Title".Translate("0", "500", "120", minAutoMountDistance.ToString()), -1f, "GU_RR_MinAutoMountDistance_Description".Translate());
 					minAutoMountDistance = (int)options.Slider(minAutoMountDistance, 20f, 500f);
 
 					options.Label("GU_RR_AutoHitchDistance_Title".Translate("0", "200", "50", autoHitchDistance.ToString()), -1f, "GU_RR_AutoHitchDistance_Description".Translate());
