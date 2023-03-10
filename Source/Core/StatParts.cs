@@ -37,7 +37,7 @@ namespace GiddyUp
                         sb.AppendLine("        " + "GUC_StatPart_LevelsAbove".Translate() + ": " + adjustedLevel);
                         sb.AppendLine("        " + "GUC_StatPart_HandlingMovementImpact".Translate() + ": " + (Settings.handlingMovementImpact / 100f).ToStringByStyle(ToStringStyle.PercentOne));
                     }
-                    var modExt = pawn.def.GetModExtension<CustomStats>();
+                    var modExt = pawn.kindDef.GetModExtension<CustomStats>();
                     if (modExt != null)
                     {
                         sb.AppendLine("    " + "GUC_StatPart_MountTypeMultiplier".Translate() + ": " + modExt.speedModifier.ToStringByStyle(ToStringStyle.PercentOne, ToStringNumberSense.Factor));
@@ -71,7 +71,7 @@ namespace GiddyUp
             }
             float animalHandlingOffset = 1f + (adjustedLevel * Settings.handlingMovementImpact) / 100f;
             baseValue *= animalHandlingOffset;
-            var modExt = animal.def.GetModExtension<CustomStats>();
+            var modExt = animal.kindDef.GetModExtension<CustomStats>();
             if (modExt != null) baseValue *= modExt.speedModifier;
             return baseValue;
         }
@@ -83,7 +83,7 @@ namespace GiddyUp
             StringBuilder sb = new StringBuilder();
             if (req.Thing is Pawn pawn && pawn.jobs != null && pawn.jobs.curDriver is JobDriver_Mounted)
             {
-                var modExt = pawn.def.GetModExtension<CustomStats>();
+                var modExt = pawn.kindDef.GetModExtension<CustomStats>();
                 if (modExt != null && modExt.armorModifier != 1.0f)
                 {
                     sb.AppendLine("GUC_StatPart_Mounted".Translate());
@@ -96,7 +96,7 @@ namespace GiddyUp
         {
             if (req.Thing is Pawn pawn && pawn.IsMountedAnimal())
             {
-                var modExt = pawn.def.GetModExtension<CustomStats>();
+                var modExt = pawn.kindDef.GetModExtension<CustomStats>();
                 if (modExt != null) val *= modExt.armorModifier;
             }
         }

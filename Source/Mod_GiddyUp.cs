@@ -65,11 +65,9 @@ namespace GiddyUp
 		public static void BuildAllowedJobsCache()
 		{
 			JobDriver_Mounted.allowedJobs = new HashSet<JobDef>();
-			var list = DefDatabase<JobDef>.AllDefsListForReading;
-			var length = list.Count;
-			for (int i = 0; i < length; i++)
+			for (int i = DefDatabase<JobDef>.DefCount; i-- > 0;)
 			{
-				var def = list[i];
+				var def = DefDatabase<JobDef>.defsList[i];
 				if (def.HasModExtension<CanDoMounted>()) JobDriver_Mounted.allowedJobs.Add(def);
 			}
 			if (noMountedHunting) JobDriver_Mounted.allowedJobs.Add(JobDefOf.Hunt);
@@ -172,19 +170,15 @@ namespace GiddyUp
 		//Processes biome information to determine where animals come from, used for NPC mount spawning
 		static void BuildAnimalBiomeCache()
 		{
-			var biomeDefs = DefDatabase<BiomeDef>.AllDefsListForReading;
-			var length = biomeDefs.Count;
-			for (int i = 0; i < length; i++)
+			for (int i = DefDatabase<BiomeDef>.DefCount; i-- > 0;)
 			{
-				var biomeDef = biomeDefs[i];
+				var biomeDef = DefDatabase<BiomeDef>.defsList[i];
 				foreach(PawnKindDef animalKind in biomeDef.AllWildAnimals) MountUtility.allWildAnimals.Add(animalKind);
 			}
 			
-			var pawnKindDefs = DefDatabase<PawnKindDef>.AllDefsListForReading;
-			length = pawnKindDefs.Count;
-			for (int i = 0; i < length; i++)
+			for (int i = DefDatabase<PawnKindDef>.DefCount; i-- > 0;)
 			{
-				var pawnKindDef = pawnKindDefs[i];
+				var pawnKindDef = DefDatabase<PawnKindDef>.defsList[i];
 				if (pawnKindDef.RaceProps != null && pawnKindDef.RaceProps.wildness <= 0.6f && pawnKindDef.race != null && pawnKindDef.race.tradeTags != null &&
 					 (pawnKindDef.race.tradeTags.Contains("AnimalFighter") || pawnKindDef.race.tradeTags.Contains("AnimalFarm") ))
 				{

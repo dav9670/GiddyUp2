@@ -9,7 +9,7 @@ namespace GiddyUp.Harmony
         {
             if (pawn.IsMountedAnimal())
             {
-                var modExt = pawn.def.GetModExtension<CustomStats>();
+                var modExt = pawn.kindDef.GetModExtension<CustomStats>();
                 if (modExt != null)
                 {
                     armorRating *= modExt.armorModifier;
