@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
+
   <BM_MinHandlingLevel_Title>生成騎手－最低等級（範圍：{0}～{1}　默認：{2} 當前：{3}）</BM_MinHandlingLevel_Title>
   <BM_MinHandlingLevel_Description>敵方/友方單位除非擁有該值的動物技能，進入地圖時不會生成騎手。</BM_MinHandlingLevel_Description>
 
@@ -13,14 +14,14 @@
   <BM_NonWildWeight_Description>敵方坐騎為非野生動物的機率</BM_NonWildWeight_Description>
 
   <BM_EnemyMountChance_Title>騎手突襲－機率 （範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</BM_EnemyMountChance_Title>
-  <BM_EnemyMountChance_Description>襲擊時，敵方生成騎手的機率。</BM_EnemyMountChance_Description>
+  <BM_EnemyMountChance_Description>敵方襲擊時，生成騎手的機率。</BM_EnemyMountChance_Description>
 
-  <BM_EnemyMountChanceTribal_Title>部落騎手突襲－機率 （範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</BM_EnemyMountChanceTribal_Title>
-  <BM_EnemyMountChanceTribal_Description>襲擊時，原始部落、中世紀的敵方派系生成騎手的機率。</BM_EnemyMountChanceTribal_Description>
+  <BM_EnemyMountChanceTribal_Title>部落騎手突襲－機率（範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</BM_EnemyMountChanceTribal_Title>
+  <BM_EnemyMountChanceTribal_Description>敵方襲擊時，原始部落、中世紀的派系生成騎手的機率。</BM_EnemyMountChanceTribal_Description>
 
   <BM_SizeOk>可騎乘</BM_SizeOk>
   <BM_SizeNotOk>無法騎乘</BM_SizeNotOk>
   <BM_DrawFront>動物圖層置前</BM_DrawFront>
   <BM_DrawBack>動物圖層置後</BM_DrawBack>
-
+  
 </LanguageData>
