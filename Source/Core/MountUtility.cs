@@ -119,6 +119,9 @@ namespace GiddyUp
 
 				if (MountUtility.GetBestAnimal(pawn, out Pawn bestAnimal, firstTarget, secondTarget, pawnTargetDistance, firstToSecondTargetDistance, pawnData))
 				{
+					//Check if the mount is too close to the destination to be worht it
+					if (bestAnimal.Position.DistanceTo(firstTarget) < Settings.minAutoMountDistance / 4) return;
+
 					//Finally, go mount up
 					thinkResult = pawn.GoMount(bestAnimal, MountUtility.GiveJobMethod.Inject, thinkResult, thinkResult.Job).Value;
 				}
@@ -160,12 +163,12 @@ namespace GiddyUp
 
 			return false;
 		}
-		public static void Dismount(this Pawn rider, Pawn animal, ExtendedPawnData pawnData, bool clearReservation = false, IntVec3 parkLoc = default(IntVec3), bool ropeIfNeeded = true)
+		public static void Dismount(this Pawn rider, Pawn animal, ExtendedPawnData pawnData, bool clearReservation = false, IntVec3 parkLoc = default(IntVec3), bool ropeIfNeeded = true, bool waitForRider = true)
 		{
 			ExtendedDataStorage.isMounted.Remove(rider.thingIDNumber);
 			if (pawnData == null) pawnData = rider.GetGUData();
 			pawnData.mount = null;
-			if (Settings.logging) Log.Message("[Giddy-Up] pawn " + rider.thingIDNumber.ToString() + " no longer riding  " + (animal?.thingIDNumber.ToString() ?? "NULL"));
+			if (Settings.logging) Log.Message("[Giddy-Up] " + rider.Label + " no longer riding  " + (animal?.Label ?? "NULL"));
 
 			//Normally should not happen, may come in null from sanity checks. Odd bugs or save/reload conflicts between version changes
 			ExtendedPawnData animalData;
@@ -195,13 +198,13 @@ namespace GiddyUp
 				 (animal.Faction.def.isPlayer && animal.inventory != null && animal.inventory.innerContainer.Count == 0)) //Skip guest caravan pack animals
 			{
 				if (animal.roping == null) animal.roping = new Pawn_RopeTracker(animal); //Not needed, but changes to modded animals could maybe cause issues
-				if (Settings.logging) Log.Message("[Giddy-Up] pawn " + rider.thingIDNumber.ToString() + " just roped " + animal.thingIDNumber);
+				if (Settings.logging) Log.Message("[Giddy-Up] " + rider.Label + " just roped " + animal.Label);
 				animal.roping.RopeToSpot(parkLoc == default(IntVec3) ? animal.Position : parkLoc);
 			}
 			//Follow the rider for a while to give it an opportunity to take a ride back
 			if (Settings.rideAndRollEnabled && !rider.Drafted && rider.Faction.def.isPlayer && animalData.reservedBy != null)
 			{
-				if (animal.CurJobDef != ResourceBank.JobDefOf.Mounted || animal.jobs.curDriver is not Jobs.JobDriver_Mounted mountJob || !mountJob.interrupted)
+				if (waitForRider)
 				{
 					animal.jobs.jobQueue.EnqueueFirst(new Job(ResourceBank.JobDefOf.WaitForRider, animalData.reservedBy)
 					{
@@ -247,14 +250,14 @@ namespace GiddyUp
 				};
 				if (!CellFinder.TryFindRandomCellNear(riderDestinaton, map, 4, freeCell, out parkLoc, 16))
 				{
-					if (Settings.logging) Log.Message("[Giddy-Up] Pawn " + rider.Label + " could not find a valid autohitch spot near " + parkLoc.ToString());
+					if (Settings.logging) Log.Message("[Giddy-Up] " + rider.Label + " could not find a valid autohitch spot near " + parkLoc.ToString());
 					parkLoc = IntVec3.Invalid;
 				}
 			}
 			//Validate results
 			if (parkLoc == IntVec3.Invalid)
 			{
-				if (Prefs.DevMode) Log.Message("[Giddy-Up] Pawn " + rider.Label + " could not ride their mount to their job because they could not find any places to dismount. Immediately dismounting.");
+				if (Prefs.DevMode) Log.Message("[Giddy-Up] " + rider.Label + " could not ride their mount to their job because they could not find any places to dismount. Immediately dismounting.");
 			}
 			//Looks good, begin pathing
 			else return true;
@@ -335,7 +338,7 @@ namespace GiddyUp
 						if (Settings.logging)
 						{
 							var report = System.String.Join(", ", modExtension.possibleMounts.Select(x => x.Key.defName));
-							Log.Message("[Giddy-Up] Pawn " + (pawn.Label ?? "NULL") + " had a custom mount extension. The allowed mounts were: " + 
+							Log.Message("[Giddy-Up] " + (pawn.Label ?? "NULL") + " had a custom mount extension. The allowed mounts were: " + 
 							report + " and they picked " + selectedMount.Key.defName);
 						}
 						pawnKindDef = selectedMount.Key;
@@ -523,7 +526,7 @@ namespace GiddyUp
 				if (!animal.IsMountable(out IsMountableUtility.Reason reason, pawn, true, true)) 
 				{
 					if (Settings.logging && reason != IsMountableUtility.Reason.WrongFaction && reason != IsMountableUtility.Reason.NotInModOptions && 
-						reason != IsMountableUtility.Reason.NotAnimal) Log.Message("[Giddy-Up] Pawn " + pawn.Label + " will not ride " + animal.Label + " because: " + reason.ToString());
+						reason != IsMountableUtility.Reason.NotAnimal) Log.Message("[Giddy-Up] " + pawn.Label + " will not ride " + animal.Label + " because: " + reason.ToString());
 					continue;
 				}
 			
