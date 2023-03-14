@@ -18,6 +18,7 @@ namespace GiddyUp.Harmony
 		}
 		static void Postfix(Vector3 clickPos, Pawn pawn, List<FloatMenuOption> __result)
 		{
+			/*
 			if (DebugSettings.godMode)
             {
                 var godModeTargetting = new TargetingParameters() 
@@ -34,7 +35,7 @@ namespace GiddyUp.Harmony
                     if (current.Thing is Pawn target) FloatMenuUtility.AddMountingOptions(target, pawn, __result);
                 }
 				return;
-            }
+            }*/
 			foreach (LocalTargetInfo current in GenUI.TargetsAt(clickPos, TargetingParameters.ForAttackHostile(), true))
 			{
 				if (current.Thing is Pawn target && !pawn.Drafted && target.RaceProps.Animal) FloatMenuUtility.AddMountingOptions(target, pawn, __result);
@@ -51,6 +52,7 @@ namespace GiddyUp.Harmony
 		}
 		static void Postfix(Vector3 clickPos, Pawn pawn, List<FloatMenuOption> opts)
 		{
+			if (pawn.RaceProps.Animal) return;
 			foreach (LocalTargetInfo current in GenUI.TargetsAt(clickPos, TargetingParameters.ForAttackHostile(), true))
 			{
 				if (current.Thing is Pawn target) FloatMenuUtility.AddMountingOptions(target, pawn, opts);
@@ -89,10 +91,11 @@ namespace GiddyUp.Harmony
 						});
 					}
 				}
+				/*
 				else if (DebugSettings.godMode)
 				{
 					return opts.GenerateFloatMenuOption("GUC_Mount_GodMode".Translate(), true, () => pawn.GoMount(animal, MountUtility.GiveJobMethod.Try));
-				}
+				}*/
 				else
 				{
 					if (Settings.logging) Log.Message("[Giddy-Up] " + pawn.Name.ToString() + " could not mount " + animal.thingIDNumber.ToString() + " because: " + reason.ToString());

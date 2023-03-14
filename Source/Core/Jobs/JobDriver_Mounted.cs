@@ -15,11 +15,10 @@ namespace GiddyUp.Jobs
 		ExtendedPawnData riderData;
 		Map map;
 		public bool isTrained, interrupted, isParking;
-		IntVec3 dismountingAt;
-		IntVec3 riderOriginalDestinaton;
+		IntVec3 startingPoint, dismountingAt, riderOriginalDestinaton;
 		int parkingFailures = 0;
 		int ticker = 30;
-		enum DismountReason { False, Interrupted, BadState, LeftMap, NotSpawned, WrongMount, BadJob, ForbiddenAreaAndCannotPark, Parking };
+		enum DismountReason { False, Interrupted, BadState, LeftMap, NotSpawned, WrongMount, BadJob, ForbiddenAreaAndCannotPark, Parking, ParkingFailSafe };
 
 		public override IEnumerable<Toil> MakeNewToils()
 		{
@@ -28,6 +27,7 @@ namespace GiddyUp.Jobs
 			riderData = rider.GetGUData();
 			isTrained = pawn.training != null && pawn.training.HasLearned(TrainableDefOf.Obedience);
 			map = Map;
+			startingPoint = pawn.Position;
 			yield return WaitForRider();
 			yield return DelegateMovement();
 		}
@@ -89,8 +89,12 @@ namespace GiddyUp.Jobs
 					if (map == null) map = Map;
 					if (CheckReason(RiderShouldDismount(riderData), out DismountReason dismountReason))
 					{
-						if (Settings.logging) Log.Message("[Giddy-Up] Pawn " + pawn.thingIDNumber + " dismounting for reason: " + 
+						if (Settings.logging) Log.Message("[Giddy-Up] " + pawn.Label + " dismounting for reason: " + 
 							dismountReason.ToString() + " (rider's job was: " + (rider.CurJobDef?.ToString() ?? "NULL" + ")"));
+
+						//Check if something went wrong
+						if (dismountReason == DismountReason.ParkingFailSafe) interrupted = true;
+
 						ReadyForNextToil();
 						return;
 					}
@@ -102,8 +106,9 @@ namespace GiddyUp.Jobs
 				finishActions = new List<Action>() { (delegate
 				{
 					if (isParking) pawn.pather.StopDead();
+
 					//Check mount first. If it's null then they must have dismounted outside the driver's control
-					if (riderData.mount != null) rider.Dismount(pawn, riderData, false, isParking && pawn.Position.DistanceTo(dismountingAt) < 3f ? dismountingAt : default(IntVec3));
+					if (riderData.mount != null) rider.Dismount(pawn, riderData, false, isParking && pawn.Position.DistanceTo(dismountingAt) < 3f ? dismountingAt : default(IntVec3), waitForRider: !interrupted);
 					isParking = false;
 				})}
 			};
@@ -117,12 +122,13 @@ namespace GiddyUp.Jobs
 				if (rider.pather.nextCell == dismountingAt)
 				{
 					rider.pather.StartPath(riderOriginalDestinaton, PathEndMode.OnCell); //Resume original work
-					return DismountReason.Parking;
+					if (startingPoint.DistanceTo(dismountingAt) < 10f) return DismountReason.ParkingFailSafe;
+					else return DismountReason.Parking;
 				}
 				else if (rider.pather.destination.Cell != dismountingAt)
 				{
 					isParking = false;
-					if (parkingFailures++ == 3) return DismountReason.Parking; //Some sorta job is interferring with the parking, so just dismount.
+					if (parkingFailures++ == 3) return DismountReason.ParkingFailSafe; //Some sorta job is interferring with the parking, so just dismount.
 				}
 			}
 			
