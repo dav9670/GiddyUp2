@@ -31,7 +31,8 @@
   <GUC_IsRoped>动物被牵引</GUC_IsRoped>
   <GUC_Mount>骑乘</GUC_Mount>
   <GUC_Mount_GodMode>骑乘 (god mode)</GUC_Mount_GodMode>
-  <GUC_Dismount>停止骑乘</GUC_Dismount>
+  <GUC_Dismount>停止骑乘并拴束</GUC_Dismount>
+  <GUC_DismountWithoutHitching>停止骑乘</GUC_DismountWithoutHitching>
   <GUC_SwitchMount>更换坐骑</GUC_SwitchMount>
 
   <GUC_Mountable_Tab>可骑乘动物</GUC_Mountable_Tab>
@@ -58,6 +59,5 @@
   <GU_IncompatibleEquipment>装备不兼容</GU_IncompatibleEquipment>
   <GU_CannotRide>骑手无法骑乘</GU_CannotRide>
   <GUC_TooHeavy>超重</GUC_TooHeavy>
-
 
 </LanguageData>
