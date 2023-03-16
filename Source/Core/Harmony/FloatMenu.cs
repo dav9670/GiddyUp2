@@ -68,7 +68,8 @@ namespace GiddyUp.Harmony
 			//Right click to dismount...
 			if (animal == pawnData.mount)
 			{
-				return opts.GenerateFloatMenuOption("GUC_Dismount".Translate(), true, () => pawn.Dismount(animal, pawnData, true));
+				if (animal.RaceProps.Roamer && AnimalPenUtility.GetCurrentPenOf(animal, true) == null) opts.GenerateFloatMenuOption("GUC_DismountWithoutHitching".Translate(), true, () => pawn.Dismount(animal, pawnData, clearReservation: true, ropeIfNeeded: false));
+				return opts.GenerateFloatMenuOption("GUC_Dismount".Translate(), true, () => pawn.Dismount(animal, pawnData, clearReservation: true));
 			}
 			//Right click to mount...
 			else

@@ -10,6 +10,12 @@
 					<li MayRequire="Ludeon.RimWorld.Ideology">MountableBySlaves</li>
 				</value>
 			</li>
+			<li Class="PatchOperationInsert">
+				<xpath>/Defs/PawnTableDef[defName="Assign"]/columns/li[text()="MedicalCare"]</xpath>
+				<value>
+					<li>AllowedToRide</li>
+				</value>
+			</li>
 			<!-- When a pawn checks to see if they should dismount, one condition is to check if their current job is allowed while mounted. This is the whitelist -->
 			<li Class="PatchOperationAddModExtension">
 				<xpath>Defs/JobDef[defName="Arrest" or 

@@ -65,4 +65,22 @@ namespace GiddyUpRideAndRoll
             }
         }
     }
+
+    class PawnColumnWorker_AllowedToRide : PawnColumnWorker_Checkbox
+    {
+        public override bool HasCheckbox(Pawn pawn)
+        {
+            return true;
+        }
+        public override bool GetValue(Pawn pawn)
+        {
+            return pawn.CanRide();
+        }
+
+        //[SyncMethod]
+        public override void SetValue(Pawn pawn, bool value, PawnTable table)
+        {
+            pawn.GetGUData().canRide = !pawn.CanRide();
+        }
+    }
 }

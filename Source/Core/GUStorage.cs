@@ -65,6 +65,11 @@ namespace GiddyUp
             if (noRideArea == null) return true;
             return !noRideArea.innerGrid[noRideArea.Map.cellIndices.CellToIndex(cell)];
         }
+
+        public static bool CanRide(this Pawn pawn)
+        {
+            return pawn.GetGUData().canRide;
+        }
     }
     public class ExtendedDataStorage : WorldComponent, IExposable
     {
@@ -141,7 +146,7 @@ namespace GiddyUp
         public int ID;
 		public Pawn mount;
 		public Pawn reservedMount, reservedBy; //Used by the rider and mount respectively. This creates a short-term association, like for example of a rider hops off for a few moments.
-		public bool selectedForCaravan = false;
+		public bool selectedForCaravan = false, canRide = true;
 		public float drawOffset;
         public Automount automount = Automount.Anyone; public enum Automount { False, Anyone, Colonists, Slaves };
 		

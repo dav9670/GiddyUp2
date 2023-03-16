@@ -37,7 +37,7 @@ namespace GiddyUp
 			{
 				var penMarker = pen.TryGetComp<CompAnimalPenMarker>();
 				if (penMarker == null || !penMarker.AcceptsToPen(animal) || penMarker.parent.IsForbidden(rider)) continue;
-				if (!animal.Map.reachability.CanReach(secondTarget, penMarker.parent, PathEndMode.Touch, TraverseParms.For(rider).WithFenceblockedOf(animal) )) continue;
+				if (!animal.Map.reachability.CanReach(secondTarget, penMarker.parent, PathEndMode.OnCell, TraverseParms.For(rider).WithFenceblockedOf(animal) )) continue;
 				
 				float tmp = firstTarget.DistanceTo(penMarker.parent.Position) + penMarker.parent.Position.DistanceTo(secondTarget);
 				if (tmp < workingNum)

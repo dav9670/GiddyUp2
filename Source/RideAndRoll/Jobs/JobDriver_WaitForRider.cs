@@ -78,7 +78,7 @@ namespace GiddyUpRideAndRoll.Jobs
 							//"Fine, I'll follow you instead :pouting_cat:"
 							else if (pawn.roping == null || !pawn.roping.IsRoped)
 							{
-								pawn.pather.StartPath(waitingFor.pather.Destination.Cell, PathEndMode.Touch);
+								pawn.pather.StartPath(waitingFor.pather.Destination.Cell, PathEndMode.ClosestTouch);
 							}
 						}
 						//Did the rider get interupted?
@@ -121,7 +121,7 @@ namespace GiddyUpRideAndRoll.Jobs
 			if (pawn.roping != null && pawn.roping.IsRoped)
 			{
 				IntVec3 target = RCellFinder.RandomWanderDestFor(pawn, pawn.roping.RopedToSpot , 5, ((Pawn p, IntVec3 loc, IntVec3 root) => true), Danger.None);
-				pawn.pather.StartPath(target, PathEndMode.Touch);
+				pawn.pather.StartPath(target, PathEndMode.ClosestTouch);
 			}
 			else
 			{
@@ -129,7 +129,7 @@ namespace GiddyUpRideAndRoll.Jobs
 				if (room == null || room.Role == RoomRoleDefOf.None)
 				{
 					IntVec3 target = RCellFinder.RandomWanderDestFor(waitingFor, waitingFor.Position, 8, ((Pawn p, IntVec3 loc, IntVec3 root) => true), Danger.Some);
-					pawn.pather.StartPath(target, PathEndMode.Touch);
+					pawn.pather.StartPath(target, PathEndMode.ClosestTouch);
 				}
 			}
 		}
