@@ -16,6 +16,8 @@ namespace GiddyUp.Jobs
 		Map map;
 		public bool isTrained, interrupted, isParking;
 		IntVec3 startingPoint, dismountingAt, riderOriginalDestinaton;
+		PathEndMode originalPeMode = PathEndMode.Touch;
+		MountUtility.DismountLocationType dismountLocationType = MountUtility.DismountLocationType.Auto;
 		int parkingFailures = 0;
 		int ticker = 30;
 		enum DismountReason { False, Interrupted, BadState, LeftMap, NotSpawned, WrongMount, BadJob, ForbiddenAreaAndCannotPark, Parking, ParkingFailSafe };
@@ -39,6 +41,8 @@ namespace GiddyUp.Jobs
 			Scribe_Values.Look(ref this.isParking, "isParking");
 			Scribe_Values.Look(ref this.dismountingAt, "dismountingAt");
 			Scribe_Values.Look(ref this.ticker, "ticker");
+			Scribe_Values.Look(ref this.dismountLocationType, "dismountLocationType");
+			Scribe_Values.Look(ref this.originalPeMode, "originalPeMode");
 			Scribe_Values.Look(ref this.riderOriginalDestinaton, "riderOriginalDestinaton");
 		}
 		public override bool TryMakePreToilReservations(bool errorOnFailed)
@@ -71,7 +75,7 @@ namespace GiddyUp.Jobs
 							//Rider is cheating on this mount and went with another
 							(rider.CurJobDef == ResourceBank.JobDefOf.Mount && rider.jobs.curDriver is JobDriver_Mount mountDriver && mountDriver.Mount != pawn))
 						{
-							if (Settings.logging) Log.Message("[Giddy-Up] Animal " + pawn.thingIDNumber + " is no longer waiting for " + rider.Label);
+							if (Settings.logging) Log.Message("[Giddy-Up] " + pawn.Label + " is no longer waiting for " + rider.Label);
 							interrupted = true;
 							ReadyForNextToil();
 						}
@@ -108,7 +112,12 @@ namespace GiddyUp.Jobs
 					if (isParking) pawn.pather.StopDead();
 
 					//Check mount first. If it's null then they must have dismounted outside the driver's control
-					if (riderData.mount != null) rider.Dismount(pawn, riderData, false, isParking && pawn.Position.DistanceTo(dismountingAt) < 3f ? dismountingAt : default(IntVec3), waitForRider: !interrupted);
+					if (riderData.mount != null) rider.Dismount(
+						animal: pawn,
+						pawnData: riderData,
+						clearReservation: false,
+						parkLoc: isParking && pawn.Position.DistanceTo(dismountingAt) < 5f ? dismountingAt : default(IntVec3),
+						waitForRider: !interrupted);
 					isParking = false;
 				})}
 			};
@@ -119,9 +128,10 @@ namespace GiddyUp.Jobs
 
 			if (isParking)
 			{
-				if (rider.pather.nextCell == dismountingAt)
+				if ((dismountLocationType == MountUtility.DismountLocationType.Auto && rider.pather.nextCell == dismountingAt) ||
+					(dismountLocationType != MountUtility.DismountLocationType.Auto && dismountingAt.AdjacentTo8Way(rider.pather.nextCell)))
 				{
-					rider.pather.StartPath(riderOriginalDestinaton, PathEndMode.OnCell); //Resume original work
+					rider.pather.StartPath(riderOriginalDestinaton, originalPeMode); //Resume original work
 					if (startingPoint.DistanceTo(dismountingAt) < 10f) return DismountReason.ParkingFailSafe;
 					else return DismountReason.Parking;
 				}
@@ -164,16 +174,19 @@ namespace GiddyUp.Jobs
 			if (!rider.Drafted)
 			{
 				//If the mount's non-drafted rider is heading towards a forbidden area, they'll need to dismount
-				if (!isParking && Settings.rideAndRollEnabled && (!allowedJob || !riderDestinaton.CanRideAt(areaNoMount)))
+				if (!isParking && Settings.rideAndRollEnabled && ((!allowedJob && rider.Position.DistanceTo(riderDestinaton) < 15f) || !riderDestinaton.CanRideAt(areaNoMount)))
 				{
-					if (rider.FindPlaceToDismount(areaDropAnimal, riderDestinaton, out dismountingAt, pawn))
+					isParking = true;
+					if (rider.FindPlaceToDismount(areaDropAnimal, riderDestinaton, out dismountingAt, pawn, out dismountLocationType))
 					{
 						riderOriginalDestinaton = riderDestinaton;
-						rider.pather.StartPath(dismountingAt, PathEndMode.OnCell);
-						isParking = true;
+						originalPeMode = rider.pather.peMode;
+						if (Settings.logging) Log.Message("[Giddy-Up] " + rider.Label + " wants to dismount at " + dismountingAt.ToString() + " which is a " + dismountLocationType.ToString());
+						rider.pather.StartPath(dismountingAt, dismountLocationType == MountUtility.DismountLocationType.Auto ? PathEndMode.OnCell : PathEndMode.Touch);
 					}
 					else 
 					{
+						isParking = false;
 						ExtendedDataStorage.GUComp.badSpots.Add(riderDestinaton);
 						return DismountReason.ForbiddenAreaAndCannotPark;
 					}

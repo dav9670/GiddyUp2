@@ -15,6 +15,7 @@ namespace GiddyUp
 		public static HashSet<PawnKindDef> allWildAnimals = new HashSet<PawnKindDef>(), allDomesticAnimals = new HashSet<PawnKindDef>();
 		public enum GiveJobMethod { Inject, Try, Instant };
 		enum ListToUse { Local, Foreign, Domestic };
+		public enum DismountLocationType { Invalid, Pen, Spot, Auto };
 		
 		public static ThinkResult? GoMount(this Pawn rider, Pawn animal, GiveJobMethod giveJobMethod = GiveJobMethod.Inject, ThinkResult? thinkResult = null, Job currentJob = null)
 		{
@@ -103,6 +104,7 @@ namespace GiddyUp
 			else firstToSecondTargetDistance = 0;
 			
 			ExtendedPawnData pawnData = pawn.GetGUData();
+			if (!pawnData.canRide) return;
 
 			/*
 			//Bias nearby waiting animals first
@@ -154,7 +156,7 @@ namespace GiddyUp
 				else return false; //Neither a pen or spot available
 			}
 			//Can reach
-			if (rider.Map.reachability.CanReach(rider.Position, targetLoc, PathEndMode.OnCell, TraverseParms.For(TraverseMode.PassDoors, Danger.Deadly, false)))
+			if (rider.Map.reachability.CanReach(rider.Position, targetLoc, PathEndMode.Touch, TraverseParms.For(rider)))
 			{
 				rider.jobs.jobQueue.EnqueueFirst(new Job(ResourceBank.JobDefOf.Dismount, targetLoc) { count = 1});
 				return true;
@@ -225,14 +227,22 @@ namespace GiddyUp
 			}
 			pawnData.ReservedBy = null;
 		}
-		public static bool FindPlaceToDismount(this Pawn rider, Area areaDropAnimal, IntVec3 riderDestinaton, out IntVec3 parkLoc, Pawn animal)
+		public static bool FindPlaceToDismount(this Pawn rider, Area areaDropAnimal, IntVec3 riderDestinaton, out IntVec3 parkLoc, Pawn animal, out DismountLocationType dismountLocationType)
 		{
 			Map map = rider.Map;
-			if (areaDropAnimal == null) TryParkAnimalPen(out parkLoc);
-			else parkLoc = areaDropAnimal.GetClosestAreaLoc(riderDestinaton);
+			if (areaDropAnimal == null || areaDropAnimal.TrueCount == 0)
+			{
+				dismountLocationType = DismountLocationType.Pen;
+				TryParkAnimalPen(out parkLoc);
+			}
+			else
+			{
+				dismountLocationType = DismountLocationType.Spot;
+				parkLoc = areaDropAnimal.GetClosestAreaLoc(riderDestinaton);
+			}
 
-			//Invalide the results if not reachable
-			if (!map.reachability.CanReach(rider.Position, parkLoc, PathEndMode.OnCell, TraverseParms.For(TraverseMode.PassDoors, Danger.Deadly, false)))
+			//Invalidate the results if not reachable
+			if (!map.reachability.CanReach(rider.Position, parkLoc, PathEndMode.Touch, TraverseParms.For(rider)))
 			{
 				parkLoc = IntVec3.Invalid;
 			}
@@ -240,6 +250,7 @@ namespace GiddyUp
 			//Dropoff is too far away, setup a hitching point instead
 			if (parkLoc.DistanceTo(riderDestinaton) > Settings.autoHitchDistance)
 			{
+				dismountLocationType = DismountLocationType.Auto;
 				Predicate<IntVec3> freeCell = delegate(IntVec3 cell)
 				{
 					return (cell.Standable(map) && 
@@ -257,6 +268,7 @@ namespace GiddyUp
 			//Validate results
 			if (parkLoc == IntVec3.Invalid)
 			{
+				dismountLocationType = DismountLocationType.Invalid;
 				if (Prefs.DevMode) Log.Message("[Giddy-Up] " + rider.Label + " could not ride their mount to their job because they could not find any places to dismount. Immediately dismounting.");
 			}
 			//Looks good, begin pathing
@@ -267,7 +279,7 @@ namespace GiddyUp
 			void TryParkAnimalPen(out IntVec3 parkLoc)
 			{
 				parkLoc = IntVec3.Invalid;
-				var pen = AnimalPenUtility.GetPenAnimalShouldBeTakenTo(rider, animal, out string failReason, true, true, false, true);
+				var pen = AnimalPenUtility.GetPenAnimalShouldBeTakenTo(rider, animal, out string failReason, true);
 				if (pen != null)
 				{
 					parkLoc = AnimalPenUtility.FindPlaceInPenToStand(pen, rider);
@@ -570,7 +582,7 @@ namespace GiddyUp
 				if (ExtendedDataStorage.GUComp.badSpots.Contains(firstTarget))
 				{
 					//Check if this blacklisting is still valid
-					if (pawn.FindPlaceToDismount(areaDropAnimal, firstTarget, out IntVec3 dismountingAt, bestAnimal))
+					if (pawn.FindPlaceToDismount(areaDropAnimal, firstTarget, out IntVec3 dismountingAt, bestAnimal, out MountUtility.DismountLocationType dismountLocationType))
 					{
 						ExtendedDataStorage.GUComp.badSpots.Remove(firstTarget);
 					}

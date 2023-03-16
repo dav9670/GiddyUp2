@@ -10,7 +10,7 @@ namespace GiddyUp
 	public static class IsMountableUtility
 	{
 		public enum Reason{ False, NotFullyGrown, NotInModOptions, CanMount, IsRoped, NeedsTraining, MountedByAnother, IsBusy, IsBusyWithCaravan,
-			IsPoorCondition, WrongFaction, NotAnimal, IsReserved, MissingResearch, TooYoung, IncompatibleEquipment, TooHeavy};
+			IsPoorCondition, WrongFaction, NotAnimal, IsReserved, MissingResearch, TooYoung, IncompatibleEquipment, TooHeavy, Forbidden};
 
 		static HashSet<JobDef> busyJobs = new HashSet<JobDef>() {ResourceBank.JobDefOf.Mounted, JobDefOf.LayEgg, JobDefOf.Nuzzle, JobDefOf.Lovin, JobDefOf.Vomit, JobDefOf.Wait_Downed};
 

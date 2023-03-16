@@ -12,7 +12,7 @@ namespace GiddyUp.Jobs
         }
         public override IEnumerable<Toil> MakeNewToils()
         {
-            yield return Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.OnCell);
+            yield return Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.Touch);
             yield return new Toil()
             {
                 defaultCompleteMode = ToilCompleteMode.Never,

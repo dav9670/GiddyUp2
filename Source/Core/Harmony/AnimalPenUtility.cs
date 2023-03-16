@@ -1,10 +1,9 @@
 ﻿using HarmonyLib;
 using RimWorld.Planet;
 using Verse;
-using GiddyUp;
 using Settings = GiddyUp.ModSettings_GiddyUp;
 
-namespace GiddyUpCaravan
+namespace GiddyUp
 {
     [HarmonyPatch(typeof(AnimalPenUtility), nameof(AnimalPenUtility.NeedsToBeManagedByRope))]
     class Patch_NeedsToBeManagedByRope
@@ -17,7 +16,8 @@ namespace GiddyUpCaravan
         {
             if (__result)
             {
-                if (pawn.IsMountedAnimal() || pawn.CurJobDef == ResourceBank.JobDefOf.WaitForRider) return false;
+                if ((pawn.IsMountedAnimal() && pawn.jobs != null && pawn.jobs.curDriver is Jobs.JobDriver_Mounted mounted && !mounted.isParking) || 
+                    pawn.CurJobDef == ResourceBank.JobDefOf.WaitForRider) return false;
                 else
                 {
                     var reservedBy = pawn.GetGUData().reservedBy;
