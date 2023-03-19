@@ -3,5 +3,7 @@
 
   <MountableByColonists.headerTip>可被殖民者自动骑乘。</MountableByColonists.headerTip>
   <MountableBySlaves.headerTip>可被奴隶自动骑乘。</MountableBySlaves.headerTip>
+  <AllowedToRide.headerTip>允许自动骑乘动物。</AllowedToRide.headerTip>
+
 
 </LanguageData>
