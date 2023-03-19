@@ -73,10 +73,10 @@ namespace GiddyUpRideAndRoll.Jobs
 							if (waitingFor.Position.DistanceTo(pawn.Position) < 15f)
 							{
 								riderReturning = true;
-								waitingFor.GoMount(pawn, MountUtility.GiveJobMethod.Inject);
+								waitingFor.GoMount(pawn, MountUtility.GiveJobMethod.Inject, currentJob: waitingFor.CurJob);
 							}
 							//"Fine, I'll follow you instead :pouting_cat:"
-							else if (pawn.roping == null || !pawn.roping.IsRoped)
+							else if (!pawn.IsRoped())
 							{
 								pawn.pather.StartPath(waitingFor.pather.Destination.Cell, PathEndMode.ClosestTouch);
 							}
@@ -118,7 +118,7 @@ namespace GiddyUpRideAndRoll.Jobs
 		}
 		void WalkRandomNearby()
 		{
-			if (pawn.roping != null && pawn.roping.IsRoped)
+			if (pawn.IsRoped())
 			{
 				IntVec3 target = RCellFinder.RandomWanderDestFor(pawn, pawn.roping.RopedToSpot , 5, ((Pawn p, IntVec3 loc, IntVec3 root) => true), Danger.None);
 				pawn.pather.StartPath(target, PathEndMode.ClosestTouch);

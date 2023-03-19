@@ -70,7 +70,7 @@ namespace GiddyUp
 				var def = DefDatabase<JobDef>.defsList[i];
 				if (def.HasModExtension<CanDoMounted>()) JobDriver_Mounted.allowedJobs.Add(def);
 			}
-			if (noMountedHunting) JobDriver_Mounted.allowedJobs.Add(JobDefOf.Hunt);
+			if (!noMountedHunting) JobDriver_Mounted.allowedJobs.Add(JobDefOf.Hunt);
 		}
 		//Responsible for caching which animals are mounted, draw layering behavior, and calling caravan speed bonuses
 		public static void BuildMountCache()
@@ -487,7 +487,7 @@ namespace GiddyUp
 				if (giveCaravanSpeed) for (int i = 0; i < Setup.allAnimals.Length; i++) Setup.CalculateCaravanSpeed(Setup.allAnimals[i], true);
 
 				//TODO: consider providing a list of all jobdefs users can add/remove to the allowed list
-				if (noMountedHunting) JobDriver_Mounted.allowedJobs.Add(JobDefOf.Hunt);
+				if (!noMountedHunting) JobDriver_Mounted.allowedJobs.Add(JobDefOf.Hunt);
 				else JobDriver_Mounted.allowedJobs.Remove(JobDefOf.Hunt);
 			}
 			catch (System.Exception ex)

@@ -195,7 +195,7 @@ namespace GiddyUp
 			
 			//If the animal is being dismounted outside of a pen and it's a roamer, hitch it
 			if (ropeIfNeeded && AnimalPenUtility.NeedsToBeManagedByRope(animal) && AnimalPenUtility.GetCurrentPenOf(animal, true) == null && //Needs to be roped and not already penned?
-				 (animal.roping == null || !animal.roping.IsRoped) && //Skip already roped
+				 (!animal.IsRoped()) && //Skip already roped
 				 !animal.Position.CloseToEdge(animal.Map, ResourceBank.mapEdgeIgnore) && //Skip pawns near the map edge. They may be entering/exiting the map which triggers dismount calls
 				 (animal.Faction.def.isPlayer && animal.inventory != null && animal.inventory.innerContainer.Count == 0)) //Skip guest caravan pack animals
 			{
@@ -227,7 +227,7 @@ namespace GiddyUp
 			}
 			pawnData.ReservedBy = null;
 		}
-		public static bool FindPlaceToDismount(this Pawn rider, Area areaDropAnimal, IntVec3 riderDestinaton, out IntVec3 parkLoc, Pawn animal, out DismountLocationType dismountLocationType)
+		public static bool FindPlaceToDismount(this Pawn rider, Area areaDropAnimal, Area areaNoMount, IntVec3 riderDestinaton, out IntVec3 parkLoc, Pawn animal, out DismountLocationType dismountLocationType)
 		{
 			Map map = rider.Map;
 			if (areaDropAnimal == null || areaDropAnimal.TrueCount == 0)
@@ -257,9 +257,20 @@ namespace GiddyUp
 						cell.GetDangerFor(animal, map) == Danger.None && 
 						!cell.Fogged(map) &&
 						cell.InBounds(map) &&
+						(areaNoMount == null || !areaNoMount.innerGrid[map.cellIndices.CellToIndex(cell)]) &&
 						rider.CanReserveAndReach(cell, PathEndMode.OnCell, Danger.None));
 				};
-				if (!CellFinder.TryFindRandomCellNear(riderDestinaton, map, 4, freeCell, out parkLoc, 16))
+				
+				bool foundRandomCellNear = false;
+				for (int attempt = 1; attempt < 8; attempt++)
+				{
+					if (CellFinder.TryFindRandomCellNear(riderDestinaton, map, attempt * 5, freeCell, out parkLoc))
+					{
+						foundRandomCellNear = true;
+						break;
+					}
+				}
+				if (!foundRandomCellNear)
 				{
 					if (Settings.logging) Log.Message("[Giddy-Up] " + rider.Label + " could not find a valid autohitch spot near " + parkLoc.ToString());
 					parkLoc = IntVec3.Invalid;
@@ -582,7 +593,7 @@ namespace GiddyUp
 				if (ExtendedDataStorage.GUComp.badSpots.Contains(firstTarget))
 				{
 					//Check if this blacklisting is still valid
-					if (pawn.FindPlaceToDismount(areaDropAnimal, firstTarget, out IntVec3 dismountingAt, bestAnimal, out MountUtility.DismountLocationType dismountLocationType))
+					if (pawn.FindPlaceToDismount(areaDropAnimal, areaNoMount, firstTarget, out IntVec3 dismountingAt, bestAnimal, out MountUtility.DismountLocationType dismountLocationType))
 					{
 						ExtendedDataStorage.GUComp.badSpots.Remove(firstTarget);
 					}
@@ -593,6 +604,10 @@ namespace GiddyUp
 			}
 			bestAnimal = null;
 			return false;
+		}
+		public static bool IsRoped(this Pawn animal)
+		{
+			return animal.roping != null && animal.roping.IsRoped;
 		}
 	}
 }

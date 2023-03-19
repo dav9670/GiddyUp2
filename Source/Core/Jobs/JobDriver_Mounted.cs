@@ -174,10 +174,10 @@ namespace GiddyUp.Jobs
 			if (!rider.Drafted)
 			{
 				//If the mount's non-drafted rider is heading towards a forbidden area, they'll need to dismount
-				if (!isParking && Settings.rideAndRollEnabled && ((!allowedJob && rider.Position.DistanceTo(riderDestinaton) < 15f) || !riderDestinaton.CanRideAt(areaNoMount)))
+				if (!isParking && Settings.rideAndRollEnabled && ((!allowedJob && rider.Position.DistanceTo(riderDestinaton) < 25f) || !riderDestinaton.CanRideAt(areaNoMount)))
 				{
 					isParking = true;
-					if (rider.FindPlaceToDismount(areaDropAnimal, riderDestinaton, out dismountingAt, pawn, out dismountLocationType))
+					if (rider.FindPlaceToDismount(areaDropAnimal, areaNoMount, riderDestinaton, out dismountingAt, pawn, out dismountLocationType))
 					{
 						riderOriginalDestinaton = riderDestinaton;
 						originalPeMode = rider.pather.peMode;

@@ -76,7 +76,7 @@ namespace GiddyUp.Harmony
 			if (Settings.caravansEnabled && !pawn.Faction.def.isPlayer)
 			{
 				//Handle failsafe for roped animals belonging to invalid pawns
-				if (pawn.roping != null && pawn.roping.IsRoped)
+				if (pawn.IsRoped())
 				{
 					var owner = pawn.GetGUData().reservedBy;
 					if (owner == null || owner.Dead || !owner.Spawned) pawn.roping.BreakAllRopes();
@@ -93,7 +93,7 @@ namespace GiddyUp.Harmony
 				{
 					Pawn trader = TraderCaravanUtility.FindTrader(lord);
 					//Unroped guest animals too far from their owners, go return
-					if (trader != null && pawn.mindState.duty.focus.Cell.DistanceTo(trader.Position) > 150f && (pawn.roping == null || !pawn.roping.IsRoped)) 
+					if (trader != null && pawn.mindState.duty.focus.Cell.DistanceTo(trader.Position) > 150f && (!pawn.IsRoped())) 
 					{
 						pawn.mindState.duty = new PawnDuty(DutyDefOf.Follow, trader, 5f);
 					}
