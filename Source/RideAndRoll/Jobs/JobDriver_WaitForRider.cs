@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using Verse;
 using Verse.AI;
+using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUpRideAndRoll.Jobs
 {
@@ -67,18 +68,20 @@ namespace GiddyUpRideAndRoll.Jobs
 						}
 
 						//Check if the rider is attempting to abandon the mount
-						if (!riderReturning && waitingFor.pather.Destination.Cell.DistanceTo(pawn.Position) > 50f)
+						var destinationCell = waitingFor.pather.Destination.Cell;
+						if (!riderReturning && destinationCell != IntVec3.Zero && destinationCell.DistanceTo(pawn.Position) > 50f)
 						{
 							//"Wait, come pick me up!"
 							if (waitingFor.Position.DistanceTo(pawn.Position) < 15f)
 							{
 								riderReturning = true;
+								if (Settings.logging) Log.Message("[Giddy-Up] " + pawn.Label + " wants  " + waitingFor.Label + " to come get them before they head to " + destinationCell.ToString());
 								waitingFor.GoMount(pawn, MountUtility.GiveJobMethod.Inject, currentJob: waitingFor.CurJob);
 							}
 							//"Fine, I'll follow you instead :pouting_cat:"
 							else if (!pawn.IsRoped())
 							{
-								pawn.pather.StartPath(waitingFor.pather.Destination.Cell, PathEndMode.ClosestTouch);
+								pawn.pather.StartPath(destinationCell, PathEndMode.ClosestTouch);
 							}
 						}
 						//Did the rider get interupted?

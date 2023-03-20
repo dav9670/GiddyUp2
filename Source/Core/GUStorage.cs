@@ -170,8 +170,8 @@ namespace GiddyUp
 		{
 			set
 			{
-				if (Settings.logging && value == null) Log.Message("[Giddy-Up] animal " + ID.ToString() + " no longer reserved to  " + (reservedBy?.thingIDNumber.ToString() ?? "NULL"));
-				else if (Settings.logging && value != null) Log.Message("[Giddy-Up] animal " + ID.ToString() + " now reserved to  " + (value?.thingIDNumber.ToString() ?? "NULL"));
+				if (Settings.logging && value == null) Log.Message("[Giddy-Up] " + pawn.Label + " no longer reserved to  " + (reservedBy?.Label ?? "NULL"));
+				else if (Settings.logging && value != null) Log.Message("[Giddy-Up] " + pawn.Label + " now reserved to  " + (value?.Label ?? "NULL"));
 				reservedBy = value;
 			}
 		}
