@@ -10,7 +10,7 @@ namespace GiddyUp.Harmony
     {
         static bool Prefix(Thing t, Job __result)
         {
-            if (t is Pawn animal && (animal.IsMountedAnimal() || animal.CurJobDef == ResourceBank.JobDefOf.WaitForRider))
+            if (t is Pawn animal && (animal.CurJobDef == ResourceBank.JobDefOf.Mounted || animal.CurJobDef == ResourceBank.JobDefOf.WaitForRider))
             {
                 __result = null;
                 return false;

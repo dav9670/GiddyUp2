@@ -36,7 +36,7 @@ namespace GiddyUp
 		{
 			return IsMountable(pawn, out reason, null, false, false, false);
 		}
-		public static bool IsMountable(this Pawn animal, out Reason reason, Pawn rider, bool checkState = true, bool checkFaction = false, bool checkTraining = true)
+		public static bool IsMountable(this Pawn animal, out Reason reason, Pawn rider, bool checkState = true, bool checkFaction = false, bool checkTraining = true, List<ReservationManager.Reservation> reservationsToCheck = null)
 		{
 			reason = Reason.CanMount;
 			//Is even an animal?
@@ -155,14 +155,33 @@ namespace GiddyUp
 					return false;
 				}
 				//Can reserve? Null check as this may be a non-specific check like the UI
-				if (!rider.CanReserve(animal))
+				if (ReserversOfFast(animal, reservationsToCheck, out List<Pawn> claimants))
 				{
-					reason = Reason.IsReserved;
-					return false;
+					for (int i = claimants.Count; i-- > 0;)
+					{
+						var claimant = claimants[i];
+						if (claimant.CurJobDef != JobDefOf.RopeToPen)
+						{
+							reason = Reason.IsReserved;
+							return false;
+						}
+					}
 				}
 			}
 			
 			return true;
+
+			static bool ReserversOfFast(Pawn animal, List<ReservationManager.Reservation> reservations, out List<Pawn> claimants)
+			{
+				claimants = new List<Pawn>();
+				if (reservations == null) reservations = animal.Map.FetchReservedAnimals();
+				for (int i = reservations.Count; i-- > 0;)
+				{
+					ReservationManager.Reservation item = reservations[i];
+					if (item.Target == animal) claimants.Add(item.Claimant);
+				}
+				return claimants.Count > 0;
+			}
 		}
 		public static bool IsStillMountable(this Pawn animal, Pawn rider, out Reason reason)
 		{
@@ -208,6 +227,17 @@ namespace GiddyUp
 		public static bool IsTooHeavy(this Pawn rider, Pawn animal)
 		{
 			return rider.GetStatValue(StatDefOf.Mass) > animal.GetStatValue(StatDefOf.CarryingCapacity);
+		}
+		public static List<ReservationManager.Reservation> FetchReservedAnimals(this Map map)
+		{
+			var workingList = new List<ReservationManager.Reservation>();
+			var list = map.reservationManager.reservations;
+			for (int i = list.Count; i-- > 0;)
+			{
+				ReservationManager.Reservation item = list[i];
+				if (item.Target.Thing is Pawn pawn && pawn.RaceProps.Animal) workingList.Add(item);
+			}
+			return workingList;
 		}
 	}
 }

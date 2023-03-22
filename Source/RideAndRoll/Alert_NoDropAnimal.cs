@@ -17,12 +17,10 @@ namespace GiddyUpRideAndRoll
             return this.ShouldAlert();
         }
         bool cacheResult;
-        int ticker = 1;
         bool ShouldAlert()
         {
-            if (--ticker == 0)
+            if (Current.gameInt.tickManager.ticksGameInt % 20 == 0)
             {
-                ticker = 20;
                 foreach (Map map in Find.Maps)
                 {
                     map.GetGUAreas(out Area areaNoMount, out Area areaDropAnimal);

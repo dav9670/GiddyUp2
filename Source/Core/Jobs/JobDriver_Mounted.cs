@@ -19,7 +19,6 @@ namespace GiddyUp.Jobs
 		PathEndMode originalPeMode = PathEndMode.Touch;
 		MountUtility.DismountLocationType dismountLocationType = MountUtility.DismountLocationType.Auto;
 		int parkingFailures = 0;
-		int ticker = 30;
 		enum DismountReason { False, Interrupted, BadState, LeftMap, NotSpawned, WrongMount, BadJob, ForbiddenAreaAndCannotPark, Parking, ParkingFailSafe };
 
 		public override IEnumerable<Toil> MakeNewToils()
@@ -40,7 +39,6 @@ namespace GiddyUp.Jobs
 			Scribe_Values.Look(ref this.interrupted, "interrupted");
 			Scribe_Values.Look(ref this.isParking, "isParking");
 			Scribe_Values.Look(ref this.dismountingAt, "dismountingAt");
-			Scribe_Values.Look(ref this.ticker, "ticker");
 			Scribe_Values.Look(ref this.dismountLocationType, "dismountLocationType");
 			Scribe_Values.Look(ref this.originalPeMode, "originalPeMode");
 			Scribe_Values.Look(ref this.riderOriginalDestinaton, "riderOriginalDestinaton");
@@ -60,9 +58,8 @@ namespace GiddyUp.Jobs
 					if (riderData.mount == pawn) ReadyForNextToil();
 
 					//Something interrupted the rider, abort
-					if (--ticker != 0)
+					if (Current.gameInt.tickManager.ticksGameInt % 15 == 0) //Check 4 times per second
 					{
-						ticker = 15; //Check 4 times per second
 						var curJobDef = rider.CurJobDef;
 						if ((rider == null || rider.Dead || !rider.Spawned || rider.Downed || rider.InMentalState) ||
 							//Rider changed their mind
@@ -142,8 +139,8 @@ namespace GiddyUp.Jobs
 				}
 			}
 			
-			if (--ticker != 0) return DismountReason.False;
-			ticker = 30; //Check every twice per second
+			//Check remaining statements twice per second
+			if (Current.gameInt.tickManager.ticksGameInt % 15 != 0) return DismountReason.False;
 			
 			//Check physical and mental health
 			if (rider.Downed || rider.Dead || pawn.Downed || pawn.Dead || 

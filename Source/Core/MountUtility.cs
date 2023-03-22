@@ -19,6 +19,9 @@ namespace GiddyUp
 		
 		public static ThinkResult? GoMount(this Pawn rider, Pawn animal, GiveJobMethod giveJobMethod = GiveJobMethod.Inject, ThinkResult? thinkResult = null, Job currentJob = null)
 		{
+			//Cancel any reservations. The IsMountable method already checked if the reservation was fine to abort
+			animal.CancelRopers();
+			
 			//Immediately mount the pawn on the animal. This is done when the mount job finishes, or emulating that it has already finished such as when pawns come in pre-mounted
 			if (giveJobMethod == GiveJobMethod.Instant) rider.Mount(animal);
 			
@@ -30,7 +33,7 @@ namespace GiddyUp
 				else rider.jobs?.StartJob(new Job(
 					ResourceBank.JobDefOf.Mount, animal) {count = 1}, 
 					lastJobEndCondition: JobCondition.InterruptOptional, 
-					resumeCurJobAfterwards: true, 
+					resumeCurJobAfterwards: currentJob == null, 
 					cancelBusyStances: false, 
 					keepCarryingThingOverride: true);
 			}
@@ -540,13 +543,14 @@ namespace GiddyUp
 			Pawn closestAnimal = null;
 			float timeBestRiding = float.MaxValue;
 			float distanceBestRiding = float.MaxValue;
+			var reservedAnimals = map.FetchReservedAnimals();
 			var list = map.mapPawns.pawnsSpawned;
 			var length = list.Count;
 			for (int i = 0; i < length; i++)
 			{
 				Pawn animal = list[i];
 
-				if (!animal.IsMountable(out IsMountableUtility.Reason reason, pawn, true, true)) 
+				if (!animal.IsMountable(out IsMountableUtility.Reason reason, pawn, checkState: true, checkFaction: true, reservationsToCheck: reservedAnimals)) 
 				{
 					if (Settings.logging && reason != IsMountableUtility.Reason.WrongFaction && reason != IsMountableUtility.Reason.NotInModOptions && 
 						reason != IsMountableUtility.Reason.NotAnimal) Log.Message("[Giddy-Up] " + pawn.Label + " will not ride " + animal.Label + " because: " + reason.ToString());
@@ -555,7 +559,7 @@ namespace GiddyUp
 			
 				if (!pawn.IsAllowed(animal)) continue; //Disallowed
 
-				float distancePawnToAnimal = pawn.Position.DistanceTo(animal.Position);
+				float distancePawnToAnimal = (float)Math.Pow(pawn.Position.DistanceTo(animal.Position), 1.05); //Penalize farther mounts to account for presumed non-straight paths
 				float distanceRiding = (animal.Position.DistanceTo(firstTarget) + firstToSecondTargetDistance) * 1.05f;
 				float timeNeededForThisMount = (distancePawnToAnimal / pawnWalkSpeed) + (distanceRiding / StatPart_Riding.GetRidingSpeed(animal.GetStatValue(StatDefOf.MoveSpeed), animal, pawn.skills));
 				
@@ -569,19 +573,19 @@ namespace GiddyUp
 			
 			if (Settings.logging)
 			{
-				if (closestAnimal == null) Log.Message("[Giddy-Up] " + (pawn.Label ?? "NULL") + " tried to find an animal but couldn't fnid any.");
-				else Log.Message("[Giddy-Up] report for " + (pawn.Label ?? "NULL") + ":\n" +
-				"Animal: " + (closestAnimal.Label) + "\n" +
-				"First target: " + (firstTarget.ToString()) + "\n" + 
-				"Second target: " + (secondTarget.ToString()) + "\n" + 
-				"Normal walking speed: " + ((int)(pawnWalkSpeed)).ToString() + "\n" + 
-				"Normal walking distance: " + ((int)(pawnTargetDistance + firstToSecondTargetDistance)).ToString() + "\n" + 
-				"Normal walking time: " + ((int)timeNormalWalking).ToString() + "\n" + 
-				"Distance to animal: " + ((int)pawn.Position.DistanceTo(closestAnimal.Position)).ToString() + "\n" + 
-				"Ride distance: " + ((int)distanceBestRiding).ToString()  + "\n" + 
-				"Ride speed: " + ((int)StatPart_Riding.GetRidingSpeed(closestAnimal.GetStatValue(StatDefOf.MoveSpeed), closestAnimal, pawn.skills)).ToString() + "\n" +
-				"Ride time: " + ((int)((pawn.Position.DistanceTo(closestAnimal.Position) / pawnWalkSpeed) + 
-					(distanceBestRiding / StatPart_Riding.GetRidingSpeed(closestAnimal.GetStatValue(StatDefOf.MoveSpeed), closestAnimal, pawn.skills)))).ToString()
+				if (closestAnimal == null) Log.Message("[Giddy-Up] " + pawn.Label + " tried to find an animal but couldn't find any.");
+				else Log.Message("[Giddy-Up] report for " + pawn.Label + ":\n" +
+				"Animal: " + closestAnimal.Label + "\n" +
+				"First target: " + firstTarget + "\n" + 
+				"Second target: " + secondTarget + "\n" + 
+				"Normal walking speed: " + (int)pawnWalkSpeed + "\n" + 
+				"Normal walking distance: " + (int)(pawnTargetDistance + firstToSecondTargetDistance) + "\n" + 
+				"Normal walking time: " + (int)timeNormalWalking + "\n" + 
+				"Distance to animal: " + (int)pawn.Position.DistanceTo(closestAnimal.Position) + "\n" + 
+				"Ride distance: " + (int)distanceBestRiding  + "\n" + 
+				"Ride speed: " + (int)StatPart_Riding.GetRidingSpeed(closestAnimal.GetStatValue(StatDefOf.MoveSpeed), closestAnimal, pawn.skills) + "\n" +
+				"Ride time: " + (int)((pawn.Position.DistanceTo(closestAnimal.Position) / pawnWalkSpeed) + 
+					(distanceBestRiding / StatPart_Riding.GetRidingSpeed(closestAnimal.GetStatValue(StatDefOf.MoveSpeed), closestAnimal, pawn.skills)))
 				);
 			}
 
@@ -608,6 +612,19 @@ namespace GiddyUp
 		public static bool IsRoped(this Pawn animal)
 		{
 			return animal.roping != null && animal.roping.IsRoped;
+		}
+		public static void CancelRopers(this Pawn animal)
+		{
+			var workingList = new HashSet<Pawn>();
+			animal.Map.reservationManager.ReserversOf(animal, workingList);
+			foreach (var pawn in workingList)
+			{
+				if (pawn.CurJobDef == JobDefOf.RopeToPen)
+				{
+					if (Settings.logging) Log.Message("[Giddy-Up] " + pawn.Label + " was roping " + animal.Label + ", but stopped to give rider priority.");
+					pawn.jobs.EndCurrentJob(JobCondition.Incompletable, startNewJob: false, canReturnToPool: false);
+				}
+			}
 		}
 	}
 }

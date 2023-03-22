@@ -1,12 +1,14 @@
 ﻿using RimWorld;
 using Verse;
 using UnityEngine;
+using System;
 
 namespace GiddyUp
 {
     [StaticConstructorOnStartup]
     public static class ResourceBank
     {
+        public static Type RaidStrategyWorker_Siege = typeof(RaidStrategyWorker_Siege);
         public static Texture2D iconDropAnimalClear = ContentFinder<Texture2D>.Get("UI/GU_RR_Designator_GU_DropAnimal_Clear", true),
             iconDropAnimalExpand = ContentFinder<Texture2D>.Get("UI/GU_RR_Designator_GU_DropAnimal_Expand", true),
             iconNoMountClear = ContentFinder<Texture2D>.Get("UI/GU_RR_Designator_GU_NoMount_Clear", true),

@@ -29,7 +29,7 @@ namespace BattleMounts.Harmony
             if (!(parms.raidArrivalMode == null || 
                 parms.raidArrivalMode == PawnsArrivalModeDefOf.EdgeWalkIn) || 
                 (parms.raidStrategy != null && 
-                parms.raidStrategy.workerClass == typeof(RaidStrategyWorker_Siege)))
+                parms.raidStrategy.workerClass == ResourceBank.RaidStrategyWorker_Siege))
             {
                 return;
             }

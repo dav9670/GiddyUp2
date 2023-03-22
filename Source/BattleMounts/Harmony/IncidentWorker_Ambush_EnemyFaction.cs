@@ -37,7 +37,7 @@ namespace BattleMounts.Harmony
         {
             //Only allow raids tha are edge walk ins, except sieges
             if (list.Count == 0 || !(parms.raidArrivalMode == null || parms.raidArrivalMode == PawnsArrivalModeDefOf.EdgeWalkIn) ||
-                (parms.raidStrategy != null && parms.raidStrategy.workerClass == typeof(RaidStrategyWorker_Siege)))
+                (parms.raidStrategy != null && parms.raidStrategy.workerClass == ResourceBank.RaidStrategyWorker_Siege))
             {
                 return;
             }
