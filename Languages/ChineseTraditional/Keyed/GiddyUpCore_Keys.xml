@@ -32,7 +32,6 @@
   <GUC_Mount>坐上</GUC_Mount>
   <GUC_Mount_GodMode>坐上 (上帝模式)</GUC_Mount_GodMode>
   <GUC_Dismount>翻下</GUC_Dismount>
-  <GUC_DismountWithoutHitching>翻下拴住</GUC_DismountWithoutHitching>
   <GUC_SwitchMount>切換</GUC_SwitchMount>
 
   <GUC_Mountable_Tab>可騎乘</GUC_Mountable_Tab>
