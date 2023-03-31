@@ -11,10 +11,10 @@
   <GUC_StatPart_MountTypeMultiplier>騎獸類型－倍率</GUC_StatPart_MountTypeMultiplier>
 
   <GUC_HandlingAccuracyImpact_Title>馴獸等級－ＨＩＴ（範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</GUC_HandlingAccuracyImpact_Title>
-  <GUC_HandlingAccuracyImpact_Description>如果騎手技能高/低於所需等級時，會有增/減益影響命中率。</GUC_HandlingAccuracyImpact_Description>
+  <GUC_HandlingAccuracyImpact_Description>如果騎手技能高/低於坐騎馴服等級時，會有增/減益影響命中率。</GUC_HandlingAccuracyImpact_Description>
 
   <GUC_HandlingMovementImpact_Title>馴獸等級－移速（範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</GUC_HandlingMovementImpact_Title>
-  <GUC_HandlingMovementImpact_Description>如果騎手技能高/低於所需等級時，會有增/減益影響移動速度。</GUC_HandlingMovementImpact_Description>
+  <GUC_HandlingMovementImpact_Description>如果騎手技能高/低於坐騎馴服等級時，會有增/減益影響移動速度。</GUC_HandlingMovementImpact_Description>
 
   <GUC_AccuracyPenalty_Title>騎乘－ＨＩＴ減益（範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</GUC_AccuracyPenalty_Title>
   <GUC_AccuracyPenalty_Description>騎乘時，命中率的減益影響</GUC_AccuracyPenalty_Description>
