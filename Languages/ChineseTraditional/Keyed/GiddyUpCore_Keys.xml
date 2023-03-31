@@ -10,14 +10,14 @@
   <GUC_StatPart_HandlingMovementImpact>等級－速度影響</GUC_StatPart_HandlingMovementImpact>
   <GUC_StatPart_MountTypeMultiplier>騎獸類型－倍率</GUC_StatPart_MountTypeMultiplier>
 
-  <GUC_HandlingAccuracyImpact_Title>馴獸等級－ＨＩＴ影響（範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</GUC_HandlingAccuracyImpact_Title>
-  <GUC_HandlingAccuracyImpact_Description>如果騎手技能高/低於所需等級時，會有增益/減益影響命中率。</GUC_HandlingAccuracyImpact_Description>
+  <GUC_HandlingAccuracyImpact_Title>馴獸等級－ＨＩＴ（範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</GUC_HandlingAccuracyImpact_Title>
+  <GUC_HandlingAccuracyImpact_Description>如果騎手技能高/低於所需等級時，會有增/減益影響命中率。</GUC_HandlingAccuracyImpact_Description>
 
-  <GUC_HandlingMovementImpact_Title>馴獸等級－移速影響（範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</GUC_HandlingMovementImpact_Title>
-  <GUC_HandlingMovementImpact_Description>如果騎手技能高/低於所需等級時，會有增益/減益影響移動速度。</GUC_HandlingMovementImpact_Description>
+  <GUC_HandlingMovementImpact_Title>馴獸等級－移速（範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</GUC_HandlingMovementImpact_Title>
+  <GUC_HandlingMovementImpact_Description>如果騎手技能高/低於所需等級時，會有增/減益影響移動速度。</GUC_HandlingMovementImpact_Description>
 
   <GUC_AccuracyPenalty_Title>騎乘－ＨＩＴ減益（範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</GUC_AccuracyPenalty_Title>
-  <GUC_AccuracyPenalty_Description>騎乘時，命中率受到的減益</GUC_AccuracyPenalty_Description>
+  <GUC_AccuracyPenalty_Description>騎乘時，命中率的減益影響</GUC_AccuracyPenalty_Description>
 
   <GUC_BodySizeFilter_Title>按體型篩選（範圍：{0}～{1}%　默認：{2}% 當前：{3}%）</GUC_BodySizeFilter_Title>
   <GUC_BodySizeFilter_Description>按體型篩選可騎乘的動物</GUC_BodySizeFilter_Description>
@@ -45,13 +45,13 @@
   <GUC_Caravans_Tab>旅商</GUC_Caravans_Tab>
 
   <GU_Enable_RnR>啟用－騎行</GU_Enable_RnR>
-  <GU_Enable_RnR_Description>禁用此模塊，將刪除殖民者出於方便或工作需要而使用坐騎在地圖上行走的相關功能。更改此設置需要重新啟動。</GU_Enable_RnR_Description>
+  <GU_Enable_RnR_Description>禁用此模塊，將刪除殖民者出於方便或工作需要而使用坐騎在地圖上行走的相關功能。更改需要重新啟動。</GU_Enable_RnR_Description>
 
   <GU_Enable_BattleMounts>啟用－騎兵</GU_Enable_BattleMounts>
-  <GU_Enable_BattleMounts_Description>禁用此模塊，將刪除單位（殖民者和敵人）使用動物作為戰鬥坐騎的的相關功能。更改此設置需要重新啟動。</GU_Enable_BattleMounts_Description>
+  <GU_Enable_BattleMounts_Description>禁用此模塊，將刪除單位（殖民者和敵人）使用動物作為戰鬥坐騎的的相關功能。更改需要重新啟動。</GU_Enable_BattleMounts_Description>
 
   <GU_Enable_Caravans>啟用－旅商</GU_Enable_Caravans>
-  <GU_Enable_Caravans_Description>禁用此模塊，將刪除單位（包括殖民者和友軍）在進出地圖時騎乘動物的相關功能。更改此設置需要重新啟動。</GU_Enable_Caravans_Description>
+  <GU_Enable_Caravans_Description>禁用此模塊，將刪除單位（包括殖民者和友軍）在進出地圖時騎乘動物的相關功能。更改需要重新啟動。</GU_Enable_Caravans_Description>
 
   <GU_Reset_Cache>重置</GU_Reset_Cache>
 
