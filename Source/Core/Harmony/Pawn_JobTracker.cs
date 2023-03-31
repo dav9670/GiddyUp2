@@ -32,6 +32,16 @@ namespace GiddyUp.Harmony
 			job.EndCurrentJob(condition, startNewJob, canReturnToPool);
 		}
 	}
+	//TODO: There should be a centralized way to block these special job enders. For now they're individually handled, like this one
+	[HarmonyPatch(typeof(LordToil_KidnapCover), nameof(LordToil_KidnapCover.TryFindGoodOpportunisticTaskTarget))]
+	static class Patch_LordToil_KidnapCover_TryFindGoodOpportunisticTaskTarget
+	{ 
+		static bool Postfix(bool __result, Pawn pawn)
+		{
+			return !__result || pawn.IsMountedAnimal() ? false : __result;
+		}
+	}
+
 	//Postfix, after a job has been determined, inject a job before it to go mount/dismount based on conditions
 	[HarmonyPatch(typeof(Pawn_JobTracker), nameof(Pawn_JobTracker.DetermineNextJob))]
 	static class Patch_DetermineNextJob

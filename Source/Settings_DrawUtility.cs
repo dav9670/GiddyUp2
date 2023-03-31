@@ -20,12 +20,10 @@ namespace GiddyUp
 				var def = allAnimals[i];
 				if (def == null) continue;
 				if (selectedTab == SelectedTab.bodySize && def.race.baseBodySize < bodySizeFilter) continue;
-
+				
+				DrawListItem(options, def);
 				cellPosition += lineHeight;
 				++lineNumber;
-				
-				//if (cellPosition > scrollPos.y - container.height && cellPosition < scrollPos.y + container.height) DrawListItem(options, def);
-				DrawListItem(options, def);
 			}
 		}
 
@@ -91,14 +89,7 @@ namespace GiddyUp
 				Widgets.Label(dataRect, data?.Truncate(dataRect.width - 12f, InspectPaneUtility.truncatedLabelsCached));
 			}
 
-			//Checkbox
-			if (Widgets.ButtonInvisible(rect, true))
-			{
-				checkOn = !checkOn;
-				if (checkOn) SoundDefOf.Checkbox_TurnedOn.PlayOneShotOnCamera(null);
-				else SoundDefOf.Checkbox_TurnedOff.PlayOneShotOnCamera(null);
-			}
-			Widgets.CheckboxDraw(rect.xMax - 24f, rect.y, checkOn, false, 24f, null, null);
+			Widgets.Checkbox(new Vector2(rect.xMax - 24f, rect.y), ref checkOn, 24f, paintable: true);
 		}
 	}
 }

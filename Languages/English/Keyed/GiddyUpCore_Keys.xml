@@ -32,6 +32,7 @@
 	<GUC_Mount>Mount</GUC_Mount>
 	<GUC_Mount_GodMode>Mount (god mode)</GUC_Mount_GodMode>
 	<GUC_Dismount>Dismount</GUC_Dismount>
+	<GUC_DismountWithoutHitching>Dismount without hitching</GUC_DismountWithoutHitching>
 	<GUC_SwitchMount>Switch mount</GUC_SwitchMount>
 	
 	<GUC_Mountable_Tab>Mountable animals</GUC_Mountable_Tab>

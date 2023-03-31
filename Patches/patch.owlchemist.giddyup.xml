@@ -22,6 +22,7 @@
 					defName="AttackMelee" or  
 					defName="AttackStatic" or  
 					defName="Capture" or  
+					defName="CarryDownedPawnToExit" or  
 					defName="Dismount" or 
 					defName="DropEquipment" or  
 					defName="EscortPrisonerToBed" or  
@@ -48,6 +49,7 @@
 					defName="RopeToPen" or  
 					defName="RopeRoamerToUnenclosedPen" or 
 					defName="RopeRoamerToHitchingPost" or 
+					defName="Steal" or 
 					defName="TakeInventory" or  
 					defName="TakeWoundedPrisonerToBed" or  
 					defName="Tame" or 

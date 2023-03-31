@@ -14,7 +14,7 @@ namespace GiddyUp.Jobs
 		public Pawn rider;
 		ExtendedPawnData riderData;
 		Map map;
-		public bool isTrained, interrupted, isParking;
+		public bool isTrained, interrupted, isParking, isDespawning;
 		IntVec3 startingPoint, dismountingAt, riderOriginalDestinaton;
 		PathEndMode originalPeMode = PathEndMode.Touch;
 		MountUtility.DismountLocationType dismountLocationType = MountUtility.DismountLocationType.Auto;
@@ -116,6 +116,14 @@ namespace GiddyUp.Jobs
 						parkLoc: isParking && pawn.Position.DistanceTo(dismountingAt) < 5f ? dismountingAt : default(IntVec3),
 						waitForRider: !interrupted);
 					isParking = false;
+
+					//Check if the mount was meant to despawn along with the rider. This is already handled in the RiderShouldDismount but some spaghetti code elsewhere could bypass it
+					//TODO: See if the two could be unified
+					if (!isDespawning && rider != null && !rider.Spawned && pawn.Position.CloseToEdge(map, ResourceBank.mapEdgeIgnore))
+					{
+						isDespawning = true; //Avoid recurssive loop
+						pawn.ExitMap(false, CellRect.WholeMap(map).GetClosestEdge(pawn.Position));
+					}
 				})}
 			};
 		}
