@@ -24,7 +24,8 @@
 					defName="Capture" or  
 					defName="CarryDownedPawnToExit" or  
 					defName="Dismount" or 
-					defName="DropEquipment" or  
+					defName="DropEquipment" or 
+					defName="EjectAmmo" or 
 					defName="EscortPrisonerToBed" or  
 					defName="ExtinguishSelf" or  
 					defName="Flee" or  
@@ -68,6 +69,14 @@
 					defName="Wear"]</xpath>
 				<value>
 					<li Class="GiddyUp.CanDoMounted" />
+				</value>
+			</li>
+			<li Class="PatchOperationAddModExtension">
+				<xpath>Defs/JobDef[defName="DoBill"]</xpath>
+				<value>
+					<li Class="GiddyUp.CanDoMounted">
+						<checkTargets>true</checkTargets>
+					</li>
 				</value>
 			</li>
 			<li Class="PatchOperationAdd">

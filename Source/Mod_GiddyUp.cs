@@ -64,13 +64,13 @@ namespace GiddyUp
 		}
 		public static void BuildAllowedJobsCache()
 		{
-			JobDriver_Mounted.allowedJobs = new HashSet<JobDef>();
+			JobDriver_Mounted.allowedJobs = new Dictionary<JobDef, bool>();
 			for (int i = DefDatabase<JobDef>.DefCount; i-- > 0;)
 			{
 				var def = DefDatabase<JobDef>.defsList[i];
-				if (def.HasModExtension<CanDoMounted>()) JobDriver_Mounted.allowedJobs.Add(def);
+				if (def.GetModExtension<CanDoMounted>() is CanDoMounted canDoMounted) JobDriver_Mounted.allowedJobs.Add(def, canDoMounted.checkTargets);
 			}
-			if (!noMountedHunting) JobDriver_Mounted.allowedJobs.Add(JobDefOf.Hunt);
+			if (!noMountedHunting) JobDriver_Mounted.allowedJobs.Add(JobDefOf.Hunt, false);
 		}
 		//Responsible for caching which animals are mounted, draw layering behavior, and calling caravan speed bonuses
 		public static void BuildMountCache()
@@ -487,7 +487,7 @@ namespace GiddyUp
 				if (giveCaravanSpeed) for (int i = 0; i < Setup.allAnimals.Length; i++) Setup.CalculateCaravanSpeed(Setup.allAnimals[i], true);
 
 				//TODO: consider providing a list of all jobdefs users can add/remove to the allowed list
-				if (!noMountedHunting) JobDriver_Mounted.allowedJobs.Add(JobDefOf.Hunt);
+				if (!noMountedHunting) JobDriver_Mounted.allowedJobs.Add(JobDefOf.Hunt, false);
 				else JobDriver_Mounted.allowedJobs.Remove(JobDefOf.Hunt);
 			}
 			catch (System.Exception ex)

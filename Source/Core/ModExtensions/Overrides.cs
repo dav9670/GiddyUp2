@@ -5,5 +5,5 @@ namespace GiddyUp
     class DrawInFront : DefModExtension { }
     class NotMountable : DefModExtension { }
     class Mountable : DefModExtension { }
-    class CanDoMounted : DefModExtension { }
+    public class CanDoMounted : DefModExtension { public bool checkTargets; }
 }

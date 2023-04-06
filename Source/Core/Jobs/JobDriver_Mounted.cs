@@ -10,7 +10,7 @@ namespace GiddyUp.Jobs
 {
 	public class JobDriver_Mounted : JobDriver
 	{
-		public static HashSet<JobDef> allowedJobs;
+		public static Dictionary<JobDef, bool> allowedJobs;
 		public Pawn rider;
 		ExtendedPawnData riderData;
 		Map map;
@@ -119,7 +119,7 @@ namespace GiddyUp.Jobs
 
 					//Check if the mount was meant to despawn along with the rider. This is already handled in the RiderShouldDismount but some spaghetti code elsewhere could bypass it
 					//TODO: See if the two could be unified
-					if (!isDespawning && rider != null && !rider.Spawned && pawn.Position.CloseToEdge(map, ResourceBank.mapEdgeIgnore))
+					if (!isDespawning && rider != null && !pawn.Faction.IsPlayer && !rider.Spawned && pawn.Position.CloseToEdge(map, ResourceBank.mapEdgeIgnore))
 					{
 						isDespawning = true; //Avoid recurssive loop
 						pawn.ExitMap(false, CellRect.WholeMap(map).GetClosestEdge(pawn.Position));
@@ -172,28 +172,36 @@ namespace GiddyUp.Jobs
 				else return DismountReason.NotSpawned;
 			}
 
-			var allowedJob = allowedJobs.Contains(rider.CurJobDef);
+			var allowedJob = allowedJobs.TryGetValue(rider.CurJobDef, out bool checkTargets);
 			var riderDestinaton = rider.pather.Destination.Cell;
 			map.GetGUAreas(out Area areaNoMount, out Area areaDropAnimal);
 
 			if (!rider.Drafted)
 			{
-				//If the mount's non-drafted rider is heading towards a forbidden area, they'll need to dismount
-				if (!isParking && Settings.rideAndRollEnabled && ((!allowedJob && rider.Position.DistanceTo(riderDestinaton) < 25f) || !riderDestinaton.CanRideAt(areaNoMount)))
+				if (!isParking && Settings.rideAndRollEnabled)
 				{
-					isParking = true;
-					if (rider.FindPlaceToDismount(areaDropAnimal, areaNoMount, riderDestinaton, out dismountingAt, pawn, out dismountLocationType))
+					//Special checks for allowedJobs
+					if (allowedJob && checkTargets && rider.CurJob.targetA.Thing?.InteractionCell == riderDestinaton)
 					{
-						riderOriginalDestinaton = riderDestinaton;
-						originalPeMode = rider.pather.peMode;
-						if (Settings.logging) Log.Message("[Giddy-Up] " + rider.Label + " wants to dismount at " + dismountingAt.ToString() + " which is a " + dismountLocationType.ToString());
-						rider.pather.StartPath(dismountingAt, dismountLocationType == MountUtility.DismountLocationType.Auto ? PathEndMode.OnCell : PathEndMode.Touch);
+						allowedJob = false;
 					}
-					else 
+					//If the mount's non-drafted rider is heading towards a forbidden area, they'll need to dismount
+					if ( (!allowedJob && rider.Position.DistanceTo(riderDestinaton) < 25f) || !riderDestinaton.CanRideAt(areaNoMount) )
 					{
-						isParking = false;
-						ExtendedDataStorage.GUComp.badSpots.Add(riderDestinaton);
-						return DismountReason.ForbiddenAreaAndCannotPark;
+						isParking = true;
+						if (rider.FindPlaceToDismount(areaDropAnimal, areaNoMount, riderDestinaton, out dismountingAt, pawn, out dismountLocationType))
+						{
+							riderOriginalDestinaton = riderDestinaton;
+							originalPeMode = rider.pather.peMode;
+							if (Settings.logging) Log.Message("[Giddy-Up] " + rider.Label + " wants to dismount at " + dismountingAt.ToString() + " which is a " + dismountLocationType.ToString());
+							rider.pather.StartPath(dismountingAt, dismountLocationType == MountUtility.DismountLocationType.Auto ? PathEndMode.OnCell : PathEndMode.Touch);
+						}
+						else 
+						{
+							isParking = false;
+							ExtendedDataStorage.GUComp.badSpots.Add(riderDestinaton);
+							return DismountReason.ForbiddenAreaAndCannotPark;
+						}
 					}
 				}
 			}
