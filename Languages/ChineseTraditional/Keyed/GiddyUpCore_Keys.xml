@@ -37,7 +37,7 @@
 
   <GUC_Mountable_Tab>可騎乘</GUC_Mountable_Tab>
   <GUC_DrawBehavior_Tab>圖層</GUC_DrawBehavior_Tab>
-  <GUC_DrawBehavior_Description>勾選的動物，更改圖層渲染的優先級（優先於單位，體形特殊的動物建議勾選）。</GUC_DrawBehavior_Description>
+  <GUC_DrawBehavior_Description>勾選的動物，將更改圖層渲染的優先級（優先於單位，體形特殊的動物建議勾選）。</GUC_DrawBehavior_Description>
 
   <GUC_Core_Tab>核心</GUC_Core_Tab>
   <GUC_RnR_Tab>騎行</GUC_RnR_Tab>
@@ -48,10 +48,10 @@
   <GU_Enable_RnR_Description>禁用此模塊，將刪除殖民者出於方便或工作需要而使用坐騎在地圖上行走的相關功能。更改需要重新啟動。</GU_Enable_RnR_Description>
 
   <GU_Enable_BattleMounts>啟用－騎兵</GU_Enable_BattleMounts>
-  <GU_Enable_BattleMounts_Description>禁用此模塊，將刪除單位（殖民者和敵人）使用動物作為戰鬥坐騎的的相關功能。更改需要重新啟動。</GU_Enable_BattleMounts_Description>
+  <GU_Enable_BattleMounts_Description>禁用此模塊，將刪除單位（殖民者和敵人）使用坐騎在戰鬥的相關功能。更改需要重新啟動。</GU_Enable_BattleMounts_Description>
 
   <GU_Enable_Caravans>啟用－旅商</GU_Enable_Caravans>
-  <GU_Enable_Caravans_Description>禁用此模塊，將刪除單位（包括殖民者和友軍）在進出地圖時騎乘動物的相關功能。更改需要重新啟動。</GU_Enable_Caravans_Description>
+  <GU_Enable_Caravans_Description>禁用此模塊，將刪除單位（包括殖民者和友軍）使用坐騎在進出地圖時的相關功能。更改需要重新啟動。</GU_Enable_Caravans_Description>
 
   <GU_Reset_Cache>重置</GU_Reset_Cache>
 
