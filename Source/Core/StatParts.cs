@@ -28,11 +28,11 @@ namespace GiddyUp
                     float adjustedLevel = 0;
                     if (jobDriver.rider.skills != null)
                     {
-                        var skill = jobDriver.rider.skills.GetSkill(SkillDefOf.Animals);
-                        adjustedLevel = skill.levelInt - (int)Math.Round(pawn.GetStatValue(StatDefOf.MinimumHandlingSkill, true));
+                        var skill = jobDriver.rider.skills.GetSkill(SkillDefOf.Animals).Level;
+                        adjustedLevel = skill - (int)Math.Round(pawn.GetStatValue(StatDefOf.MinimumHandlingSkill, true));
                         float animalHandlingOffset = 1f + (adjustedLevel * Settings.handlingMovementImpact) / 100f;
                         sb.AppendLine("    " + "GUC_StatPart_HandlingMultiplier".Translate() + ": " + animalHandlingOffset.ToStringByStyle(ToStringStyle.PercentOne, ToStringNumberSense.Factor));
-                        sb.AppendLine("        " + "GUC_StatPart_HandlingSkill".Translate() + ": " + skill.levelInt);
+                        sb.AppendLine("        " + "GUC_StatPart_HandlingSkill".Translate() + ": " + skill);
                         sb.AppendLine("        " + "GUC_StatPart_SkillReq".Translate() + ": " + (int)Math.Round(pawn.GetStatValue(StatDefOf.MinimumHandlingSkill, true)));
                         sb.AppendLine("        " + "GUC_StatPart_LevelsAbove".Translate() + ": " + adjustedLevel);
                         sb.AppendLine("        " + "GUC_StatPart_HandlingMovementImpact".Translate() + ": " + (Settings.handlingMovementImpact / 100f).ToStringByStyle(ToStringStyle.PercentOne));
@@ -66,8 +66,7 @@ namespace GiddyUp
             float adjustedLevel = 0;
             if (skills != null)
             {
-                var skill = skills.GetSkill(SkillDefOf.Animals);
-                adjustedLevel = skill.levelInt - (int)Math.Round(animal.GetStatValue(StatDefOf.MinimumHandlingSkill, true));
+                adjustedLevel = skills.GetSkill(SkillDefOf.Animals).Level - (int)Math.Round(animal.GetStatValue(StatDefOf.MinimumHandlingSkill, true));
             }
             float animalHandlingOffset = 1f + (adjustedLevel * Settings.handlingMovementImpact) / 100f;
             baseValue *= animalHandlingOffset;

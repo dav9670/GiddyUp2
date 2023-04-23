@@ -25,7 +25,7 @@ namespace GiddyUp.Harmony
             float adjustedLevel = 5;
             if (pawn.skills != null)
             {
-                adjustedLevel = pawn.skills.GetSkill(SkillDefOf.Animals).levelInt - (int)Math.Round(mount.GetStatValue(StatDefOf.MinimumHandlingSkill, true));
+                adjustedLevel = pawn.skills.GetSkill(SkillDefOf.Animals).Level - (int)Math.Round(mount.GetStatValue(StatDefOf.MinimumHandlingSkill, true));
             }
             float animalHandlingOffset = adjustedLevel * Settings.handlingAccuracyImpact;
             float factor = (100f - ((float)Settings.accuracyPenalty - animalHandlingOffset)) / 100f;

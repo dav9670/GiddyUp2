@@ -213,7 +213,7 @@ namespace GiddyUp
 				{
 					animal.jobs.jobQueue.EnqueueFirst(new Job(ResourceBank.JobDefOf.WaitForRider, animalData.reservedBy)
 					{
-						expiryInterval = 10000,
+						expiryInterval = Settings.waitForRiderTimer,
 						checkOverrideOnExpire = true,
 						followRadius = 8,
 						locomotionUrgency = LocomotionUrgency.Walk
@@ -223,12 +223,13 @@ namespace GiddyUp
 		}
 		public static void InvoluntaryDismount(this Pawn rider, Pawn animal, ExtendedPawnData pawnData)
 		{
-			if (!rider.Faction.def.isPlayer && animal != null && !animal.Dead && animal.Spawned &&
-				(ExtendedDataStorage.nofleeingAnimals == null || !ExtendedDataStorage.nofleeingAnimals.Contains(animal)))
+			if (!rider.Faction.def.isPlayer && animal != null && !animal.Dead && animal.Spawned && //Is a non-colonist, and animal is valid?
+				(ExtendedDataStorage.nofleeingAnimals == null || !ExtendedDataStorage.nofleeingAnimals.Contains(animal)) && //Does this animal ever flee?
+				(animal.Faction == null || !animal.Faction.def.isPlayer) ) //Is the animal ours?
 			{
 				animal.mindState.mentalStateHandler.TryStartMentalState(MentalStateDefOf.PanicFlee);
 			}
-			pawnData.ReservedBy = null;
+			Dismount(rider, animal, pawnData, clearReservation: true, ropeIfNeeded: false, waitForRider: false);
 		}
 		public static bool FindPlaceToDismount(this Pawn rider, Area areaDropAnimal, Area areaNoMount, IntVec3 riderDestinaton, out IntVec3 parkLoc, Pawn animal, out DismountLocationType dismountLocationType)
 		{

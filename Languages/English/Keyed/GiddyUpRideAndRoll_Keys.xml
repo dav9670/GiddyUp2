@@ -40,4 +40,7 @@
 	
 	<GU_RR_Gizmo_LeaveRider_Label>Leave rider</GU_RR_Gizmo_LeaveRider_Label>
 	<GU_RR_Gizmo_LeaveRider_Description>Order the animal to stop waiting for the rider.</GU_RR_Gizmo_LeaveRider_Description>
+
+	<GU_RR_WaitForRiderTimer_Title>Wait for rider timer (Min: {0} Max: {1} Default: {2} Current: {3} hours)</GU_RR_WaitForRiderTimer_Title>
+	<GU_RR_WaitForRiderTimer_Description>When a rider dismounts, but may need the mount for the return ride back, this is how long the animal will wait. Note, an animal will prematurely leave for emergencies, such as starving.</GU_RR_WaitForRiderTimer_Description>
 </LanguageData>

@@ -348,6 +348,9 @@ namespace GiddyUp
 					options.Label("GU_RR_InjuredThreshold_Title".Translate("0", "100", "75", Math.Round(injuredThreshold * 100f).ToString()), -1f, "GU_RR_InjuredThreshold_Description".Translate());
 					injuredThreshold = options.Slider(injuredThreshold, 0f, 1f);
 
+					options.Label("GU_RR_WaitForRiderTimer_Title".Translate("1000", "30000", "10000", System.Math.Round(waitForRiderTimer / 2500f, 1) ), -1f, "GU_RR_WaitForRiderTimer_Description".Translate());
+					waitForRiderTimer = (int)options.Slider(waitForRiderTimer, 0f, 30000f);
+
 					options.CheckboxLabeled("GU_RR_NoMountedHunting_Title".Translate(), ref noMountedHunting, "GU_RR_NoMountedHunting_Description".Translate());
 					options.CheckboxLabeled("GU_RR_DisableSlavePawnColumn_Title".Translate(), ref disableSlavePawnColumn, "GU_RR_DisableSlavePawnColumn_Description".Translate());
 					options.CheckboxLabeled("GU_RR_AutomountDisabledByDefault_Title".Translate(), ref automountDisabledByDefault, "GU_RR_AutomountDisabledByDefault_Description".Translate());
@@ -524,6 +527,7 @@ namespace GiddyUp
 			Scribe_Values.Look(ref giveCaravanSpeed, "giveCaravanSpeed");
 			Scribe_Values.Look(ref ridePackAnimals, "ridePackAnimals", true);
 			Scribe_Values.Look(ref injuredThreshold, "injuredThreshold", 0.75f);
+			Scribe_Values.Look(ref waitForRiderTimer, "waitForRiderTimer", 10000);
 			Scribe_Collections.Look(ref invertMountingRules, "invertMountingRules", LookMode.Value);
 			Scribe_Collections.Look(ref invertDrawRules, "invertDrawRules", LookMode.Value);
 			Scribe_Collections.Look(ref offsetCache, "offsetCache", LookMode.Value);
@@ -545,7 +549,8 @@ namespace GiddyUp
 			enemyMountChancePreInd = 33, 
 			visitorMountChance = 15, 
 			visitorMountChancePreInd = 33,
-			autoHitchDistance = 50;
+			autoHitchDistance = 50,
+			waitForRiderTimer = 10000;
 		public static bool rideAndRollEnabled = true, 
 			battleMountsEnabled = true,
 			caravansEnabled = true,
