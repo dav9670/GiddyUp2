@@ -22,7 +22,7 @@
   <GU_RR_InjuredThreshold_Description>當動物的健康狀況低於此值時，就會禁止騎乘。</GU_RR_InjuredThreshold_Description>
 
   <GU_RR_Designator_GU_DropAnimal_Expand_Label>釋放點</GU_RR_Designator_GU_DropAnimal_Expand_Label>  <!--Should be short-->
-  <GU_RR_Designator_GU_DropAnimal_Expand_Description>當騎乘不需要圍欄的動物時，單位將使用釋放點。如果是家畜，會去附近的飼養圈。</GU_RR_Designator_GU_DropAnimal_Expand_Description>
+  <GU_RR_Designator_GU_DropAnimal_Expand_Description>當騎乘不需要圍欄的動物時，單位將使用釋放點。若是家畜，會去附近的飼養圈。</GU_RR_Designator_GU_DropAnimal_Expand_Description>
 
   <GU_RR_Designator_GU_DropAnimal_Clear_Label>移除釋放點</GU_RR_Designator_GU_DropAnimal_Clear_Label>  <!--Should be short-->
   <GU_RR_Designator_GU_DropAnimal_Clear_Description>移除釋放點。</GU_RR_Designator_GU_DropAnimal_Clear_Description>
@@ -40,5 +40,8 @@
 
   <GU_RR_Gizmo_LeaveRider_Label>離開騎手</GU_RR_Gizmo_LeaveRider_Label>
   <GU_RR_Gizmo_LeaveRider_Description>命令動物停止等待騎手。</GU_RR_Gizmo_LeaveRider_Description>
+
+  <GU_RR_WaitForRiderTimer_Title>坐騎待命 ({3} 小時)</GU_RR_WaitForRiderTimer_Title>
+  <GU_RR_WaitForRiderTimer_Description>當騎手下坐騎工作，但回程時可能需要坐騎，該值為坐騎待命的時長。注意，會因緊急情況而提前離開，如飢餓。</GU_RR_WaitForRiderTimer_Description>
 
 </LanguageData>
