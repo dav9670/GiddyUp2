@@ -124,10 +124,10 @@ namespace GiddyUp.Harmony
 					return;
 				}
 
-				QueuedJob qJob = pawn.jobs.jobQueue.FirstOrFallback(null);
-				if (qJob != null && (qJob.job.def == ResourceBank.JobDefOf.Dismount || qJob.job.def == ResourceBank.JobDefOf.Mount))
+				if (pawn.jobs.jobQueue.FirstOrFallback(null) is QueuedJob queuedJob)
 				{
-					return;
+					Job qJob = queuedJob.job;
+					if (qJob != null && (qJob.def == ResourceBank.JobDefOf.Dismount || qJob.def == ResourceBank.JobDefOf.Mount)) return;
 				}
 
 				ExtendedPawnData pawnData = pawn.GetGUData();

@@ -65,12 +65,13 @@ namespace GiddyUp
 		public static void BuildAllowedJobsCache()
 		{
 			JobDriver_Mounted.allowedJobs = new Dictionary<JobDef, bool>();
-			for (int i = DefDatabase<JobDef>.DefCount; i-- > 0;)
+			var list = DefDatabase<JobDef>.defsList;
+			for (int i = list.Count; i-- > 0;)
 			{
-				var def = DefDatabase<JobDef>.defsList[i];
+				var def = list[i];
 				if (def.GetModExtension<CanDoMounted>() is CanDoMounted canDoMounted) JobDriver_Mounted.allowedJobs.Add(def, canDoMounted.checkTargets);
 			}
-			if (!noMountedHunting) JobDriver_Mounted.allowedJobs.Add(JobDefOf.Hunt, false);
+			if (!noMountedHunting) JobDriver_Mounted.allowedJobs.AddDistinct(JobDefOf.Hunt, false);
 		}
 		//Responsible for caching which animals are mounted, draw layering behavior, and calling caravan speed bonuses
 		public static void BuildMountCache()
@@ -173,7 +174,14 @@ namespace GiddyUp
 			for (int i = DefDatabase<BiomeDef>.DefCount; i-- > 0;)
 			{
 				var biomeDef = DefDatabase<BiomeDef>.defsList[i];
-				foreach(PawnKindDef animalKind in biomeDef.AllWildAnimals) MountUtility.allWildAnimals.Add(animalKind);
+				try
+				{
+					foreach(PawnKindDef animalKind in biomeDef.AllWildAnimals) MountUtility.allWildAnimals.Add(animalKind);
+				}
+				catch (System.Exception ex)
+				{
+					Log.Error("[Giddy-Up] An error occured calling AllWildAnimals. This may happen if a mod has malformed PawnKindDef when the game is trying to process the def database for the first time. Skipping...\n" + ex);
+				}	
 			}
 			
 			for (int i = DefDatabase<PawnKindDef>.DefCount; i-- > 0;)
@@ -490,7 +498,7 @@ namespace GiddyUp
 				if (giveCaravanSpeed) for (int i = 0; i < Setup.allAnimals.Length; i++) Setup.CalculateCaravanSpeed(Setup.allAnimals[i], true);
 
 				//TODO: consider providing a list of all jobdefs users can add/remove to the allowed list
-				if (!noMountedHunting) JobDriver_Mounted.allowedJobs.Add(JobDefOf.Hunt, false);
+				if (!noMountedHunting) JobDriver_Mounted.allowedJobs.AddDistinct(JobDefOf.Hunt, false);
 				else JobDriver_Mounted.allowedJobs.Remove(JobDefOf.Hunt);
 			}
 			catch (System.Exception ex)
@@ -536,7 +544,7 @@ namespace GiddyUp
 		}
 
 		public static float handlingMovementImpact = 2.5f,
-			bodySizeFilter = 1.2f,
+			bodySizeFilter = 0.2f,
 			handlingAccuracyImpact = 0.5f,
 			inBiomeWeight = 20f, 
 			outBiomeWeight = 10f,

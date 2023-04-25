@@ -54,6 +54,9 @@
 					defName="TakeInventory" or  
 					defName="TakeWoundedPrisonerToBed" or  
 					defName="Tame" or 
+					defName="TMCastAbilityVerb" or 
+					defName="TMCastAbilitySelf" or 
+					defName="TMCastIdeoAbility" or 
 					defName="TradeWithPawn" or  
 					defName="UnloadInventory" or  
 					defName="UnloadYourInventory" or  
