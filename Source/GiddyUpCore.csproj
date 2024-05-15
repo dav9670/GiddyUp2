@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<Product>Giddy-Up</Product>
-		<AssemblyVersion>2.1.0</AssemblyVersion>
+		<AssemblyVersion>2.1.1</AssemblyVersion>
 		<Version>1.5</Version>
 		<Copyright>$([System.DateTime]::Now.ToString('yyyy'))</Copyright>
 		<Company>Owlchemist</Company>
