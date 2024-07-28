@@ -447,10 +447,10 @@ namespace GiddyUp
 				FactionRestrictions factionRules = parms.faction?.def?.GetModExtension<FactionRestrictions>();
 				if (factionRules != null)
 				{
-					//Override working list
-					wildAnimals = factionRules.allowedWildAnimals;
+                    //Override working list
+                    wildAnimals = factionRules.allowedWildAnimals.ToArray();
 					var wildAnimalsReadonly = wildAnimals;
-					domesticAnimals = factionRules.allowedNonWildAnimals;
+					domesticAnimals = factionRules.allowedNonWildAnimals.ToArray();
 					localAnimals = map.Biome.AllWildAnimals.
 						Where(x => wildAnimalsReadonly.Contains(x) && map.mapTemperature.SeasonAcceptableFor(x.race) && 
 						Settings.mountableCache.Contains(x.shortHash) && parms.points > x.combatPower * 2f).ToArray();
