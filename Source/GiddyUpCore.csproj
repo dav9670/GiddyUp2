@@ -11,16 +11,25 @@
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-		<OutputPath>..\..\..\Mods\$(Product)\$(Version)\Assemblies</OutputPath>
+		<OutputPath>..\ModFolder\$(Version)\Assemblies</OutputPath>
 		<DefineConstants>TRACE;NDEBUG</DefineConstants>
 		<WarningLevel>4</WarningLevel>
 		<DebugSymbols>false</DebugSymbols>
 		<DebugType>None</DebugType>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<OutputPath>..\..\..\Mods\$(Product)\$(Version)\Assemblies</OutputPath>
+		<OutputPath>..\ModFolder\$(Version)\Assemblies</OutputPath>
 		<DefineConstants>TRACE;DEBUG;NETFRAMEWORK;NET48;</DefineConstants>
 	</PropertyGroup>
+
+	<Target Name="CopyCustomContent" AfterTargets="AfterBuild">
+		<ItemGroup>
+			<ModFolder Include="..\ModFolder\**\*" />
+		</ItemGroup>
+		
+		<Copy SourceFiles="@(ModFolder)" DestinationFolder="..\..\..\Mods\$(Product)\%(RecursiveDir)" />
+	</Target>
+	
 	<ItemGroup>
 		<PackageReference Include="Krafs.Publicizer" Version="2.2.1">
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
