@@ -27,7 +27,8 @@
 			<ModFolder Include="..\ModFolder\**\*" />
 		</ItemGroup>
 		
-		<Copy SourceFiles="@(ModFolder)" DestinationFolder="..\..\..\Mods\$(Product)\%(RecursiveDir)" />
+		<!--Destination folder should your Rimworld mod folder (by default, will use \Program Files (x86)\Steam\steamapps\common\RimWorld\Mods)-->
+		<Copy SourceFiles="@(ModFolder)" DestinationFolder="$(MSBuildProgramFiles32)\Steam\steamapps\common\RimWorld\Mods\$(Product)\%(RecursiveDir)" />
 	</Target>
 	
 	<ItemGroup>
