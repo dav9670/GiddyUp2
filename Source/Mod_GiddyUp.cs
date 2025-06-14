@@ -187,7 +187,7 @@ namespace GiddyUp
 			for (int i = DefDatabase<PawnKindDef>.DefCount; i-- > 0;)
 			{
 				var pawnKindDef = DefDatabase<PawnKindDef>.defsList[i];
-				if (pawnKindDef.RaceProps != null && pawnKindDef.RaceProps.wildness <= 0.6f && pawnKindDef.race != null && pawnKindDef.race.tradeTags != null &&
+				if (pawnKindDef.race != null && pawnKindDef.race.GetStatValueAbstract(StatDefOf.Wildness) <= 0.6f && pawnKindDef.race.tradeTags != null &&
 					 (pawnKindDef.race.tradeTags.Contains("AnimalFighter") || pawnKindDef.race.tradeTags.Contains("AnimalFarm") ))
 				{
 					MountUtility.allDomesticAnimals.Add(pawnKindDef);
@@ -296,7 +296,7 @@ namespace GiddyUp
 				speed = sizeFactor.Evaluate(def.race.baseBodySize) * 
 					speedFactor.Evaluate(def.GetStatValueAbstract(StatDefOf.MoveSpeed)) * 
 					valueFactor.Evaluate(def.BaseMarketValue) * 
-					wildnessFactor.Evaluate(def.race.wildness) * 
+					wildnessFactor.Evaluate(def.GetStatValueAbstract(StatDefOf.Wildness)) * 
 					(def.race.packAnimal ? 1.1f : 0.95f);
 				if (speed < 1.00001f) speed = 1.00001f;
 			}

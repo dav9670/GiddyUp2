@@ -4,62 +4,39 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Verse;
+using Verse.AI;
 using static GiddyUp.IsMountableUtility;
 using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUp.Harmony
 {
-	[HarmonyPatch(typeof(FloatMenuMakerMap), nameof(FloatMenuMakerMap.ChoicesAtFor))]
-	static class FloatMenuMakerMap_ChoicesAtFor
+	public class FloatMenuOptionProvider_RidingOptions : FloatMenuOptionProvider
 	{
-		static bool Prepare()
+		public override bool Drafted => true;
+
+		public override bool Undrafted => true;
+
+		public override bool Multiselect => false;
+
+		public override bool RequiresManipulation => true;
+		
+		public override IEnumerable<FloatMenuOption> GetOptionsFor(Pawn clickedPawn, FloatMenuContext context)
 		{
-			return Settings.rideAndRollEnabled;
-		}
-		static void Postfix(Vector3 clickPos, Pawn pawn, List<FloatMenuOption> __result)
-		{
-			/*
-			if (DebugSettings.godMode)
-            {
-                var godModeTargetting = new TargetingParameters() 
-                {
-                    canTargetAnimals = true, 
-                    canTargetHumans = true, 
-                    canTargetPawns = true,
-                    validator = null,
-                    onlyTargetColonists = false,
-                    mustBeSelectable = false
-                };
-                foreach (LocalTargetInfo current in GenUI.TargetsAt(clickPos, godModeTargetting, true))
-                {
-                    if (current.Thing is Pawn target) FloatMenuUtility.AddMountingOptions(target, pawn, __result);
-                }
-				return;
-            }*/
-			foreach (LocalTargetInfo current in GenUI.TargetsAt(clickPos, TargetingParameters.ForAttackHostile(), true))
+			if (!Settings.rideAndRollEnabled && !Settings.battleMountsEnabled)
+				return [];
+			
+			var options = new List<FloatMenuOption>();
+			
+			foreach (Pawn selectedPawn in context.ValidSelectedPawns)
 			{
-				if (current.Thing is Pawn target && !pawn.Drafted && target.RaceProps.Animal) FloatMenuUtility.AddMountingOptions(target, pawn, __result);
+				if (clickedPawn.RaceProps.Animal && ((!selectedPawn.Drafted && Settings.rideAndRollEnabled) || (selectedPawn.Drafted && Settings.battleMountsEnabled))) 
+					FloatMenuUtility.AddMountingOptions(clickedPawn, selectedPawn, options);
 			}
+
+			return options;
 		}
 	}
-
-	[HarmonyPatch(typeof(FloatMenuMakerMap), nameof(FloatMenuMakerMap.AddDraftedOrders), new Type[] { typeof(Vector3), typeof(Pawn), typeof(List<FloatMenuOption>), typeof(bool) })]
-	static class Patch_AddDraftedOrders
-	{
-		static bool Prepare()
-		{
-			return Settings.battleMountsEnabled;
-		}
-		static void Postfix(Vector3 clickPos, Pawn pawn, List<FloatMenuOption> opts)
-		{
-			if (pawn.RaceProps.Animal) return;
-			foreach (LocalTargetInfo current in GenUI.TargetsAt(clickPos, TargetingParameters.ForAttackHostile(), true))
-			{
-				if (current.Thing is Pawn target) FloatMenuUtility.AddMountingOptions(target, pawn, opts);
-			}
-		}
-	}
-
+	
 	static class FloatMenuUtility
 	{
 		public static bool AddMountingOptions(Pawn animal, Pawn pawn, List<FloatMenuOption> opts)

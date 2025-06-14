@@ -58,7 +58,7 @@ namespace GiddyUp.Jobs
         Toil TalkToAnimal()
         {
             var mount = Mount;
-            int mountComplexity = (int)(bodySizeFactor.Evaluate(mount.BodySize) * wildnessFactor.Evaluate(mount.RaceProps.wildness) * 
+            int mountComplexity = (int)(bodySizeFactor.Evaluate(mount.BodySize) * wildnessFactor.Evaluate(mount.kindDef.race.GetStatValueAbstract(StatDefOf.Wildness)) * 
                 skillFactor.Evaluate(pawn.skills?.GetSkill(SkillDefOf.Animals).Level ?? 0));
             if (Settings.logging) Log.Message("[Giddy-Up] Number of ticks for " + pawn.Label + " to mount " + mount.def.defName + " : " + mountComplexity.ToString());
             return new Toil()

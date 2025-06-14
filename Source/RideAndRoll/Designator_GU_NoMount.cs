@@ -21,13 +21,7 @@ namespace GiddyUpRideAndRoll
         {
             return c.InBounds(base.Map) && selectedArea != null && selectedArea[c];
         }
-        public override int DraggableDimensions
-        {
-            get
-            {
-                return 2;
-            }
-        }
+        public override DrawStyleCategoryDef DrawStyleCategory => DrawStyleCategoryDefOf.FilledRectangle;
         public override bool DragDrawMeasurements
         {
             get
@@ -53,13 +47,9 @@ namespace GiddyUpRideAndRoll
         {
             return c.InBounds(base.Map) && selectedArea != null && !selectedArea[c];
         }
-        public override int DraggableDimensions
-        {
-            get
-            {
-                return 2;
-            }
-        }
+
+        public override DrawStyleCategoryDef DrawStyleCategory => DrawStyleCategoryDefOf.FilledRectangle;
+
         public override bool DragDrawMeasurements
         {
             get

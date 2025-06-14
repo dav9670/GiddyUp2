@@ -81,7 +81,7 @@ namespace GiddyUp
         public HashSet<IntVec3> badSpots = new HashSet<IntVec3>();
         public ExtendedDataStorage(World world) : base(world) {}
 
-        public override void FinalizeInit()
+        public override void FinalizeInit(bool fromLoad)
         {
             GUComp = this;
             ExtendedDataStorage.isMounted = new HashSet<int>();

@@ -497,7 +497,7 @@ namespace GiddyUp
 				//Common animals more likely when pawns have low handling, and rare animals more likely when pawns have high handling.  
 				float commonalityAdjusted = commonality * ((15f - (float)commonality)) / 15f + (1 - commonality) * ((float)pawnHandlingLevel) / 15f;
 				//Wildness decreases the likelyhood of the mount being picked. Handling level mitigates this. 
-				float wildnessPenalty = 1 - (def.RaceProps.wildness * ((15f - (float)pawnHandlingLevel) / 15f));
+				float wildnessPenalty = 1 - (def.race.GetStatValueAbstract(StatDefOf.Wildness) * ((15f - (float)pawnHandlingLevel) / 15f));
 
 				//Log.Message("name: " + def.defName + ", commonality: " + commonality + ", pawnHandlingLevel: " + pawnHandlingLevel + ", wildness: " + def.RaceProps.wildness + ", commonalityBonus: " + commonalityAdjusted + ", wildnessPenalty: " + wildnessPenalty + ", result: " + commonalityAdjusted * wildnessPenalty);
 				return commonalityAdjusted * wildnessPenalty;

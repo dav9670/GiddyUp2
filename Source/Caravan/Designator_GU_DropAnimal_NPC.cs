@@ -19,13 +19,7 @@ namespace GiddyUpCaravan
         {
             selectedArea[c] = false;
         }
-        public override int DraggableDimensions
-        {
-            get
-            {
-                return 2;
-            }
-        }
+        public override DrawStyleCategoryDef DrawStyleCategory => DrawStyleCategoryDefOf.FilledRectangle;
         public override bool DragDrawMeasurements
         {
             get
