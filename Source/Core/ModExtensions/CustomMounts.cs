@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
 using Verse;
 
-namespace GiddyUp
+namespace GiddyUp;
+
+//For PawnKindDef
+internal class CustomMounts : DefModExtension
 {
-    //For PawnKindDef
-    class CustomMounts : DefModExtension
-    {
-        public int mountChance = 0;
-        public Dictionary<PawnKindDef, int> possibleMounts = new Dictionary<PawnKindDef, int>();
-    }
+    public int mountChance = 0;
+    public Dictionary<PawnKindDef, int> possibleMounts = new();
 }

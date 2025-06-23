@@ -1,12 +1,11 @@
 using System.Collections.Generic;
 using Verse;
 
-namespace GiddyUp
+namespace GiddyUp;
+
+//For ThingDef
+internal class ResearchRestrictions : DefModExtension
 {
-    //For ThingDef
-    class ResearchRestrictions : DefModExtension
-    {
-        public ResearchProjectDef researchProjectDefToAttack = null;
-        public List<ResearchProjectDef> researchProjectDefs = new List<ResearchProjectDef>();
-    }
+    public ResearchProjectDef researchProjectDefToAttack = null;
+    public List<ResearchProjectDef> researchProjectDefs = new();
 }

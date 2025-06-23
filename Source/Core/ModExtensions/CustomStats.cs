@@ -1,12 +1,11 @@
 ﻿using Verse;
 
-namespace GiddyUp
+namespace GiddyUp;
+
+//For PawnKindDef
+internal class CustomStats : DefModExtension
 {
-    //For PawnKindDef
-    class CustomStats : DefModExtension
-    {
-        public float speedModifier = 1.0f;
-        public float armorModifier = 1.0f;
-        public bool useMetalArmor = false;
-    }
+    public float speedModifier = 1.0f;
+    public float armorModifier = 1.0f;
+    public bool useMetalArmor = false;
 }

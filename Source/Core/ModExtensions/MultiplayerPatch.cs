@@ -27,10 +27,10 @@ namespace GiddyUp.ModExtensions
                 return;
             }
             giddyUpMultiplayerHarmony = new HarmonyLib.Harmony("giddyup.multiplayer.compat");
-            
+
             MP.RegisterAll();
-            
-            
+
+
 
             giddyUpMultiplayerHarmony.Patch(AccessTools.Constructor(type),
                 postfix: new HarmonyMethod(typeof(MultiplayerPatch), nameof(ExtendedDataStoragePostfix)));
@@ -41,10 +41,10 @@ namespace GiddyUp.ModExtensions
             giddyUpMultiplayerHarmony.Patch(AccessTools.Method(type, "DeleteExtendedDataFor", new Type[] { typeof(Pawn) }),
                 postfix: new HarmonyMethod(typeof(MultiplayerPatch), nameof(DeleteExtendedDataForPostfix)));
 
-            
-            
+
+
             MP.RegisterSyncWorker<object>(ExtendedPawnData, type);
-            
+
             var rngFixMethods = new[]
             {
                 "GiddyUp.Utilities.NPCMountUtility:determinePawnKind",
@@ -55,7 +55,7 @@ namespace GiddyUp.ModExtensions
             MP.RegisterSyncMethod(typeof(ExtendedPawnData), nameof(Storage.ExtendedPawnData.reset));
             MP.RegisterSyncMethod(typeof(Jobs.JobDriver_Mounted), nameof(Jobs.JobDriver_Mounted.delegateMovement));
             MP.RegisterSyncMethod(typeof(Jobs.JobDriver_Mount), nameof(Jobs.JobDriver_Mount.FinishAction));
-            
+
             MP.RegisterSyncMethod(typeof(Utilities.DrawUtility), nameof(Utilities.DrawUtility.CustomDrawer_Tabs)); // Needed to sync with arbiter START
             MP.RegisterSyncMethod(typeof(Utilities.DrawUtility), nameof(Utilities.DrawUtility.CustomDrawer_Filter));
             //MP.RegisterSyncMethod(typeof(Utilities.DrawUtility), nameof(Utilities.DrawUtility.filterAnimals));
@@ -126,9 +126,10 @@ namespace GiddyUp.ModExtensions
         {
             foreach (var method in methods)
             {
-                PatchPushPopRand(AccessTools.Method(method), transpiler);   
+                PatchPushPopRand(AccessTools.Method(method), transpiler);
             }
         }
     }
 }
 */
+

@@ -1,9 +1,20 @@
 ﻿using Verse;
 
-namespace GiddyUp
+namespace GiddyUp;
+
+internal class DrawInFront : DefModExtension
 {
-    class DrawInFront : DefModExtension { }
-    class NotMountable : DefModExtension { }
-    class Mountable : DefModExtension { }
-    public class CanDoMounted : DefModExtension { public bool checkTargets; }
+}
+
+internal class NotMountable : DefModExtension
+{
+}
+
+internal class Mountable : DefModExtension
+{
+}
+
+public class CanDoMounted : DefModExtension
+{
+    public bool checkTargets;
 }
