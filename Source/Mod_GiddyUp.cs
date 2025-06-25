@@ -267,16 +267,17 @@ public static class Setup
         var designationCategoryDef = DefDatabase<DesignationCategoryDef>.GetNamed("Zone");
         designationCategoryDef.specialDesignatorClasses.RemoveAll(x =>
             x == typeof(Designator_GU_DropAnimal_Expand) ||
-            x == typeof(Designator_GU_DropAnimal_Clear) ||
-            x == typeof(Designator_GU_NoMount_Expand) ||
-            x == typeof(Designator_GU_NoMount_Clear)
+            x == typeof(Designator_GU_DropAnimal_Clear) // ||
+            // x == typeof(Designator_GU_NoMount_Expand) ||
+            // x == typeof(Designator_GU_NoMount_Clear)
         );
         var workingList = new List<Designator>(designationCategoryDef.resolvedDesignators);
         foreach (var designator in workingList)
             if (designator is Designator_GU_DropAnimal_Expand ||
-                designator is Designator_GU_DropAnimal_Clear ||
-                designator is Designator_GU_NoMount_Expand ||
-                designator is Designator_GU_NoMount_Clear)
+                designator is Designator_GU_DropAnimal_Clear // ||
+                // designator is Designator_GU_NoMount_Expand ||
+                // designator is Designator_GU_NoMount_Clear
+                )
                 designationCategoryDef.resolvedDesignators.Remove(designator);
     }
 
