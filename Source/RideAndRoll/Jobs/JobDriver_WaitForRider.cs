@@ -98,7 +98,8 @@ internal class JobDriver_WaitForRider : JobDriver
                 if (ticker-- == 0)
                 {
                     ticker = Rand.Range(300, 600);
-                    if (!pawn.pather.Moving) WalkRandomNearby();
+                    if (!pawn.pather.Moving)
+                        WalkRandomNearby();
                 }
             },
             finishActions = new List<Action>
@@ -126,7 +127,8 @@ internal class JobDriver_WaitForRider : JobDriver
         if (animalData.reservedBy != null)
         {
             var riderData = animalData.reservedBy.GetGUData();
-            if (riderData.reservedMount == pawn) riderData.ReservedMount = null;
+            if (riderData.reservedMount == pawn)
+                riderData.ReservedMount = null;
         }
 
         animalData.ReservedBy = null;

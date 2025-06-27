@@ -32,7 +32,8 @@ internal static class Patch_DoAction
     public static void EndCurrentJob(this Pawn_JobTracker job, JobCondition condition, bool startNewJob = true,
         bool canReturnToPool = true)
     {
-        if (job.pawn.IsMountedAnimal()) return;
+        if (job.pawn.IsMountedAnimal())
+            return;
         job.EndCurrentJob(condition, startNewJob, canReturnToPool);
     }
 }
@@ -54,7 +55,8 @@ internal static class Patch_DetermineNextJob
     private static void Postfix(Pawn_JobTracker __instance, ref ThinkResult __result)
     {
         var pawn = __instance.pawn;
-        if (pawn.Faction == null) return;
+        if (pawn.Faction == null)
+            return;
         if (pawn.def.race.intelligence == Intelligence.Humanlike)
         {
             //Sanity check, make sure the mount driver is still valid
@@ -71,10 +73,12 @@ internal static class Patch_DetermineNextJob
             {
                 var pawnData = pawn.GetGUData();
                 var hostileMount = pawnData.reservedMount;
-                if (hostileMount == null || !hostileMount.IsMountable(out var reason, pawn, true, true)) return;
+                if (hostileMount == null || !hostileMount.IsMountable(out var reason, pawn, true, true))
+                    return;
                 var qJob = pawn.jobs.jobQueue.FirstOrFallback(null);
                 if (qJob?.job.def == ResourceBank.JobDefOf.Mount ||
-                    __result.Job?.def == ResourceBank.JobDefOf.Mount) return;
+                    __result.Job?.def == ResourceBank.JobDefOf.Mount)
+                    return;
 
                 pawn.GoMount(hostileMount);
             }
@@ -90,7 +94,8 @@ internal static class Patch_DetermineNextJob
             if (pawn.IsRoped())
             {
                 var owner = pawn.GetGUData().reservedBy;
-                if (owner == null || owner.Dead || !owner.Spawned) pawn.roping.BreakAllRopes();
+                if (owner == null || owner.Dead || !owner.Spawned)
+                    pawn.roping.BreakAllRopes();
             }
 
             HandleVisitorsMounting(__instance, ref __result, pawn);
@@ -100,7 +105,8 @@ internal static class Patch_DetermineNextJob
         void HandleVisitorsMounting(Pawn_JobTracker jobTracker, ref ThinkResult thinkResult, Pawn pawn)
         {
             var lord = pawn.GetLord();
-            if (lord == null) return;
+            if (lord == null)
+                return;
 
             if (pawn.RaceProps.Animal && thinkResult.SourceNode is JobGiver_Wander jobGiver_Wander &&
                 lord.CurLordToil is LordToil_DefendPoint)
@@ -110,24 +116,29 @@ internal static class Patch_DetermineNextJob
                 if (trader != null && pawn.mindState.duty.focus.Cell.DistanceTo(trader.Position) > 150f &&
                     !pawn.IsRoped())
                     pawn.mindState.duty = new PawnDuty(DutyDefOf.Follow, trader, 5f);
-                else jobGiver_Wander.wanderRadius = 5f;
+                else
+                    jobGiver_Wander.wanderRadius = 5f;
             }
 
             //Filter out anything that is not a guest rider
             if (pawn.def.race.intelligence != Intelligence.Humanlike ||
                 pawn.Faction.HostileTo(Current.gameInt.worldInt.factionManager.ofPlayer) || pawn.IsPrisoner ||
-                thinkResult.Job == null) return;
+                thinkResult.Job == null)
+                return;
 
             var job = thinkResult.Job;
-            if (job == null || !job.GetFirstTarget(TargetIndex.A).IsValid) return;
+            if (job == null || !job.GetFirstTarget(TargetIndex.A).IsValid)
+                return;
 
-            if (job.def == ResourceBank.JobDefOf.Dismount || job.def == ResourceBank.JobDefOf.Mount) return;
+            if (job.def == ResourceBank.JobDefOf.Dismount || job.def == ResourceBank.JobDefOf.Mount)
+                return;
 
             if (pawn.jobs.jobQueue.FirstOrFallback(null) is QueuedJob queuedJob)
             {
                 var qJob = queuedJob.job;
                 if (qJob != null && (qJob.def == ResourceBank.JobDefOf.Dismount ||
-                                     qJob.def == ResourceBank.JobDefOf.Mount)) return;
+                                     qJob.def == ResourceBank.JobDefOf.Mount))
+                    return;
             }
 
             var pawnData = pawn.GetGUData();
@@ -159,7 +170,8 @@ internal static class Patch_DetermineNextJob
                 if (pawnData.mount.inventory != null && pawnData.mount.inventory.innerContainer.Count > 0)
                     pawn.Dismount(pawnData.mount, pawnData);
                 //Other animals go to the assigned dismount spot.
-                else pawn.GoDismount(pawnData.mount);
+                else
+                    pawn.GoDismount(pawnData.mount);
             }
         }
     }

@@ -28,7 +28,8 @@ internal static class Patch_PrepareCaravan_Leave
     {
         foreach (var pawn in ___lord.ownedPawns)
         {
-            if (pawn.RaceProps.Animal) continue;
+            if (pawn.RaceProps.Animal)
+                continue;
             var pawnData = pawn.GetGUData();
             if (pawnData.reservedMount != null)
             {

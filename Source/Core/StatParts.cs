@@ -76,7 +76,8 @@ public class StatPart_Riding : StatPart
         var animalHandlingOffset = 1f + adjustedLevel * Settings.handlingMovementImpact / 100f;
         baseValue *= animalHandlingOffset;
         var modExt = animal.kindDef.GetModExtension<CustomStats>();
-        if (modExt != null) baseValue *= modExt.speedModifier;
+        if (modExt != null)
+            baseValue *= modExt.speedModifier;
         return baseValue;
     }
 }
@@ -106,7 +107,8 @@ internal class StatPart_Armor : StatPart
         if (req.Thing is Pawn pawn && pawn.IsMountedAnimal())
         {
             var modExt = pawn.kindDef.GetModExtension<CustomStats>();
-            if (modExt != null) val *= modExt.armorModifier;
+            if (modExt != null)
+                val *= modExt.armorModifier;
         }
     }
 }

@@ -16,7 +16,8 @@ internal static class StorageUtility
         var pawnID = pawn?.thingIDNumber ?? -1;
         if (_store.TryGetValue(pawnID, out var data))
             return data;
-        else if (pawnID == -1) Log.Warning("[Giddy-Up] Invalid pawnID sent.");
+        else if (pawnID == -1)
+            Log.Warning("[Giddy-Up] Invalid pawnID sent.");
 
         var newExtendedData = new ExtendedPawnData(pawn);
 
@@ -34,7 +35,8 @@ internal static class StorageUtility
     {
         if (reset)
         {
-            if (Settings.logging) Log.Message("[Giddy-Up] Registering area for map ID " + map.uniqueID.ToString());
+            if (Settings.logging)
+                Log.Message("[Giddy-Up] Registering area for map ID " + map.uniqueID.ToString());
             ExtendedDataStorage.GUComp.areaNoMount.Add(map.uniqueID, null);
             ExtendedDataStorage.GUComp.areaDropAnimal.Add(map.uniqueID, null);
         }
@@ -47,8 +49,10 @@ internal static class StorageUtility
         {
             var area = list[i];
             var label = area.Label;
-            if (label == ResourceBank.AreaNoMount) areaNoMount = area;
-            else if (label == ResourceBank.AreaDropMount) areaDropAnimal = area;
+            if (label == ResourceBank.AreaNoMount)
+                areaNoMount = area;
+            else if (label == ResourceBank.AreaDropMount)
+                areaDropAnimal = area;
         }
 
         ExtendedDataStorage.GUComp.areaNoMount[map.uniqueID] = areaNoMount;
@@ -65,7 +69,8 @@ internal static class StorageUtility
 
     public static bool CanRideAt(this IntVec3 cell, Area noRideArea)
     {
-        if (noRideArea == null) return true;
+        if (noRideArea == null)
+            return true;
         return !noRideArea.innerGrid[noRideArea.Map.cellIndices.CellToIndex(cell)];
     }
 
@@ -136,8 +141,10 @@ public class ExtendedDataStorage : WorldComponent, IExposable
         }
         else if (Scribe.mode == LoadSaveMode.PostLoadInit)
         {
-            if (_store == null) _store = new Dictionary<int, ExtendedPawnData>();
-            if (badSpots == null) badSpots = new HashSet<IntVec3>();
+            if (_store == null)
+                _store = new Dictionary<int, ExtendedPawnData>();
+            if (badSpots == null)
+                badSpots = new HashSet<IntVec3>();
         }
     }
 
@@ -187,7 +194,8 @@ public class ExtendedPawnData : IExposable
     {
         this.pawn = pawn;
         ID = pawn?.thingIDNumber ?? -1;
-        if (Settings.automountDisabledByDefault) automount = Automount.False;
+        if (Settings.automountDisabledByDefault)
+            automount = Automount.False;
     }
 
     public Pawn ReservedMount
@@ -227,8 +235,10 @@ public class ExtendedPawnData : IExposable
 
         if (Scribe.mode == LoadSaveMode.PostLoadInit)
         {
-            if (mount != null) ExtendedDataStorage.isMounted.Add(ID);
-            if (Settings.disableSlavePawnColumn && automount == Automount.Slaves) automount = Automount.False;
+            if (mount != null)
+                ExtendedDataStorage.isMounted.Add(ID);
+            if (Settings.disableSlavePawnColumn && automount == Automount.Slaves)
+                automount = Automount.False;
 
             //Remove any invalid entries that somehow slipped into the store.
             if (ID == 0)
@@ -241,7 +251,8 @@ public class ExtendedPawnData : IExposable
             }
             else if (pawn == null || pawn.Dead)
             {
-                if (Settings.logging) Log.Message("[Giddy-Up] clean up... removed ID: " + ID.ToString());
+                if (Settings.logging)
+                    Log.Message("[Giddy-Up] clean up... removed ID: " + ID.ToString());
                 ExtendedDataStorage.GUComp._store.Remove(ID);
             }
         }

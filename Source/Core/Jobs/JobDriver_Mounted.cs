@@ -71,7 +71,8 @@ public class JobDriver_Mounted : JobDriver
             tickAction = delegate
             {
                 //Rider just mounted up, finish toil
-                if (riderData.mount == pawn) ReadyForNextToil();
+                if (riderData.mount == pawn)
+                    ReadyForNextToil();
 
                 //Something interrupted the rider, abort
                 if (Current.gameInt.tickManager.ticksGameInt % 15 == 0) //Check 4 times per second
@@ -105,7 +106,8 @@ public class JobDriver_Mounted : JobDriver
             defaultCompleteMode = ToilCompleteMode.Never,
             tickAction = delegate
             {
-                if (map == null) map = Map;
+                if (map == null)
+                    map = Map;
                 if (CheckReason(RiderShouldDismount(riderData), out var dismountReason))
                 {
                     if (Settings.logging)
@@ -114,7 +116,8 @@ public class JobDriver_Mounted : JobDriver
                                     (rider.CurJobDef?.ToString() ?? "NULL" + ")"));
 
                     //Check if something went wrong
-                    if (dismountReason == DismountReason.ParkingFailSafe) interrupted = true;
+                    if (dismountReason == DismountReason.ParkingFailSafe)
+                        interrupted = true;
 
                     ReadyForNextToil();
                     return;
@@ -124,13 +127,15 @@ public class JobDriver_Mounted : JobDriver
                     rider.Drawer.tweener; //Could probably just be set once, but reloading could cause issues?
                 pawn.Position = rider.Position;
                 pawn.Rotation = rider.Rotation;
-                if (isTrained) TryAttackEnemy(rider);
+                if (isTrained)
+                    TryAttackEnemy(rider);
             },
             finishActions = new List<Action>
             {
                 delegate
                 {
-                    if (isParking) pawn.pather.StopDead();
+                    if (isParking)
+                        pawn.pather.StopDead();
 
                     //Check mount first. If it's null then they must have dismounted outside the driver's control
                     if (riderData.mount != null)
@@ -168,8 +173,10 @@ public class JobDriver_Mounted : JobDriver
                  dismountingAt.AdjacentTo8Way(rider.pather.nextCell)))
             {
                 rider.pather.StartPath(riderOriginalDestinaton, originalPeMode); //Resume original work
-                if (startingPoint.DistanceTo(dismountingAt) < 10f) return DismountReason.ParkingFailSafe;
-                else return DismountReason.Parking;
+                if (startingPoint.DistanceTo(dismountingAt) < 10f)
+                    return DismountReason.ParkingFailSafe;
+                else
+                    return DismountReason.Parking;
             }
             else if (rider.pather.destination.Cell != dismountingAt)
             {
@@ -182,7 +189,8 @@ public class JobDriver_Mounted : JobDriver
         }
 
         //Check remaining statements twice per second
-        if (Current.gameInt.tickManager.ticksGameInt % 15 != 0) return DismountReason.False;
+        if (Current.gameInt.tickManager.ticksGameInt % 15 != 0)
+            return DismountReason.False;
 
         //Check physical and mental health
         if (rider.Downed || rider.Dead || pawn.Downed || pawn.Dead ||
@@ -249,8 +257,10 @@ public class JobDriver_Mounted : JobDriver
         else
         {
             if (!allowedJob && rider.Position.DistanceTo(rider.pather.Destination.Cell) <
-                ResourceBank.autoHitchDistance) return DismountReason.BadJob;
-            if (!pawn.Faction.def.isPlayer) return DismountReason.False;
+                ResourceBank.autoHitchDistance)
+                return DismountReason.BadJob;
+            if (!pawn.Faction.def.isPlayer)
+                return DismountReason.False;
         }
 
         if (Settings.caravansEnabled)
@@ -296,12 +306,14 @@ public class JobDriver_Mounted : JobDriver
         {
             var modExt = pawn.def.GetModExtension<ResearchRestrictions>();
             if (modExt != null && modExt.researchProjectDefToAttack != null &&
-                !modExt.researchProjectDefToAttack.IsFinished) return;
+                !modExt.researchProjectDefToAttack.IsFinished)
+                return;
 
             var verb = pawn.meleeVerbs?.TryGetMeleeVerb(targetThing);
             if (verb == null || !verb.CanHitTarget(targetThing))
                 pawn.TryStartAttack(targetThing); //Try start ranged attack if possible
-            else pawn.meleeVerbs.TryMeleeAttack(targetThing);
+            else
+                pawn.meleeVerbs.TryMeleeAttack(targetThing);
         }
     }
 }

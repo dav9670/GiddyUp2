@@ -19,7 +19,8 @@ public class Pawn_GetGizmos
 
     private static IEnumerable<Gizmo> Postfix(IEnumerable<Gizmo> values, Pawn __instance)
     {
-        foreach (var value in values) yield return value;
+        foreach (var value in values)
+            yield return value;
 
         if (__instance.CurJobDef == GiddyUp.ResourceBank.JobDefOf.WaitForRider)
             yield return new Command_Action

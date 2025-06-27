@@ -39,13 +39,17 @@ public class TextureUtility
 
     public static Vector3 ExtractVector3(string extractFrom)
     {
-        if (extractFrom.NullOrEmpty()) return new Vector3();
+        if (extractFrom.NullOrEmpty())
+            return new Vector3();
         var result = new Vector3();
 
         var values = extractFrom.Split(',').ToList().Select(x => float.Parse(x)).ToList();
-        if (values.Count >= 1) result.x = values[0];
-        if (values.Count >= 2) result.y = values[1];
-        if (values.Count >= 3) result.z = values[2];
+        if (values.Count >= 1)
+            result.x = values[0];
+        if (values.Count >= 2)
+            result.y = values[1];
+        if (values.Count >= 3)
+            result.z = values[2];
         return result;
     }
 
@@ -66,7 +70,8 @@ public class TextureUtility
                 break;
             }
 
-            if (c.a >= threshold) inBody = true;
+            if (c.a >= threshold)
+                inBody = true;
         }
 
         return backHeight;

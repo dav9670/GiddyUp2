@@ -31,7 +31,8 @@ internal class Alert_NoDropAnimal : Alert
                     map.mapPawns.SpawnedColonyAnimals.Any(animal => !AnimalPenUtility.NeedsToBeManagedByRope(animal));
 
                 if (unropablePlayerAnimals && areaNoMount != null && areaNoMount.innerGrid.TrueCount != 0 &&
-                    (areaDropAnimal == null || areaDropAnimal.innerGrid.TrueCount == 0)) return cacheResult = true;
+                    (areaDropAnimal == null || areaDropAnimal.innerGrid.TrueCount == 0))
+                    return cacheResult = true;
             }
 
             return cacheResult = false;

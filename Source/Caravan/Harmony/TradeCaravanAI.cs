@@ -56,8 +56,10 @@ internal static class Patch_GetClosestCarrier
             if (animalData.reservedBy != null)
             {
                 var trader = TraderCaravanUtility.FindTrader(__instance.lord);
-                if (trader != null) return trader;
-                else animalData.reservedBy.Dismount(__result, null, true, ropeIfNeeded: false);
+                if (trader != null)
+                    return trader;
+                else
+                    animalData.reservedBy.Dismount(__result, null, true, ropeIfNeeded: false);
             }
         }
 

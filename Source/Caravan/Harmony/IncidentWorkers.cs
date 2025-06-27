@@ -36,7 +36,8 @@ internal static class Patch_IncidentWorkers
     private static List<Pawn> MountAnimals(IncidentWorker_TraderCaravanArrival instance, IncidentParms parms)
     {
         var pawns = instance.SpawnPawns(parms);
-        if (!pawns.NullOrEmpty()) MountUtility.GenerateMounts(ref pawns, parms);
+        if (!pawns.NullOrEmpty())
+            MountUtility.GenerateMounts(ref pawns, parms);
         return pawns;
     }
 }

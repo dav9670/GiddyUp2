@@ -51,7 +51,8 @@ internal static class MountUtility
         //This prompts them to mount up before they carry out another job they were planning to do
         else if (giveJobMethod == GiveJobMethod.Inject)
         {
-            if (currentJob != null) rider.jobs?.jobQueue?.EnqueueFirst(currentJob);
+            if (currentJob != null)
+                rider.jobs?.jobQueue?.EnqueueFirst(currentJob);
             if (thinkResult != null)
                 return new ThinkResult(new Job(ResourceBank.JobDefOf.Mount, animal) { count = 1 },
                     thinkResult.Value.SourceNode, thinkResult.Value.Tag, false);
@@ -81,7 +82,8 @@ internal static class MountUtility
     {
         //First check if the pawn had a mount to begin with...
         var pawnData = rider.GetGUData();
-        if (animal == null) animal = pawnData.reservedMount;
+        if (animal == null)
+            animal = pawnData.reservedMount;
 
         //If they did...
         if (animal != null)
@@ -93,7 +95,8 @@ internal static class MountUtility
             animal.GetGUData().ReservedBy = rider;
 
             //Break ropes if there are any
-            if (animal.roping?.IsRoped ?? false) animal.roping.BreakAllRopes();
+            if (animal.roping?.IsRoped ?? false)
+                animal.roping.BreakAllRopes();
 
             //Set the offset
             pawnData.drawOffset = TextureUtility.FetchCache(animal);
@@ -126,7 +129,8 @@ internal static class MountUtility
         var jobDef = thinkResult.Job.def;
 
         //Sort out where the targets are. For some jobs the first target is B, and the second A.
-        if (!thinkResult.Job.DetermineTargets(out var firstTarget, out var secondTarget)) return;
+        if (!thinkResult.Job.DetermineTargets(out var firstTarget, out var secondTarget))
+            return;
 
         //Determine distances
         var pawnTargetDistance = pawn.Position.DistanceTo(firstTarget);
@@ -134,10 +138,12 @@ internal static class MountUtility
         float firstToSecondTargetDistance;
         if (secondTarget.IsValid && (jobDef == JobDefOf.HaulToCell || jobDef == JobDefOf.HaulToContainer))
             firstToSecondTargetDistance = firstTarget.DistanceTo(secondTarget);
-        else firstToSecondTargetDistance = 0;
+        else
+            firstToSecondTargetDistance = 0;
 
         var pawnData = pawn.GetGUData();
-        if (!pawnData.canRide) return;
+        if (!pawnData.canRide)
+            return;
 
         /*
         //Bias nearby waiting animals first
@@ -151,13 +157,15 @@ internal static class MountUtility
         {
             //Do some less performant final check. It's less costly to run these near the end on successful mount attempts than to check constantly
             if (!pawn.IsCapableOfRiding(out var reason) || pawn.IsBorrowedByAnyFaction() ||
-                pawn.IsFormingCaravan()) return;
+                pawn.IsFormingCaravan())
+                return;
 
             if (GetBestAnimal(pawn, out var bestAnimal, firstTarget, secondTarget, pawnTargetDistance,
                     firstToSecondTargetDistance, pawnData))
             {
                 //Check if the mount is too close to the destination to be worht it
-                if (bestAnimal.Position.DistanceTo(firstTarget) < Settings.minAutoMountDistance / 4) return;
+                if (bestAnimal.Position.DistanceTo(firstTarget) < Settings.minAutoMountDistance / 4)
+                    return;
 
                 //Finally, go mount up
                 thinkResult = pawn.GoMount(bestAnimal, GiveJobMethod.Inject, thinkResult, thinkResult.Job).Value;
@@ -167,7 +175,8 @@ internal static class MountUtility
 
     public static bool GoDismount(this Pawn rider, Pawn animal, IntVec3 target = default)
     {
-        if (animal == null) return false;
+        if (animal == null)
+            return false;
         var isGuest = animal.Faction == null || !animal.Faction.def.isPlayer;
         var areaFound =
             rider.Map.areaManager.GetLabeled(isGuest ? ResourceBank.VisitorAreaDropMount : ResourceBank.AreaDropMount);
@@ -190,8 +199,10 @@ internal static class MountUtility
         {
             var pen = AnimalPenUtility.GetPenAnimalShouldBeTakenTo(rider, animal, out var failReason, true, true, false,
                 true);
-            if (pen != null) targetLoc = AnimalPenUtility.FindPlaceInPenToStand(pen, rider);
-            else return false; //Neither a pen or spot available
+            if (pen != null)
+                targetLoc = AnimalPenUtility.FindPlaceInPenToStand(pen, rider);
+            else
+                return false; //Neither a pen or spot available
         }
 
         //Can reach
@@ -213,15 +224,18 @@ internal static class MountUtility
         IntVec3 parkLoc = default, bool ropeIfNeeded = true, bool waitForRider = true)
     {
         ExtendedDataStorage.isMounted.Remove(rider.thingIDNumber);
-        if (pawnData == null) pawnData = rider.GetGUData();
+        if (pawnData == null)
+            pawnData = rider.GetGUData();
         pawnData.mount = null;
         if (Settings.logging)
             Log.Message("[Giddy-Up] " + rider.Label + " no longer riding  " + (animal?.Label ?? "NULL"));
 
         //Normally should not happen, may come in null from sanity checks. Odd bugs or save/reload conflicts between version changes
         ExtendedPawnData animalData;
-        if (animal == null) ExtendedDataStorage.GUComp.ReverseLookup(rider.thingIDNumber, out animalData);
-        else animalData = animal.GetGUData();
+        if (animal == null)
+            ExtendedDataStorage.GUComp.ReverseLookup(rider.thingIDNumber, out animalData);
+        else
+            animalData = animal.GetGUData();
 
         //Reservation handling
         if (clearReservation)
@@ -231,7 +245,8 @@ internal static class MountUtility
         }
 
         //Reset free locomotion
-        if (animal == null) return; //We're done here
+        if (animal == null)
+            return; //We're done here
         animal.Drawer.tweener = new PawnTweener(animal);
         animal.pather.ResetToCurrentPosition();
 
@@ -253,7 +268,8 @@ internal static class MountUtility
             if (animal.roping == null)
                 animal.roping =
                     new Pawn_RopeTracker(animal); //Not needed, but changes to modded animals could maybe cause issues
-            if (Settings.logging) Log.Message("[Giddy-Up] " + rider.Label + " just roped " + animal.Label);
+            if (Settings.logging)
+                Log.Message("[Giddy-Up] " + rider.Label + " just roped " + animal.Label);
             animal.roping.RopeToSpot(parkLoc == default ? animal.Position : parkLoc);
         }
 
@@ -353,7 +369,8 @@ internal static class MountUtility
         {
             parkLoc = IntVec3.Invalid;
             var pen = AnimalPenUtility.GetPenAnimalShouldBeTakenTo(rider, animal, out var failReason, true);
-            if (pen != null) parkLoc = AnimalPenUtility.FindPlaceInPenToStand(pen, rider);
+            if (pen != null)
+                parkLoc = AnimalPenUtility.FindPlaceInPenToStand(pen, rider);
         }
 
         #endregion
@@ -368,11 +385,13 @@ internal static class MountUtility
             var caravan = (Caravan)parms.target;
             int tile = caravan.Tile;
             map = Current.Game.FindMap(tile);
-            if (map == null) return false;
+            if (map == null)
+                return false;
         }
 
         var mountChance = GetMountChance(parms.faction);
-        if (mountChance == -1) return false; //wrong faction
+        if (mountChance == -1)
+            return false; //wrong faction
         var domesticWeight = Settings.nonWildWeight;
         var localWeight = Settings.inBiomeWeight;
         var foreignWeight = Settings.outBiomeWeight;
@@ -398,7 +417,8 @@ internal static class MountUtility
         for (var i = 0; i < length; i++)
         {
             var pawn = list[i];
-            if (!pawn.RaceProps.Humanlike || pawn.kindDef == PawnKindDefOf.Slave) continue;
+            if (!pawn.RaceProps.Humanlike || pawn.kindDef == PawnKindDefOf.Slave)
+                continue;
 
             var random = Rand.Range(1, 100);
 
@@ -413,8 +433,10 @@ internal static class MountUtility
                 goto Spawned;
             }
 
-            if (modExtension != null && modExtension.mountChance != 0) mountChance = modExtension.mountChance;
-            if (mountChance <= random) continue;
+            if (modExtension != null && modExtension.mountChance != 0)
+                mountChance = modExtension.mountChance;
+            if (mountChance <= random)
+                continue;
 
             if (modExtension != null && modExtension.possibleMounts.Count > 0)
             {
@@ -441,14 +463,19 @@ internal static class MountUtility
             else
             {
                 var pawnHandlingLevel = pawn.skills?.GetSkill(SkillDefOf.Animals).Level ?? 8;
-                if (pawnHandlingLevel <= Settings.minHandlingLevel) continue;
+                if (pawnHandlingLevel <= Settings.minHandlingLevel)
+                    continue;
 
                 PawnKindDef[] workingList;
                 var domestic = false;
                 switch (DetermineList(localWeight, foreignWeight, random))
                 {
-                    case ListToUse.Local: workingList = localAnimals; break;
-                    case ListToUse.Foreign: workingList = wildAnimals; break;
+                    case ListToUse.Local:
+                        workingList = localAnimals;
+                        break;
+                    case ListToUse.Foreign:
+                        workingList = wildAnimals;
+                        break;
                     default:
                         workingList = domesticAnimals;
                         domestic = true;
@@ -491,7 +518,8 @@ internal static class MountUtility
 
             //Set their training
             Spawned:
-            if (animal.playerSettings == null) animal.playerSettings = new Pawn_PlayerSettings(animal);
+            if (animal.playerSettings == null)
+                animal.playerSettings = new Pawn_PlayerSettings(animal);
             animal.training.Train(TrainableDefOf.Obedience, pawn);
 
             //Mount up
@@ -504,16 +532,21 @@ internal static class MountUtility
 
         int GetMountChance(Faction faction)
         {
-            if (faction == null) return -1;
+            if (faction == null)
+                return -1;
             if (faction.HostileTo(Current.gameInt.worldInt.factionManager.ofPlayer))
             {
-                if (faction.def.techLevel < TechLevel.Industrial) return Settings.enemyMountChancePreInd;
-                else if (faction.def != FactionDefOf.Mechanoid) return Settings.enemyMountChance;
+                if (faction.def.techLevel < TechLevel.Industrial)
+                    return Settings.enemyMountChancePreInd;
+                else if (faction.def != FactionDefOf.Mechanoid)
+                    return Settings.enemyMountChance;
             }
             else if (Settings.caravansEnabled)
             {
-                if (faction.def.techLevel < TechLevel.Industrial) return Settings.visitorMountChancePreInd;
-                else if (faction.def != FactionDefOf.Mechanoid) return Settings.visitorMountChance;
+                if (faction.def.techLevel < TechLevel.Industrial)
+                    return Settings.visitorMountChancePreInd;
+                else if (faction.def != FactionDefOf.Mechanoid)
+                    return Settings.visitorMountChance;
             }
 
             return -1;
@@ -521,8 +554,10 @@ internal static class MountUtility
 
         ListToUse DetermineList(float localWeight, float foreignWeight, int random)
         {
-            if (random < foreignWeight) return ListToUse.Local;
-            else if (random >= localWeight && random < foreignWeight) return ListToUse.Foreign;
+            if (random < foreignWeight)
+                return ListToUse.Local;
+            else if (random >= localWeight && random < foreignWeight)
+                return ListToUse.Foreign;
             return ListToUse.Domestic;
         }
 
@@ -541,14 +576,19 @@ internal static class MountUtility
                     Settings.mountableCache.Contains(x.shortHash) && parms.points > x.combatPower * 2f).ToArray();
 
                 //Override mount chance
-                if (factionRules.mountChance > -1) mountChance = factionRules.mountChance;
+                if (factionRules.mountChance > -1)
+                    mountChance = factionRules.mountChance;
 
                 //Apply weights if needed
-                if (wildAnimals.Length == 0) localWeight = foreignWeight = 0;
-                else if (factionRules.wildAnimalWeight >= 0) foreignWeight = factionRules.wildAnimalWeight;
+                if (wildAnimals.Length == 0)
+                    localWeight = foreignWeight = 0;
+                else if (factionRules.wildAnimalWeight >= 0)
+                    foreignWeight = factionRules.wildAnimalWeight;
 
-                if (domesticAnimals.Length == 0) domesticWeight = 0;
-                else if (factionRules.nonWildAnimalWeight >= 0) foreignWeight = factionRules.nonWildAnimalWeight;
+                if (domesticAnimals.Length == 0)
+                    domesticWeight = 0;
+                else if (factionRules.nonWildAnimalWeight >= 0)
+                    foreignWeight = factionRules.nonWildAnimalWeight;
             }
             else
             {
@@ -576,8 +616,10 @@ internal static class MountUtility
         float CalculateCommonality(PawnKindDef def, BiomeDef biome, int pawnHandlingLevel, float averageCommonality = 0)
         {
             float commonality;
-            if (averageCommonality == 0) commonality = biome.CommonalityOfAnimal(def);
-            else commonality = averageCommonality;
+            if (averageCommonality == 0)
+                commonality = biome.CommonalityOfAnimal(def);
+            else
+                commonality = averageCommonality;
 
             //minimal level to get bonus. 
             pawnHandlingLevel = pawnHandlingLevel > 5 ? pawnHandlingLevel - 5 : 0;
@@ -595,7 +637,8 @@ internal static class MountUtility
 
         bool GetPackAnimals(List<Pawn> list, List<Pawn> packAnimals)
         {
-            if (list.NullOrEmpty()) return false;
+            if (list.NullOrEmpty())
+                return false;
 
             var length = list.Count;
             for (var i = 0; i < length; i++)
@@ -658,7 +701,8 @@ internal static class MountUtility
                 continue;
             }
 
-            if (!pawn.IsAllowed(animal)) continue; //Disallowed
+            if (!pawn.IsAllowed(animal))
+                continue; //Disallowed
 
             var distancePawnToAnimal =
                 (float)Math.Pow(pawn.Position.DistanceTo(animal.Position),
@@ -712,7 +756,8 @@ internal static class MountUtility
                 if (pawn.FindPlaceToDismount(areaDropAnimal, areaNoMount, firstTarget, out var dismountingAt,
                         bestAnimal, out var dismountLocationType))
                     ExtendedDataStorage.GUComp.badSpots.Remove(firstTarget);
-                else return false;
+                else
+                    return false;
             }
 
             return true;

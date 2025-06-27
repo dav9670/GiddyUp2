@@ -41,12 +41,14 @@ internal class Patch_DrawPawnGUIOverlay
         yield return new CodeInstruction(OpCodes.Call, typeof(Patch_DrawPawnGUIOverlay).GetMethod(nameof(OffsetLabel)));
         yield return new CodeInstruction(OpCodes.Brfalse_S, label);
 
-        foreach (var code in instructions) yield return code;
+        foreach (var code in instructions)
+            yield return code;
     }
 
     public static bool OffsetLabel(PawnUIOverlay __instance)
     {
-        if (!__instance.pawn.IsMounted()) return true;
+        if (!__instance.pawn.IsMounted())
+            return true;
         var data = __instance.pawn.GetGUData();
 
         var pos = GenMapUI.LabelDrawPosFor(__instance.pawn, -(data.drawOffset + 0.75f));

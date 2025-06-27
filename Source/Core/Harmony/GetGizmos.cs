@@ -28,7 +28,8 @@ internal static class Patch_PawnGetGizmos
         if (animalsReleased)
             foreach (var current in PawnUtility.SpawnedMasteredPawns(pawn))
             {
-                if (current.caller != null) current.caller.Notify_Released();
+                if (current.caller != null)
+                    current.caller.Notify_Released();
 
                 if (current.CurJobDef != ResourceBank.JobDefOf.Mounted)
                     current.jobs.EndCurrentJob(JobCondition.InterruptForced, true);

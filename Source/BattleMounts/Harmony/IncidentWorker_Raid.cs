@@ -25,7 +25,8 @@ internal static class Patch_TryGenerateRaidInfo
 
     public static void MountAnimals(PawnsArrivalModeWorker instance, List<Pawn> pawns, IncidentParms parms)
     {
-        if (pawns.Count == 0) return;
+        if (pawns.Count == 0)
+            return;
 
         parms.raidArrivalMode.Worker.Arrive(pawns, parms);
         if (!(parms.raidArrivalMode == null ||

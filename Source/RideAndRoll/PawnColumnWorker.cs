@@ -28,13 +28,17 @@ internal class PawnColumnWorker_Mountable_Colonists : PawnColumnWorker_Checkbox
         //Enabling?
         if (value)
         {
-            if (pawnData.automount == Automount.Slaves) pawnData.automount = Automount.Anyone;
-            else pawnData.automount = Automount.Colonists;
+            if (pawnData.automount == Automount.Slaves)
+                pawnData.automount = Automount.Anyone;
+            else
+                pawnData.automount = Automount.Colonists;
         }
         else
         {
-            if (pawnData.automount == Automount.Anyone) pawnData.automount = Automount.Slaves;
-            else pawnData.automount = Automount.False;
+            if (pawnData.automount == Automount.Anyone)
+                pawnData.automount = Automount.Slaves;
+            else
+                pawnData.automount = Automount.False;
         }
     }
 }
@@ -59,13 +63,17 @@ internal class PawnColumnWorker_Mountable_Slaves : PawnColumnWorker_Checkbox
         //Enabling?
         if (value)
         {
-            if (pawnData.automount == Automount.Colonists) pawnData.automount = Automount.Anyone;
-            else pawnData.automount = Automount.Slaves;
+            if (pawnData.automount == Automount.Colonists)
+                pawnData.automount = Automount.Anyone;
+            else
+                pawnData.automount = Automount.Slaves;
         }
         else
         {
-            if (pawnData.automount == Automount.Anyone) pawnData.automount = Automount.Colonists;
-            else pawnData.automount = Automount.False;
+            if (pawnData.automount == Automount.Anyone)
+                pawnData.automount = Automount.Colonists;
+            else
+                pawnData.automount = Automount.False;
         }
     }
 }

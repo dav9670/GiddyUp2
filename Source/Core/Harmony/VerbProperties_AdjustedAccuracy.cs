@@ -15,10 +15,12 @@ internal static class VerbProperties_AdjustedAccuracy
         if (holdingOwner == null || holdingOwner.Owner == null || !(holdingOwner.Owner is Pawn_EquipmentTracker eqt))
             return __result;
         var pawn = eqt.pawn;
-        if (pawn == null || pawn.stances == null) return __result;
+        if (pawn == null || pawn.stances == null)
+            return __result;
 
         var mount = pawn.GetGUData().mount;
-        if (mount == null) return __result;
+        if (mount == null)
+            return __result;
 
         float adjustedLevel = 5;
         if (pawn.skills != null)

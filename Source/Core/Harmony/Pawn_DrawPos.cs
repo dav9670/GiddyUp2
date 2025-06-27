@@ -35,7 +35,8 @@ internal static class Pawn_DrawTracker_DrawPos
         yield return new CodeInstruction(OpCodes.Call, typeof(Pawn_DrawTracker_DrawPos).GetMethod(nameof(DrawOffset)));
         yield return new CodeInstruction(OpCodes.Br_S, returnInstructionLabel);
 
-        foreach (var code in instructions) yield return code;
+        foreach (var code in instructions)
+            yield return code;
     }
 
     public static Vector3 DrawOffset(Pawn_DrawTracker __instance)
@@ -51,24 +52,30 @@ internal static class Pawn_DrawTracker_DrawPos
         }
 
         var offset = pawnData.mount.Drawer.DrawPos;
-        if (pawnData.drawOffset != -1) offset.z = offset.z + pawnData.drawOffset;
+        if (pawnData.drawOffset != -1)
+            offset.z = offset.z + pawnData.drawOffset;
         //Apply custom offsets
         var rotation = pawn.rotationInt;
         var modX = pawnData.mount.def.GetModExtension<DrawingOffset>();
-        if (modX != null) offset += AddCustomOffsets(rotation, modX);
+        if (modX != null)
+            offset += AddCustomOffsets(rotation, modX);
 
         if (rotation == Rot4.South && Settings.drawRulesCache.Contains(pawnData.mount.def.shortHash))
             offset.y -= 0.01f;
-        else offset.y += 0.01f;
+        else
+            offset.y += 0.01f;
 
         return offset;
     }
 
     private static Vector3 AddCustomOffsets(Rot4 rotation, DrawingOffset customOffsets)
     {
-        if (rotation == Rot4.North) return customOffsets.northOffset;
-        if (rotation == Rot4.South) return customOffsets.southOffset;
-        if (rotation == Rot4.East) return customOffsets.eastOffset;
+        if (rotation == Rot4.North)
+            return customOffsets.northOffset;
+        if (rotation == Rot4.South)
+            return customOffsets.southOffset;
+        if (rotation == Rot4.East)
+            return customOffsets.eastOffset;
         return customOffsets.westOffset;
     }
 }

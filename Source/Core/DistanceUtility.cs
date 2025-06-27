@@ -9,7 +9,8 @@ public static class DistanceUtility
     public static IntVec3 GetFirstTarget(this Job job, TargetIndex index)
     {
         var queue = job.GetTargetQueue(index);
-        if (queue.Count != 0) return queue[0].Cell;
+        if (queue.Count != 0)
+            return queue[0].Cell;
         return job.GetTarget(index).Cell;
     }
 
@@ -37,9 +38,11 @@ public static class DistanceUtility
         foreach (var pen in map.listerBuildings.allBuildingsAnimalPenMarkers)
         {
             var penMarker = pen.TryGetComp<CompAnimalPenMarker>();
-            if (penMarker == null || !penMarker.AcceptsToPen(animal) || penMarker.parent.IsForbidden(rider)) continue;
+            if (penMarker == null || !penMarker.AcceptsToPen(animal) || penMarker.parent.IsForbidden(rider))
+                continue;
             if (!animal.Map.reachability.CanReach(secondTarget, penMarker.parent, PathEndMode.OnCell,
-                    TraverseParms.For(rider).WithFenceblockedOf(animal))) continue;
+                    TraverseParms.For(rider).WithFenceblockedOf(animal)))
+                continue;
 
             var tmp = firstTarget.DistanceTo(penMarker.parent.Position) +
                       penMarker.parent.Position.DistanceTo(secondTarget);
@@ -92,7 +95,8 @@ public static class DistanceUtility
             secondTarget = thinkResultJob.GetFirstTarget(TargetIndex.B);
         }
 
-        if (!firstTarget.IsValid) return false;
+        if (!firstTarget.IsValid)
+            return false;
         return true;
     }
 }

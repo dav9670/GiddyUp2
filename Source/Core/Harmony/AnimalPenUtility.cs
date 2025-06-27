@@ -26,7 +26,8 @@ internal class Patch_NeedsToBeManagedByRope
             else
             {
                 var reservedBy = pawn.GetGUData().reservedBy;
-                if (reservedBy != null && reservedBy.IsFormingCaravan()) return false;
+                if (reservedBy != null && reservedBy.IsFormingCaravan())
+                    return false;
             }
         }
 

@@ -80,15 +80,24 @@ internal static class FloatMenuUtility
                                 animal.thingIDNumber.ToString() + " because: " + reason.ToString());
                 switch (reason)
                 {
-                    case Reason.NotAnimal: return false;
-                    case Reason.WrongFaction: return false;
-                    case Reason.IsBusy: return opts.GenerateFloatMenuOption("GUC_AnimalBusy".Translate());
-                    case Reason.NotInModOptions: return opts.GenerateFloatMenuOption("GUC_NotInModOptions".Translate());
-                    case Reason.NotFullyGrown: return opts.GenerateFloatMenuOption("GUC_NotFullyGrown".Translate());
-                    case Reason.NeedsTraining: return opts.GenerateFloatMenuOption("GUC_NeedsObedience".Translate());
-                    case Reason.IsRoped: return opts.GenerateFloatMenuOption("GUC_IsRoped".Translate());
-                    case Reason.IsPoorCondition: return opts.GenerateFloatMenuOption("GUC_IsPoorCondition".Translate());
-                    case Reason.TooHeavy: return opts.GenerateFloatMenuOption("GUC_TooHeavy".Translate());
+                    case Reason.NotAnimal:
+                        return false;
+                    case Reason.WrongFaction:
+                        return false;
+                    case Reason.IsBusy:
+                        return opts.GenerateFloatMenuOption("GUC_AnimalBusy".Translate());
+                    case Reason.NotInModOptions:
+                        return opts.GenerateFloatMenuOption("GUC_NotInModOptions".Translate());
+                    case Reason.NotFullyGrown:
+                        return opts.GenerateFloatMenuOption("GUC_NotFullyGrown".Translate());
+                    case Reason.NeedsTraining:
+                        return opts.GenerateFloatMenuOption("GUC_NeedsObedience".Translate());
+                    case Reason.IsRoped:
+                        return opts.GenerateFloatMenuOption("GUC_IsRoped".Translate());
+                    case Reason.IsPoorCondition:
+                        return opts.GenerateFloatMenuOption("GUC_IsPoorCondition".Translate());
+                    case Reason.TooHeavy:
+                        return opts.GenerateFloatMenuOption("GUC_TooHeavy".Translate());
                     default:
                     {
                         if (riderReason == Reason.TooYoung)
@@ -105,7 +114,8 @@ internal static class FloatMenuUtility
     private static bool GenerateFloatMenuOption(this List<FloatMenuOption> list, string text, bool prefixType = false,
         Action action = null)
     {
-        if (!prefixType) text = "GUC_CannotMount".Translate() + text;
+        if (!prefixType)
+            text = "GUC_CannotMount".Translate() + text;
         list.Add(new FloatMenuOption(text, action, MenuOptionPriority.Low));
         return true;
     }

@@ -25,7 +25,8 @@ internal static class Patch_Rotation
 
     private static void RotChanged(Thing __instance)
     {
-        if (__instance is not Pawn pawn) return;
+        if (__instance is not Pawn pawn)
+            return;
 
         if (pawn.jobs != null && pawn.jobs.curDriver is JobDriver_Mounted jobDriver)
             __instance.rotationInt = jobDriver.rider.Rotation;

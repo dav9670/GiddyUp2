@@ -29,7 +29,8 @@ internal static class Patch_TransferableOneWayWidget
             yield return code;
 
             if (code.OperandIs(AccessTools.Method(typeof(TooltipHandler), nameof(TooltipHandler.TipRegion),
-                    new Type[] { typeof(Rect), typeof(TipSignal) }))) flag = true;
+                    new Type[] { typeof(Rect), typeof(TipSignal) })))
+                flag = true;
             if (flag && code.opcode == OpCodes.Stloc_0)
             {
                 //TODO: Improve this to be less fragile
@@ -49,7 +50,8 @@ internal static class Patch_TransferableOneWayWidget
     {
         var buttonWidth = 75f;
 
-        if (trad.AnyThing is not Pawn pawn) return num; //not an animal, return; 
+        if (trad.AnyThing is not Pawn pawn)
+            return num; //not an animal, return; 
 
         var buttonRect = new Rect(num - buttonWidth, 0f, buttonWidth, rect.height);
         var cachedTransferables = new List<TransferableOneWay>();
@@ -67,14 +69,16 @@ internal static class Patch_TransferableOneWayWidget
             foreach (var tow in cachedTransferables)
             {
                 var towPawn = tow.AnyThing as Pawn;
-                if (towPawn != null) pawns.Add(tow.AnyThing as Pawn);
+                if (towPawn != null)
+                    pawns.Add(tow.AnyThing as Pawn);
             }
 
         //It quacks like a duck, so it is one!
         SetSelectedForCaravan(pawn, trad);
         if (pawn.RaceProps.Animal && pawns.Count > 0)
             HandleAnimal(num, buttonRect, pawn, pawns, trad);
-        else return num;
+        else
+            return num;
 
         return num - (buttonWidth - 25f);
     }
@@ -87,13 +91,17 @@ internal static class Patch_TransferableOneWayWidget
         if (trad.CountToTransfer == 0) //unset pawndata when pawn is not selected for caravan. 
         {
             pawnData.selectedForCaravan = false;
-            if (reservedMount != null) UnsetDataForRider(pawnData);
-            if (pawnData.reservedBy != null) UnsetDataForMount(pawnData);
+            if (reservedMount != null)
+                UnsetDataForRider(pawnData);
+            if (pawnData.reservedBy != null)
+                UnsetDataForMount(pawnData);
         }
 
-        if (reservedMount != null && (reservedMount.Dead || reservedMount.Downed)) UnsetDataForRider(pawnData);
+        if (reservedMount != null && (reservedMount.Dead || reservedMount.Downed))
+            UnsetDataForRider(pawnData);
 
-        if (trad.CountToTransfer > 0) pawnData.selectedForCaravan = true;
+        if (trad.CountToTransfer > 0)
+            pawnData.selectedForCaravan = true;
     }
 
     private static void UnsetDataForRider(ExtendedPawnData pawnData)
@@ -154,13 +162,15 @@ internal static class Patch_TransferableOneWayWidget
                         continue;
                     }
 
-                    if (pawnData.reservedMount != null) continue;
+                    if (pawnData.reservedMount != null)
+                        continue;
                     if (!rider.IsCapableOfRiding(out var riderReason))
                     {
                         string cannotRideReason;
                         if (riderReason == Reason.TooYoung)
                             cannotRideReason = rider.Name.ToStringShort + " (" + "GU_TooYoung".Translate() + ")";
-                        else cannotRideReason = rider.Name.ToStringShort + " (" + "GU_CannotRide".Translate() + ")";
+                        else
+                            cannotRideReason = rider.Name.ToStringShort + " (" + "GU_CannotRide".Translate() + ")";
 
                         list.Add(new FloatMenuOption(cannotRideReason, null, MenuOptionPriority.Default, null, null, 0f,
                             null, null));
@@ -201,7 +211,8 @@ internal static class Patch_TransferableOneWayWidget
     //[SyncMethod]
     private static void SelectMountRider(ExtendedPawnData animalData, ExtendedPawnData pawnData, Pawn animal, Pawn pawn)
     {
-        if (animalData.reservedBy != null) animalData.reservedBy.GetGUData().ReservedMount = null;
+        if (animalData.reservedBy != null)
+            animalData.reservedBy.GetGUData().ReservedMount = null;
 
         pawnData.ReservedMount = animal;
         animalData.ReservedBy = pawn;

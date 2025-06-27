@@ -20,15 +20,18 @@ public class Designator_GU : Designator
 
     public override AcceptanceReport CanDesignateCell(IntVec3 loc)
     {
-        if (!loc.InBounds(Map)) return false;
+        if (!loc.InBounds(Map))
+            return false;
         return true;
     }
 
     public override void ProcessInput(Event ev)
     {
-        if (!CheckCanInteract()) return;
+        if (!CheckCanInteract())
+            return;
         SetSelectedArea(areaLabel);
-        if (selectedArea != null) base.ProcessInput(ev);
+        if (selectedArea != null)
+            base.ProcessInput(ev);
     }
 
     protected void SetSelectedArea(string areaLabel)
@@ -46,7 +49,8 @@ public class Designator_GU : Designator
     public override void SelectedUpdate()
     {
         GenUI.RenderMouseoverBracket();
-        if (selectedArea != null) selectedArea.MarkForDraw();
+        if (selectedArea != null)
+            selectedArea.MarkForDraw();
     }
 
     public override void FinalizeDesignationSucceeded()

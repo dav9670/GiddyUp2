@@ -45,7 +45,8 @@ internal static class Patch_AreaSet
     private static void Postfix(Area __instance)
     {
         var label = __instance.Label;
-        if (label is ResourceBank.AreaDropMount) __instance.Map.UpdateAreaCache();
+        if (label is ResourceBank.AreaDropMount)
+            __instance.Map.UpdateAreaCache();
     }
 }
 

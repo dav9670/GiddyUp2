@@ -57,8 +57,10 @@ public static class Setup
         BuildAllowedJobsCache();
         BuildMountCache();
         BuildAnimalBiomeCache();
-        if (!rideAndRollEnabled) RemoveRideAndRoll();
-        if (!caravansEnabled) RemoveCaravans();
+        if (!rideAndRollEnabled)
+            RemoveRideAndRoll();
+        if (!caravansEnabled)
+            RemoveCaravans();
 
         ProcessPawnKinds(harmony);
         if (disableSlavePawnColumn)
@@ -82,7 +84,8 @@ public static class Setup
                 JobDriver_Mounted.allowedJobs.Add(def, canDoMounted.checkTargets);
         }
 
-        if (!noMountedHunting) JobDriver_Mounted.allowedJobs.AddDistinct(JobDefOf.Hunt, false);
+        if (!noMountedHunting)
+            JobDriver_Mounted.allowedJobs.AddDistinct(JobDefOf.Hunt, false);
     }
 
     //Responsible for caching which animals are mounted, draw layering behavior, and calling caravan speed bonuses
@@ -90,10 +93,12 @@ public static class Setup
     {
         //Setup collections
         var workingList = new List<ThingDef>();
-        if (invertMountingRules == null) invertMountingRules = new HashSet<string>();
+        if (invertMountingRules == null)
+            invertMountingRules = new HashSet<string>();
         mountableCache = new HashSet<ushort>();
 
-        if (invertDrawRules == null) invertDrawRules = new HashSet<string>();
+        if (invertDrawRules == null)
+            invertDrawRules = new HashSet<string>();
         drawRulesCache = new HashSet<ushort>();
 
         var list = DefDatabase<ThingDef>.AllDefsListForReading;
@@ -106,8 +111,10 @@ public static class Setup
                 workingList.Add(def);
 
                 var setting = def.race.baseBodySize > ResourceBank.defaultSizeThreshold;
-                if (def.HasModExtension<NotMountable>()) setting = false;
-                else if (def.HasModExtension<Mountable>()) setting = true;
+                if (def.HasModExtension<NotMountable>())
+                    setting = false;
+                else if (def.HasModExtension<Mountable>())
+                    setting = true;
                 if (invertMountingRules.Contains(def.defName))
                     setting = !setting; //Player customization says to invert rule.
 
@@ -123,10 +130,13 @@ public static class Setup
 
                 //Handle the draw front/behind draw instruction cache
                 setting = def.HasModExtension<DrawInFront>();
-                if (invertDrawRules.Contains(def.defName)) setting = !setting;
+                if (invertDrawRules.Contains(def.defName))
+                    setting = !setting;
 
-                if (setting) drawRulesCache.Add(def.shortHash);
-                else drawRulesCache.Remove(def.shortHash);
+                if (setting)
+                    drawRulesCache.Add(def.shortHash);
+                else
+                    drawRulesCache.Remove(def.shortHash);
             }
         }
 
@@ -139,14 +149,17 @@ public static class Setup
     {
         var newEntries = false;
         var usingCustomStats = false;
-        if (offsetCache == null) offsetCache = new Dictionary<string, float>();
+        if (offsetCache == null)
+            offsetCache = new Dictionary<string, float>();
         var list = DefDatabase<PawnKindDef>.AllDefsListForReading;
         var length = list.Count;
         for (var i = 0; i < length; i++)
         {
             var pawnKindDef = list[i];
-            if (pawnKindDef.race == null) continue;
-            if (!usingCustomStats && pawnKindDef.HasModExtension<CustomStats>()) usingCustomStats = true;
+            if (pawnKindDef.race == null)
+                continue;
+            if (!usingCustomStats && pawnKindDef.HasModExtension<CustomStats>())
+                usingCustomStats = true;
 
             //Only process animals that can be mounted
             if (mountableCache.Contains(pawnKindDef.race.shortHash))
@@ -155,19 +168,23 @@ public static class Setup
                 var lifeStages = pawnKindDef.lifeStages;
                 var lifeIndexes = lifeStages?.Count;
                 AllowedLifeStages customLifeStages;
-                if (lifeIndexes > 0) customLifeStages = pawnKindDef.race.GetModExtension<AllowedLifeStages>();
-                else customLifeStages = null;
+                if (lifeIndexes > 0)
+                    customLifeStages = pawnKindDef.race.GetModExtension<AllowedLifeStages>();
+                else
+                    customLifeStages = null;
 
                 //Go through each life stage for this animal
                 for (var lifeIndex = 0; lifeIndex < lifeIndexes; lifeIndex++)
                 {
                     //Convert the def and age into a key string used for storage between sessions
                     if (lifeIndex != lifeIndexes - 1 &&
-                        (customLifeStages == null || !customLifeStages.IsAllowedAge(lifeIndex))) continue;
+                        (customLifeStages == null || !customLifeStages.IsAllowedAge(lifeIndex)))
+                        continue;
                     var key = TextureUtility.FormatKey(pawnKindDef, lifeIndex);
 
                     //Skip if already set
-                    if (offsetCache.ContainsKey(key)) continue;
+                    if (offsetCache.ContainsKey(key))
+                        continue;
 
                     //Build out...
                     var offset = TextureUtility.SetDrawOffset(lifeStages[lifeIndex]);
@@ -178,7 +195,8 @@ public static class Setup
         }
 
         //Write to settings file
-        if (newEntries) LoadedModManager.GetMod<Mod_GiddyUp>().modSettings.Write();
+        if (newEntries)
+            LoadedModManager.GetMod<Mod_GiddyUp>().modSettings.Write();
 
         //Only bother applying this harmony patch if using a mod that utilizes this extension
         if (usingCustomStats && harmony != null && !patchLedger.Add(1))
@@ -195,7 +213,8 @@ public static class Setup
             var biomeDef = DefDatabase<BiomeDef>.defsList[i];
             try
             {
-                foreach (var animalKind in biomeDef.AllWildAnimals) MountUtility.allWildAnimals.Add(animalKind);
+                foreach (var animalKind in biomeDef.AllWildAnimals)
+                    MountUtility.allWildAnimals.Add(animalKind);
             }
             catch (Exception ex)
             {
@@ -229,28 +248,35 @@ public static class Setup
             //Search for abnormalities, meaning the player wants to invert the rules
             if (animalDef.HasModExtension<NotMountable>())
             {
-                if (mountableCache.Contains(hash)) invertMountingRules.Add(animalDef.defName);
+                if (mountableCache.Contains(hash))
+                    invertMountingRules.Add(animalDef.defName);
             }
             else if (animalDef.HasModExtension<Mountable>())
             {
-                if (!mountableCache.Contains(hash)) invertMountingRules.Add(animalDef.defName);
+                if (!mountableCache.Contains(hash))
+                    invertMountingRules.Add(animalDef.defName);
             }
             else if (animalDef.race.baseBodySize <= ResourceBank.defaultSizeThreshold)
             {
-                if (mountableCache.Contains(hash)) invertMountingRules.Add(animalDef.defName);
+                if (mountableCache.Contains(hash))
+                    invertMountingRules.Add(animalDef.defName);
             }
             else
             {
-                if (!mountableCache.Contains(hash)) invertMountingRules.Add(animalDef.defName);
+                if (!mountableCache.Contains(hash))
+                    invertMountingRules.Add(animalDef.defName);
             }
 
             //And now draw rules
             var drawFront = false;
             var modExt = animalDef.GetModExtension<DrawInFront>();
-            if (modExt != null) drawFront = true;
+            if (modExt != null)
+                drawFront = true;
 
-            if (drawFront && !drawRulesCache.Contains(hash)) invertDrawRules.Add(animalDef.defName);
-            else if (!drawFront && drawRulesCache.Contains(hash)) invertDrawRules.Add(animalDef.defName);
+            if (drawFront && !drawRulesCache.Contains(hash))
+                invertDrawRules.Add(animalDef.defName);
+            else if (!drawFront && drawRulesCache.Contains(hash))
+                invertDrawRules.Add(animalDef.defName);
         }
     }
 
@@ -325,7 +351,8 @@ public static class Setup
                     valueFactor.Evaluate(def.BaseMarketValue) *
                     wildnessFactor.Evaluate(def.GetStatValueAbstract(StatDefOf.Wildness)) *
                     (def.race.packAnimal ? 1.1f : 0.95f);
-            if (speed < 1.00001f) speed = 1.00001f;
+            if (speed < 1.00001f)
+                speed = 1.00001f;
         }
         //Don't give a bonus and instead just set the value to be above 1f so the game thinks it's a rideable mount on the caravan UI, but low enough to render as 100%
         else
@@ -365,10 +392,14 @@ public class Mod_GiddyUp : Mod
         TabDrawer.DrawTabs(new Rect(0f, 32f, inRect.width, Text.LineHeight), tabs);
 
         if (selectedTab == SelectedTab.core || selectedTab == SelectedTab.bodySize ||
-            selectedTab == SelectedTab.drawBehavior) DrawCore();
-        else if (selectedTab == SelectedTab.rnr) DrawRnR();
-        else if (selectedTab == SelectedTab.battlemounts) DrawBattleMounts();
-        else DrawCaravan();
+            selectedTab == SelectedTab.drawBehavior)
+            DrawCore();
+        else if (selectedTab == SelectedTab.rnr)
+            DrawRnR();
+        else if (selectedTab == SelectedTab.battlemounts)
+            DrawBattleMounts();
+        else
+            DrawCaravan();
         GUI.EndGroup();
 
         void DrawRnR()
@@ -411,7 +442,8 @@ public class Mod_GiddyUp : Mod
                     "GU_RR_DisableSlavePawnColumn_Description".Translate());
                 options.CheckboxLabeled("GU_RR_AutomountDisabledByDefault_Title".Translate(),
                     ref automountDisabledByDefault, "GU_RR_AutomountDisabledByDefault_Description".Translate());
-                if (Prefs.DevMode) options.CheckboxLabeled("Enable dev mode logging", ref logging);
+                if (Prefs.DevMode)
+                    options.CheckboxLabeled("Enable dev mode logging", ref logging);
             }
 
             options.End();
@@ -494,7 +526,8 @@ public class Mod_GiddyUp : Mod
 
         void DrawCore()
         {
-            if (selectedTab == SelectedTab.core) selectedTab = SelectedTab.bodySize;
+            if (selectedTab == SelectedTab.core)
+                selectedTab = SelectedTab.bodySize;
 
             var options = new Listing_Standard();
             options.Begin(inRect.ContractedBy(15f));
@@ -515,7 +548,8 @@ public class Mod_GiddyUp : Mod
 
             options.Gap();
 
-            if (options.ButtonText("GU_Reset_Cache".Translate())) offsetCache = null;
+            if (options.ButtonText("GU_Reset_Cache".Translate()))
+                offsetCache = null;
 
             //Record positioning before closing out the lister...
             var mountableFilterRect = inRect.ContractedBy(15f);
@@ -580,8 +614,10 @@ public class Mod_GiddyUp : Mod
                     Setup.CalculateCaravanSpeed(Setup.allAnimals[i], true);
 
             //TODO: consider providing a list of all jobdefs users can add/remove to the allowed list
-            if (!noMountedHunting) JobDriver_Mounted.allowedJobs.AddDistinct(JobDefOf.Hunt, false);
-            else JobDriver_Mounted.allowedJobs.Remove(JobDefOf.Hunt);
+            if (!noMountedHunting)
+                JobDriver_Mounted.allowedJobs.AddDistinct(JobDefOf.Hunt, false);
+            else
+                JobDriver_Mounted.allowedJobs.Remove(JobDefOf.Hunt);
         }
         catch (Exception ex)
         {

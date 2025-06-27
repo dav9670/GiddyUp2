@@ -19,8 +19,10 @@ public static class OptionsDrawUtility
         for (var i = 0; i < allAnimals.Length; i++)
         {
             var def = allAnimals[i];
-            if (def == null) continue;
-            if (selectedTab == SelectedTab.bodySize && def.race.baseBodySize < bodySizeFilter) continue;
+            if (def == null)
+                continue;
+            if (selectedTab == SelectedTab.bodySize && def.race.baseBodySize < bodySizeFilter)
+                continue;
 
             DrawListItem(options, def);
             cellPosition += lineHeight;
@@ -33,8 +35,10 @@ public static class OptionsDrawUtility
         //Determine checkbox status...
         bool checkOn;
         var hash = def.shortHash;
-        if (selectedTab == SelectedTab.bodySize) checkOn = mountableCache.Contains(hash);
-        else checkOn = drawRulesCache.Contains(hash);
+        if (selectedTab == SelectedTab.bodySize)
+            checkOn = mountableCache.Contains(hash);
+        else
+            checkOn = drawRulesCache.Contains(hash);
 
         //Fetch bounding rect
         var rect = options.GetRect(lineHeight);
@@ -48,18 +52,23 @@ public static class OptionsDrawUtility
             CheckboxLabeled(rect, dataString, def.label, ref checkOn, def);
 
         //Handle row coloring and spacing
-        if (lineNumber % 2 != 0) Widgets.DrawLightHighlight(rect);
+        if (lineNumber % 2 != 0)
+            Widgets.DrawLightHighlight(rect);
         Widgets.DrawHighlightIfMouseover(rect);
 
         if (selectedTab == SelectedTab.bodySize)
         {
-            if (checkOn && !mountableCache.Contains(hash)) mountableCache.Add(hash);
-            else if (!checkOn && mountableCache.Contains(hash)) mountableCache.Remove(hash);
+            if (checkOn && !mountableCache.Contains(hash))
+                mountableCache.Add(hash);
+            else if (!checkOn && mountableCache.Contains(hash))
+                mountableCache.Remove(hash);
         }
         else
         {
-            if (checkOn && !drawRulesCache.Contains(hash)) drawRulesCache.Add(hash);
-            else if (!checkOn && drawRulesCache.Contains(hash)) drawRulesCache.Remove(hash);
+            if (checkOn && !drawRulesCache.Contains(hash))
+                drawRulesCache.Add(hash);
+            else if (!checkOn && drawRulesCache.Contains(hash))
+                drawRulesCache.Remove(hash);
         }
     }
 
@@ -70,8 +79,10 @@ public static class OptionsDrawUtility
         //Is there an icon?
         var iconRect = new Rect(leftHalf.x, leftHalf.y, 32f, leftHalf.height);
         Texture2D icon = null;
-        if (def is BuildableDef) icon = ((BuildableDef)def).uiIcon;
-        if (icon != null) GUI.DrawTexture(iconRect, icon, ScaleMode.ScaleToFit, true, 1f, Color.white, 0f, 0f);
+        if (def is BuildableDef)
+            icon = ((BuildableDef)def).uiIcon;
+        if (icon != null)
+            GUI.DrawTexture(iconRect, icon, ScaleMode.ScaleToFit, true, 1f, Color.white, 0f, 0f);
 
         //If there is a label, split the cell in half, otherwise use the full cell for data
         if (!label.NullOrEmpty())

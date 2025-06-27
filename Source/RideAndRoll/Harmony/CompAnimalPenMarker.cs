@@ -16,7 +16,8 @@ internal class CompAnimalPenMarker_AcceptsToPen
 
     private static bool Postfix(bool __result, Pawn animal)
     {
-        if (!__result) return animal.IsMountedAnimal();
+        if (!__result)
+            return animal.IsMountedAnimal();
         return __result;
     }
 }

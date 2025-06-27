@@ -212,11 +212,13 @@ public static class IsMountableUtility
             out List<Pawn> claimants)
         {
             claimants = new List<Pawn>();
-            if (reservations == null) reservations = animal.Map.FetchReservedAnimals();
+            if (reservations == null)
+                reservations = animal.Map.FetchReservedAnimals();
             for (var i = reservations.Count; i-- > 0;)
             {
                 var item = reservations[i];
-                if (item.Target == animal) claimants.Add(item.Claimant);
+                if (item.Target == animal)
+                    claimants.Add(item.Claimant);
             }
 
             return claimants.Count > 0;
@@ -248,9 +250,12 @@ public static class IsMountableUtility
     public static bool IsAllowed(this Pawn rider, ExtendedPawnData animalData)
     {
         var automount = animalData.automount;
-        if (automount == ExtendedPawnData.Automount.Anyone) return true;
-        else if (automount == ExtendedPawnData.Automount.Colonists && rider.GuestStatus == null) return true;
-        else if (automount == ExtendedPawnData.Automount.Slaves && rider.GuestStatus == GuestStatus.Slave) return true;
+        if (automount == ExtendedPawnData.Automount.Anyone)
+            return true;
+        else if (automount == ExtendedPawnData.Automount.Colonists && rider.GuestStatus == null)
+            return true;
+        else if (automount == ExtendedPawnData.Automount.Slaves && rider.GuestStatus == GuestStatus.Slave)
+            return true;
         return false;
     }
 
@@ -284,7 +289,8 @@ public static class IsMountableUtility
         for (var i = list.Count; i-- > 0;)
         {
             var item = list[i];
-            if (item.Target.Thing is Pawn pawn && pawn.RaceProps.Animal) workingList.Add(item);
+            if (item.Target.Thing is Pawn pawn && pawn.RaceProps.Animal)
+                workingList.Add(item);
         }
 
         return workingList;

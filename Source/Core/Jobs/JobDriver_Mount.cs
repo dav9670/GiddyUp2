@@ -43,7 +43,8 @@ public class JobDriver_Mount : JobDriver
 
         yield return LetMountParticipate();
         yield return Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.Touch);
-        if (pawn.interactions != null) yield return Toils_Interpersonal.WaitToBeAbleToInteract(pawn);
+        if (pawn.interactions != null)
+            yield return Toils_Interpersonal.WaitToBeAbleToInteract(pawn);
         yield return TalkToAnimal();
     }
 
@@ -80,14 +81,16 @@ public class JobDriver_Mount : JobDriver
             {
                 delegate
                 {
-                    if (mount?.CurJobDef != ResourceBank.JobDefOf.Mounted) return JobCondition.Incompletable;
+                    if (mount?.CurJobDef != ResourceBank.JobDefOf.Mounted)
+                        return JobCondition.Incompletable;
                     return JobCondition.Ongoing;
                 }
             },
             initAction = delegate
             {
                 var actor = GetActor();
-                if (actor.interactions != null) actor.interactions.TryInteractWith(mount, InteractionDefOf.AnimalChat);
+                if (actor.interactions != null)
+                    actor.interactions.TryInteractWith(mount, InteractionDefOf.AnimalChat);
             },
             finishActions = new List<Action>
             {

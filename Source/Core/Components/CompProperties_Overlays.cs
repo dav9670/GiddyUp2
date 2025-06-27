@@ -26,8 +26,10 @@ public class CompProperties_Overlay : CompProperties
 
     public GraphicOverlay GetOverlay(Rot4 dir)
     {
-        if (dir == Rot4.South) return overlayFront;
-        if (dir == Rot4.North) return overlayBack;
+        if (dir == Rot4.South)
+            return overlayFront;
+        if (dir == Rot4.North)
+            return overlayBack;
         return overlaySide;
     }
 

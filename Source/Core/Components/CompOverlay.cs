@@ -16,17 +16,20 @@ internal class CompOverlay : ThingComp
     private void CacheGraphicData(Rot4 rotation)
     {
         var overlay = overlayComp.GetOverlay(rotation);
-        if (overlay == null) return;
+        if (overlay == null)
+            return;
 
         var graphicData = (pawn.gender == Gender.Female ? overlay.graphicDataFemale : overlay.graphicDataMale) ??
                           overlay.graphicDataDefault;
-        if (graphicData == null) return;
+        if (graphicData == null)
+            return;
 
         //support multi texture animals
         if (overlay.allVariants != null)
         {
             var graphicPath = pawn.Drawer?.renderer?.SilhouetteGraphic?.path;
-            if (graphicPath.NullOrEmpty()) return;
+            if (graphicPath.NullOrEmpty())
+                return;
             var graphicName = graphicPath.Split('/').Last();
             var found = false;
             foreach (var variant in overlay.allVariants)
@@ -75,8 +78,10 @@ internal class CompOverlay : ThingComp
         {
             var drawPos = parent.DrawPos;
             var offset = pawn.gender == Gender.Female ? cache.Item2 : cache.Item3;
-            if (offset == Vector3.zero) offset = cache.Item4;
-            if (pawn.Rotation == Rot4.West) offset.x = -offset.x;
+            if (offset == Vector3.zero)
+                offset = cache.Item4;
+            if (pawn.Rotation == Rot4.West)
+                offset.x = -offset.x;
             offset.y += pawn.Rotation == Rot4.South
                 ? 0.08f
                 : 0.04375f; //Tries to render above equipment but below the held weapon
