@@ -285,8 +285,8 @@
 					<li>GiddyUpCaravan.Designator_GU_DropAnimal_NPC_Clear</li>
 					<li>GiddyUpRideAndRoll.Designator_GU_DropAnimal_Expand</li>
 					<li>GiddyUpRideAndRoll.Designator_GU_DropAnimal_Clear</li>
-<!--					<li>GiddyUpRideAndRoll.Designator_GU_NoMount_Expand</li>-->
-<!--					<li>GiddyUpRideAndRoll.Designator_GU_NoMount_Clear</li>-->
+					<li>GiddyUpRideAndRoll.Designator_GU_NoMount_Expand</li>
+					<li>GiddyUpRideAndRoll.Designator_GU_NoMount_Clear</li>
 				</value>
 			</li>
 			<li Class="PatchOperationAdd">
