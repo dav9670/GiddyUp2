@@ -1,7 +1,7 @@
-﻿using GiddyUp;
-using RimWorld;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using GiddyUp;
+using RimWorld;
 using Verse;
 using Verse.AI;
 using Settings = GiddyUp.ModSettings_GiddyUp;
@@ -10,30 +10,26 @@ namespace GiddyUpRideAndRoll.Jobs;
 
 internal class JobDriver_WaitForRider : JobDriver
 {
-    private Pawn waitingFor;
     private JobDef initialJob; //Keep track of the pawn's job
     private int ticker = 1;
     private bool riderReturning;
 
-    public override bool TryMakePreToilReservations(bool errorOnFailed)
-    {
-        return true;
-    }
+    public override bool TryMakePreToilReservations(bool errorOnFailed) => true;
 
     public override void ExposeData()
     {
         base.ExposeData();
         Scribe_Values.Look(ref riderReturning, "riderReturning");
         Scribe_Values.Look(ref ticker, "ticker");
-        Scribe_Defs.Look<JobDef>(ref initialJob, "initialJob");
+        Scribe_Defs.Look(ref initialJob, "initialJob");
     }
 
     public override IEnumerable<Toil> MakeNewToils()
     {
-        waitingFor = TargetA.Thing as Pawn;
+        var waitingFor = TargetA.Thing as Pawn;
         this.FailOn(() => pawn.Map == null || waitingFor == null);
         initialJob = waitingFor.CurJobDef;
-        yield return new Toil { initAction = () => WalkRandomNearby(), defaultCompleteMode = ToilCompleteMode.Instant };
+        yield return new Toil { initAction = () => WalkRandomNearby(waitingFor), defaultCompleteMode = ToilCompleteMode.Instant };
         yield return new Toil
         {
             defaultCompleteMode = ToilCompleteMode.Never,
@@ -99,7 +95,7 @@ internal class JobDriver_WaitForRider : JobDriver
                 {
                     ticker = Rand.Range(300, 600);
                     if (!pawn.pather.Moving)
-                        WalkRandomNearby();
+                        WalkRandomNearby(waitingFor);
                 }
             },
             finishActions = new List<Action>
@@ -134,12 +130,12 @@ internal class JobDriver_WaitForRider : JobDriver
         animalData.ReservedBy = null;
     }
 
-    private void WalkRandomNearby()
+    private void WalkRandomNearby(Pawn waitingFor)
     {
         if (pawn.IsRoped())
         {
             var target = RCellFinder.RandomWanderDestFor(pawn, pawn.roping.RopedToSpot, 5,
-                (Pawn p, IntVec3 loc, IntVec3 root) => true, Danger.None);
+                (_, _, _) => true, Danger.None);
             pawn.pather.StartPath(target, PathEndMode.ClosestTouch);
         }
         else
@@ -148,7 +144,7 @@ internal class JobDriver_WaitForRider : JobDriver
             if (room == null || room.Role == RoomRoleDefOf.None)
             {
                 var target = RCellFinder.RandomWanderDestFor(waitingFor, waitingFor.Position, 8,
-                    (Pawn p, IntVec3 loc, IntVec3 root) => true, Danger.Some);
+                    (_, _, _) => true, Danger.Some);
                 pawn.pather.StartPath(target, PathEndMode.ClosestTouch);
             }
         }

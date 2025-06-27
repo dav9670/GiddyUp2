@@ -6,22 +6,21 @@ namespace GiddyUpRideAndRoll;
 
 internal class Designator_GU_DropAnimal_Clear : Designator_GU
 {
-    public Designator_GU_DropAnimal_Clear() : base(DesignateMode.Remove)
+    public Designator_GU_DropAnimal_Clear() : base(ResourceBank.AreaDropMount)
     {
         defaultLabel = "GU_RR_Designator_GU_DropAnimal_Clear_Label".Translate();
         defaultDesc = "GU_RR_Designator_GU_DropAnimal_Clear_Description".Translate();
         icon = ResourceBank.iconDropAnimalClear;
-        areaLabel = ResourceBank.AreaDropMount;
     }
 
     public override void DesignateSingleCell(IntVec3 c)
     {
-        selectedArea[c] = false;
+        SelectedArea[c] = false;
     }
 
     public override AcceptanceReport CanDesignateCell(IntVec3 c)
     {
-        return c.InBounds(Map) && selectedArea != null && selectedArea[c];
+        return c.InBounds(Map) && SelectedArea != null && SelectedArea[c];
     }
 
     public override DrawStyleCategoryDef DrawStyleCategory => DrawStyleCategoryDefOf.FilledRectangle;
@@ -31,21 +30,20 @@ internal class Designator_GU_DropAnimal_Clear : Designator_GU
 
 internal class Designator_GU_DropAnimal_Expand : Designator_GU
 {
-    public Designator_GU_DropAnimal_Expand() : base(DesignateMode.Add)
+    public Designator_GU_DropAnimal_Expand() : base(ResourceBank.AreaDropMount)
     {
         defaultLabel = "GU_RR_Designator_GU_DropAnimal_Expand_Label".Translate();
         defaultDesc = "GU_RR_Designator_GU_DropAnimal_Expand_Description".Translate();
         icon = ResourceBank.iconDropAnimalExpand;
-        areaLabel = ResourceBank.AreaDropMount;
     }
 
     public override void DesignateSingleCell(IntVec3 c)
     {
-        selectedArea[c] = true;
+        SelectedArea[c] = true;
     }
 
     public override AcceptanceReport CanDesignateCell(IntVec3 c)
     {
-        return c.InBounds(Map) && selectedArea != null && !selectedArea[c] && !c.Impassable(Map);
+        return c.InBounds(Map) && SelectedArea != null && !SelectedArea[c] && !c.Impassable(Map);
     }
 }

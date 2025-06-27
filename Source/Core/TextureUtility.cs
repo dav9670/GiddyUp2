@@ -1,14 +1,13 @@
 ﻿using RimWorld;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using Verse;
 using Settings = GiddyUp.ModSettings_GiddyUp;
 
 namespace GiddyUp;
 
-public class TextureUtility
+public static class TextureUtility
 {
     public static string FormatKey(Def def, int age)
     {
@@ -35,22 +34,6 @@ public class TextureUtility
         //Small extra offset, you don't want to draw pawn exactly on back
         extraOffset += (float)textureHeight * backHeightRelative / 20f;
         return textureHeight * backHeightRelative - extraOffset;
-    }
-
-    public static Vector3 ExtractVector3(string extractFrom)
-    {
-        if (extractFrom.NullOrEmpty())
-            return new Vector3();
-        var result = new Vector3();
-
-        var values = extractFrom.Split(',').ToList().Select(x => float.Parse(x)).ToList();
-        if (values.Count >= 1)
-            result.x = values[0];
-        if (values.Count >= 2)
-            result.y = values[1];
-        if (values.Count >= 3)
-            result.z = values[2];
-        return result;
     }
 
     private static int GetBackHeight(Texture2D t)

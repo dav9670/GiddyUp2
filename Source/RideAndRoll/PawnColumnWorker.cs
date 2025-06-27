@@ -4,8 +4,6 @@ using Verse;
 using static GiddyUp.ExtendedPawnData;
 using Settings = GiddyUp.ModSettings_GiddyUp;
 
-//using Multiplayer.API;
-
 namespace GiddyUpRideAndRoll;
 
 internal class PawnColumnWorker_Mountable_Colonists : PawnColumnWorker_Checkbox
@@ -21,7 +19,6 @@ internal class PawnColumnWorker_Mountable_Colonists : PawnColumnWorker_Checkbox
         return isChecked == Automount.Anyone || isChecked == Automount.Colonists;
     }
 
-    //[SyncMethod]
     public override void SetValue(Pawn pawn, bool value, PawnTable table)
     {
         var pawnData = pawn.GetGUData();
@@ -90,7 +87,6 @@ internal class PawnColumnWorker_AllowedToRide : PawnColumnWorker_Checkbox
         return pawn.CanRide();
     }
 
-    //[SyncMethod]
     public override void SetValue(Pawn pawn, bool value, PawnTable table)
     {
         pawn.GetGUData().canRide = !pawn.CanRide();

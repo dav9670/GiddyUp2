@@ -7,35 +7,31 @@ namespace GiddyUp;
 
 public class Area_GU : Area
 {
-    private string label;
-    private Color color = Color.magenta;
-
-    public Area_GU()
-    {
-    }
+    private string _label;
+    private Color _color;
 
     public Area_GU(AreaManager areaManager, string label) : base(areaManager)
     {
-        color = new Color(Rand.Value, Rand.Value, Rand.Value);
-        this.label = label;
+        _color = new Color(Rand.Value, Rand.Value, Rand.Value);
+        this._label = label;
     }
 
-    public override string Label => label;
+    public override string Label => _label;
 
-    public override Color Color => color;
+    public override Color Color => _color;
 
     public override int ListPriority => 300;
 
     public override string GetUniqueLoadID()
     {
-        return label; //only one such area, so label is sufficient. 
+        return _label; //only one such area, so label is sufficient. 
     }
 
     public override void ExposeData()
     {
         base.ExposeData();
-        Scribe_Values.Look<string>(ref label, "label", null, false);
-        Scribe_Values.Look<Color>(ref color, "color", default, false);
+        Scribe_Values.Look<string>(ref _label, "label", null, false);
+        Scribe_Values.Look<Color>(ref _color, "color", default, false);
     }
 }
 
@@ -45,8 +41,7 @@ internal static class Patch_AreaSet
     private static void Postfix(Area __instance)
     {
         var label = __instance.Label;
-        if (label is ResourceBank.AreaDropMount)
-            __instance.Map.UpdateAreaCache();
+        if (label is ResourceBank.AreaDropMount or ResourceBank.AreaNoMount) __instance.Map.UpdateAreaCache();
     }
 }
 

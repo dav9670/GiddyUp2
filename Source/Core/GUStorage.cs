@@ -1,5 +1,7 @@
 ﻿using RimWorld;
 using System.Collections.Generic;
+using GiddyUpCore.RideAndRoll;
+using GiddyUpRideAndRoll;
 using RimWorld.Planet;
 using Verse;
 using Settings = GiddyUp.ModSettings_GiddyUp;
@@ -9,19 +11,21 @@ namespace GiddyUp;
 internal static class StorageUtility
 {
     //Needs to be its own class as an extension
-    public static ExtendedPawnData GetGUData(this Pawn pawn)
+    public static ExtendedPawnData GetGUData(this Pawn? pawn)
     {
         //return ExtendedDataStorage.GUComp[pawn.thingIDNumber];
-        var _store = ExtendedDataStorage.GUComp._store;
+        var store = ExtendedDataStorage.GUComp._store;
         var pawnID = pawn?.thingIDNumber ?? -1;
-        if (_store.TryGetValue(pawnID, out var data))
+        
+        if (store.TryGetValue(pawnID, out var data))
             return data;
-        else if (pawnID == -1)
+        
+        if (pawnID == -1)
             Log.Warning("[Giddy-Up] Invalid pawnID sent.");
 
         var newExtendedData = new ExtendedPawnData(pawn);
 
-        _store[pawnID] = newExtendedData;
+        store[pawnID] = newExtendedData;
         return newExtendedData;
     }
 
@@ -59,7 +63,7 @@ internal static class StorageUtility
         ExtendedDataStorage.GUComp.areaDropAnimal[map.uniqueID] = areaDropAnimal;
     }
 
-    public static bool GetGUAreas(this Map map, out Area areaNoMount, out Area areaDropAnimal)
+    public static bool GetGUAreas(this Map map, out Area? areaNoMount, out Area? areaDropAnimal)
     {
         ExtendedDataStorage.GUComp.areaNoMount.TryGetValue(map.uniqueID, out areaNoMount);
         ExtendedDataStorage.GUComp.areaDropAnimal.TryGetValue(map.uniqueID, out areaDropAnimal);
@@ -67,11 +71,11 @@ internal static class StorageUtility
         return areaNoMount != null;
     }
 
-    public static bool CanRideAt(this IntVec3 cell, Area noRideArea)
+    public static bool CanRideAt(this IntVec3 cell, Area? noMountArea)
     {
-        if (noRideArea == null)
+        if (noMountArea == null)
             return true;
-        return !noRideArea.innerGrid[noRideArea.Map.cellIndices.CellToIndex(cell)];
+        return !noMountArea.innerGrid[noMountArea.Map.cellIndices.CellToIndex(cell)];
     }
 
     public static bool CanRide(this Pawn pawn)
@@ -84,7 +88,7 @@ public class ExtendedDataStorage : WorldComponent, IExposable
 {
     public static ExtendedDataStorage GUComp; //Singleton instance creaed on world init
     public static HashSet<int> isMounted = new(); //This just serves as a cached logic gate
-    public static HashSet<Thing> nofleeingAnimals;
+    public static HashSet<Thing>? noFleeingAnimals;
     public Dictionary<int, ExtendedPawnData> _store = new(); //Pawn xData sorted via their thingID
     public Dictionary<int, Area?> areaNoMount = new();
     public Dictionary<int, Area?> areaDropAnimal = new();
@@ -97,14 +101,14 @@ public class ExtendedDataStorage : WorldComponent, IExposable
     public override void FinalizeInit(bool fromLoad)
     {
         GUComp = this;
-        isMounted = new HashSet<int>();
+        isMounted = [];
 
         LessonAutoActivator.TeachOpportunity(ResourceBank.ConceptDefOf.GUC_Animal_Handling, OpportunityType.GoodToKnow);
         //Remove alert
         if (!Settings.rideAndRollEnabled)
             try
             {
-                Find.Alerts.AllAlerts.RemoveAll(x => x.GetType() == typeof(GiddyUpRideAndRoll.Alert_NoDropAnimal));
+                Find.Alerts.AllAlerts.RemoveAll(x => x.GetType() == typeof(Alert_NoDropAnimal));
             }
             catch (System.Exception)
             {
@@ -122,12 +126,12 @@ public class ExtendedDataStorage : WorldComponent, IExposable
 
     public override void ExposeData()
     {
-        var _extendedPawnDataWorkingList = new List<ExtendedPawnData>();
-        var _idWorkingList = new List<int>();
+        var extendedPawnDataWorkingList = new List<ExtendedPawnData>();
+        var idWorkingList = new List<int>();
 
         base.ExposeData();
-        Scribe_Collections.Look(ref _store, "store", LookMode.Value, LookMode.Deep, ref _idWorkingList,
-            ref _extendedPawnDataWorkingList);
+        Scribe_Collections.Look(ref _store, "store", LookMode.Value, LookMode.Deep, ref idWorkingList,
+            ref extendedPawnDataWorkingList);
         Scribe_Collections.Look(ref badSpots, "badSpots", LookMode.Value);
 
         //Validate data
@@ -149,18 +153,13 @@ public class ExtendedDataStorage : WorldComponent, IExposable
     }
 
     //Only used for sanity check and cleanup
-    public bool ReverseLookup(int ID, out ExtendedPawnData pawnData)
+    public ExtendedPawnData? ReverseLookup(int id)
     {
-        foreach (var (key, value) in _store)
-            if (value.reservedBy?.thingIDNumber == ID)
-            {
-                pawnData = value;
-                return true;
-            }
+        foreach (var (_, value) in _store)
+            if (value.reservedBy?.thingIDNumber == id)
+                return value;
 
-        pawnData = new ExtendedPawnData(null);
-        Log.Warning("[Giddy-Up] A reverse lookup request failed to find anything. Returning fallback instance...");
-        return false;
+        return null;
     }
 }
 
@@ -168,9 +167,9 @@ public class ExtendedPawnData : IExposable
 {
     public Pawn pawn;
     public int ID;
-    public Pawn mount;
+    public Pawn? mount;
 
-    public Pawn
+    public Pawn?
         reservedMount,
         reservedBy; //Used by the rider and mount respectively. This creates a short-term association, like for example of a rider hops off for a few moments.
 
@@ -186,10 +185,6 @@ public class ExtendedPawnData : IExposable
         Slaves
     };
 
-    public ExtendedPawnData()
-    {
-    }
-
     public ExtendedPawnData(Pawn pawn)
     {
         this.pawn = pawn;
@@ -198,7 +193,7 @@ public class ExtendedPawnData : IExposable
             automount = Automount.False;
     }
 
-    public Pawn ReservedMount
+    public Pawn? ReservedMount
     {
         set
         {
@@ -210,7 +205,7 @@ public class ExtendedPawnData : IExposable
         }
     }
 
-    public Pawn ReservedBy
+    public Pawn? ReservedBy
     {
         set
         {

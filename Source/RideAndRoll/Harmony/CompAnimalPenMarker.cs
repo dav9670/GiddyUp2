@@ -4,7 +4,7 @@ using RimWorld;
 using Verse;
 using Settings = GiddyUp.ModSettings_GiddyUp;
 
-namespace GiddyUpRideAndRoll.Harmony;
+namespace GiddyUpCore.RideAndRoll.Harmony;
 
 [HarmonyPatch(typeof(CompAnimalPenMarker), nameof(CompAnimalPenMarker.AcceptsToPen))]
 internal class CompAnimalPenMarker_AcceptsToPen

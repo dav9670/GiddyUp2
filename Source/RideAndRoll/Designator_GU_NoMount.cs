@@ -6,22 +6,21 @@ namespace GiddyUpRideAndRoll;
 
 internal class Designator_GU_NoMount_Clear : Designator_GU
 {
-    public Designator_GU_NoMount_Clear() : base(DesignateMode.Remove)
+    public Designator_GU_NoMount_Clear() : base(ResourceBank.AreaNoMount)
     {
         defaultLabel = "GU_RR_Designator_GU_NoMount_Clear_Label".Translate();
         defaultDesc = "GU_RR_Designator_GU_NoMount_Clear_Description".Translate();
         icon = ResourceBank.iconNoMountClear;
-        areaLabel = ResourceBank.AreaNoMount;
     }
 
     public override void DesignateSingleCell(IntVec3 c)
     {
-        selectedArea[c] = false;
+        SelectedArea[c] = false;
     }
 
     public override AcceptanceReport CanDesignateCell(IntVec3 c)
     {
-        return c.InBounds(Map) && selectedArea != null && selectedArea[c];
+        return c.InBounds(Map) && SelectedArea != null && SelectedArea[c];
     }
 
     public override DrawStyleCategoryDef DrawStyleCategory => DrawStyleCategoryDefOf.FilledRectangle;
@@ -30,22 +29,21 @@ internal class Designator_GU_NoMount_Clear : Designator_GU
 
 internal class Designator_GU_NoMount_Expand : Designator_GU
 {
-    public Designator_GU_NoMount_Expand() : base(DesignateMode.Add)
+    public Designator_GU_NoMount_Expand() : base(ResourceBank.AreaNoMount)
     {
         defaultLabel = "GU_RR_Designator_GU_NoMount_Expand_Label".Translate();
         defaultDesc = "GU_RR_Designator_GU_NoMount_Expand_Description".Translate();
         icon = ResourceBank.iconNoMountExpand;
-        areaLabel = ResourceBank.AreaNoMount;
     }
 
     public override void DesignateSingleCell(IntVec3 c)
     {
-        selectedArea[c] = true;
+        SelectedArea[c] = true;
     }
 
     public override AcceptanceReport CanDesignateCell(IntVec3 c)
     {
-        return c.InBounds(Map) && selectedArea != null && !selectedArea[c];
+        return c.InBounds(Map) && SelectedArea != null && !SelectedArea[c];
     }
 
     public override DrawStyleCategoryDef DrawStyleCategory => DrawStyleCategoryDefOf.FilledRectangle;

@@ -7,18 +7,17 @@ namespace GiddyUpCaravan;
 
 internal class Designator_GU_DropAnimal_NPC_Clear : Designator_GU
 {
-    public Designator_GU_DropAnimal_NPC_Clear() : base(DesignateMode.Remove)
+    public Designator_GU_DropAnimal_NPC_Clear() : base(ResourceBank.VisitorAreaDropMount)
     {
         defaultLabel = "GU_Car_Designator_GU_DropAnimal_NPC_Clear_Label".Translate();
         defaultDesc = "GU_Car_Designator_GU_DropAnimal_NPC_Clear_Description".Translate();
 
         icon = ContentFinder<Texture2D>.Get("UI/GU_Car_Designator_GU_DropAnimal_NPC_Clear", true);
-        areaLabel = ResourceBank.VisitorAreaDropMount;
     }
 
     public override void DesignateSingleCell(IntVec3 c)
     {
-        selectedArea[c] = false;
+        SelectedArea[c] = false;
     }
 
     public override DrawStyleCategoryDef DrawStyleCategory => DrawStyleCategoryDefOf.FilledRectangle;
@@ -26,27 +25,26 @@ internal class Designator_GU_DropAnimal_NPC_Clear : Designator_GU
 
     public override AcceptanceReport CanDesignateCell(IntVec3 c)
     {
-        return c.InBounds(Map) && selectedArea != null && selectedArea[c];
+        return c.InBounds(Map) && SelectedArea != null && SelectedArea[c];
     }
 }
 
 internal class Designator_GU_DropAnimal_NPC_Expand : Designator_GU
 {
-    public Designator_GU_DropAnimal_NPC_Expand() : base(DesignateMode.Add)
+    public Designator_GU_DropAnimal_NPC_Expand() : base(ResourceBank.VisitorAreaDropMount)
     {
         defaultLabel = "GU_Car_Designator_GU_DropAnimal_NPC_Expand_Label".Translate();
         defaultDesc = "GU_Car_Designator_GU_DropAnimal_NPC_Expand_Description".Translate();
         icon = ContentFinder<Texture2D>.Get("UI/GU_Car_Designator_GU_DropAnimal_NPC_Expand", true);
-        areaLabel = ResourceBank.VisitorAreaDropMount;
     }
 
     public override void DesignateSingleCell(IntVec3 c)
     {
-        selectedArea[c] = true;
+        SelectedArea[c] = true;
     }
 
     public override AcceptanceReport CanDesignateCell(IntVec3 c)
     {
-        return c.InBounds(Map) && selectedArea != null && !selectedArea[c];
+        return c.InBounds(Map) && SelectedArea != null && !SelectedArea[c];
     }
 }

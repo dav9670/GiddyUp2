@@ -1,13 +1,11 @@
-using HarmonyLib;
 using System.Collections.Generic;
+using HarmonyLib;
 using UnityEngine;
 using Verse;
 using Verse.AI;
 using Settings = GiddyUp.ModSettings_GiddyUp;
 
-//using Multiplayer.API;
-
-namespace GiddyUpRideAndRoll.Harmony;
+namespace GiddyUpCore.RideAndRoll.Harmony;
 
 [HarmonyPatch(typeof(Pawn), nameof(Pawn.GetGizmos))]
 public class Pawn_GetGizmos
@@ -32,7 +30,6 @@ public class Pawn_GetGizmos
             };
     }
 
-    //[SyncMethod]
     private static void PawnEndCurrentJob(Pawn pawn)
     {
         pawn.jobs.EndCurrentJob(JobCondition.InterruptForced);

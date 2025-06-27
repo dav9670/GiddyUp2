@@ -1,7 +1,6 @@
-﻿using System.Linq;
+﻿using GiddyUp;
 using RimWorld;
 using Verse;
-using GiddyUp;
 
 namespace GiddyUpRideAndRoll;
 
@@ -18,26 +17,24 @@ internal class Alert_NoDropAnimal : Alert
         return ShouldAlert();
     }
 
-    private bool cacheResult;
+    private bool _shouldAlertCached;
 
     private bool ShouldAlert()
     {
-        if (Current.gameInt.tickManager.ticksGameInt % 20 == 0)
+        if (Current.gameInt.tickManager.ticksGameInt % 20 != 0)
+            return _shouldAlertCached;
+        
+        foreach (var map in Find.Maps)
         {
-            foreach (var map in Find.Maps)
-            {
-                map.GetGUAreas(out var areaNoMount, out var areaDropAnimal);
-                var unropablePlayerAnimals =
-                    map.mapPawns.SpawnedColonyAnimals.Any(animal => !AnimalPenUtility.NeedsToBeManagedByRope(animal));
+            map.GetGUAreas(out var areaNoMount, out var areaDropAnimal);
+            var unropablePlayerAnimals =
+                map.mapPawns.SpawnedColonyAnimals.Any(animal => !AnimalPenUtility.NeedsToBeManagedByRope(animal));
 
-                if (unropablePlayerAnimals && areaNoMount != null && areaNoMount.innerGrid.TrueCount != 0 &&
-                    (areaDropAnimal == null || areaDropAnimal.innerGrid.TrueCount == 0))
-                    return cacheResult = true;
-            }
-
-            return cacheResult = false;
+            if (unropablePlayerAnimals && areaNoMount != null && areaNoMount.innerGrid.TrueCount != 0 &&
+                (areaDropAnimal == null || areaDropAnimal.innerGrid.TrueCount == 0))
+                return _shouldAlertCached = true;
         }
 
-        return cacheResult;
+        return _shouldAlertCached = false;
     }
 }

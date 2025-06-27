@@ -1,6 +1,5 @@
 using Verse;
 using UnityEngine;
-using Verse.Sound;
 using RimWorld;
 using static GiddyUp.ModSettings_GiddyUp;
 using static GiddyUp.Setup;
@@ -10,22 +9,22 @@ namespace GiddyUp;
 public static class OptionsDrawUtility
 {
     public static int lineNumber, cellPosition;
-    public const int lineHeight = 22; //Text.LineHeight + options.verticalSpacing;
+    private const int LineHeight = 22; //Text.LineHeight + options.verticalSpacing;
 
     public static void DrawList(this Listing_Standard options)
     {
         lineNumber = cellPosition = 0; //Reset
         //List out all the unremoved defs from the compiled database
-        for (var i = 0; i < allAnimals.Length; i++)
+        for (var i = 0; i < AllAnimals.Count; i++)
         {
-            var def = allAnimals[i];
+            var def = AllAnimals[i];
             if (def == null)
                 continue;
-            if (selectedTab == SelectedTab.bodySize && def.race.baseBodySize < bodySizeFilter)
+            if (selectedTab == SelectedTab.BodySize && def.race.baseBodySize < bodySizeFilter)
                 continue;
 
             DrawListItem(options, def);
-            cellPosition += lineHeight;
+            cellPosition += LineHeight;
             ++lineNumber;
         }
     }
@@ -35,13 +34,13 @@ public static class OptionsDrawUtility
         //Determine checkbox status...
         bool checkOn;
         var hash = def.shortHash;
-        if (selectedTab == SelectedTab.bodySize)
+        if (selectedTab == SelectedTab.BodySize)
             checkOn = mountableCache.Contains(hash);
         else
             checkOn = drawRulesCache.Contains(hash);
 
         //Fetch bounding rect
-        var rect = options.GetRect(lineHeight);
+        var rect = options.GetRect(LineHeight);
         rect.y = cellPosition;
 
         //Label
@@ -56,7 +55,7 @@ public static class OptionsDrawUtility
             Widgets.DrawLightHighlight(rect);
         Widgets.DrawHighlightIfMouseover(rect);
 
-        if (selectedTab == SelectedTab.bodySize)
+        if (selectedTab == SelectedTab.BodySize)
         {
             if (checkOn && !mountableCache.Contains(hash))
                 mountableCache.Add(hash);
@@ -78,9 +77,9 @@ public static class OptionsDrawUtility
 
         //Is there an icon?
         var iconRect = new Rect(leftHalf.x, leftHalf.y, 32f, leftHalf.height);
-        Texture2D icon = null;
+        Texture2D? icon = null;
         if (def is BuildableDef)
-            icon = ((BuildableDef)def).uiIcon;
+            icon = def.uiIcon;
         if (icon != null)
             GUI.DrawTexture(iconRect, icon, ScaleMode.ScaleToFit, true, 1f, Color.white, 0f, 0f);
 

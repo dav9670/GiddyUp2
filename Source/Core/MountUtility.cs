@@ -186,7 +186,7 @@ internal static class MountUtility
         if (areaFound != null && areaFound.innerGrid.TrueCount > 0)
         {
             targetLoc = areaFound.GetClosestAreaLoc(target == default ? rider.Position : target);
-            if (isGuest && targetLoc.DistanceTo(rider.Position) > ResourceBank.guestSpotCheckRange)
+            if (isGuest && targetLoc.DistanceTo(rider.Position) > ResourceBank.GuestSpotCheckRange)
             {
                 var guestData = rider.GetGUData();
                 rider.Dismount(guestData.mount, guestData);
@@ -220,7 +220,7 @@ internal static class MountUtility
         return false;
     }
 
-    public static void Dismount(this Pawn rider, Pawn animal, ExtendedPawnData pawnData, bool clearReservation = false,
+    public static void Dismount(this Pawn rider, Pawn? animal, ExtendedPawnData? pawnData, bool clearReservation = false,
         IntVec3 parkLoc = default, bool ropeIfNeeded = true, bool waitForRider = true)
     {
         ExtendedDataStorage.isMounted.Remove(rider.thingIDNumber);
@@ -231,9 +231,9 @@ internal static class MountUtility
             Log.Message("[Giddy-Up] " + rider.Label + " no longer riding  " + (animal?.Label ?? "NULL"));
 
         //Normally should not happen, may come in null from sanity checks. Odd bugs or save/reload conflicts between version changes
-        ExtendedPawnData animalData;
+        ExtendedPawnData? animalData;
         if (animal == null)
-            ExtendedDataStorage.GUComp.ReverseLookup(rider.thingIDNumber, out animalData);
+            animalData = ExtendedDataStorage.GUComp.ReverseLookup(rider.thingIDNumber);
         else
             animalData = animal.GetGUData();
 
@@ -241,7 +241,8 @@ internal static class MountUtility
         if (clearReservation)
         {
             pawnData.ReservedMount = null;
-            animalData.ReservedBy = null;
+            if(animalData != null)
+                animalData.ReservedBy = null;
         }
 
         //Reset free locomotion
@@ -261,7 +262,7 @@ internal static class MountUtility
             !animal.IsRoped() && //Skip already roped
             !animal.Position.CloseToEdge(animal.Map,
                 ResourceBank
-                    .mapEdgeIgnore) && //Skip pawns near the map edge. They may be entering/exiting the map which triggers dismount calls
+                    .MapEdgeIgnore) && //Skip pawns near the map edge. They may be entering/exiting the map which triggers dismount calls
             animal.Faction.def.isPlayer && animal.inventory != null &&
             animal.inventory.innerContainer.Count == 0) //Skip guest caravan pack animals
         {
@@ -274,8 +275,7 @@ internal static class MountUtility
         }
 
         //Follow the rider for a while to give it an opportunity to take a ride back
-        if (Settings.rideAndRollEnabled && !rider.Drafted && rider.Faction.def.isPlayer &&
-            animalData.reservedBy != null)
+        if (Settings.rideAndRollEnabled && !rider.Drafted && rider.Faction.def.isPlayer && animalData?.reservedBy != null)
             if (waitForRider)
                 animal.jobs.jobQueue.EnqueueFirst(new Job(ResourceBank.JobDefOf.WaitForRider, animalData.reservedBy)
                 {
@@ -286,19 +286,18 @@ internal static class MountUtility
                 });
     }
 
-    public static void InvoluntaryDismount(this Pawn rider, Pawn animal, ExtendedPawnData pawnData)
+    public static void InvoluntaryDismount(this Pawn rider, Pawn? animal, ExtendedPawnData pawnData)
     {
-        if (!rider.Faction.def.isPlayer && animal != null && !animal.Dead &&
-            animal.Spawned && //Is a non-colonist, and animal is valid?
-            (ExtendedDataStorage.nofleeingAnimals == null ||
-             !ExtendedDataStorage.nofleeingAnimals.Contains(animal)) && //Does this animal ever flee?
+        if (!rider.Faction.def.isPlayer && animal is { Dead: false, Spawned: true } && //Is a non-colonist, and animal is valid?
+            (ExtendedDataStorage.noFleeingAnimals == null ||
+             !ExtendedDataStorage.noFleeingAnimals.Contains(animal)) && //Does this animal ever flee?
             (animal.Faction == null || !animal.Faction.def.isPlayer)) //Is the animal ours?
             animal.mindState.mentalStateHandler.TryStartMentalState(MentalStateDefOf.PanicFlee);
         Dismount(rider, animal, pawnData, true, ropeIfNeeded: false, waitForRider: false);
     }
 
-    public static bool FindPlaceToDismount(this Pawn rider, Area areaDropAnimal, Area areaNoMount,
-        IntVec3 riderDestinaton, out IntVec3 parkLoc, Pawn animal, out DismountLocationType dismountLocationType)
+    public static bool FindPlaceToDismount(this Pawn rider, Area? areaDropAnimal, Area? areaNoMount,
+        IntVec3 riderDestination, out IntVec3 parkLoc, Pawn animal, out DismountLocationType dismountLocationType)
     {
         var map = rider.Map;
         if (areaDropAnimal == null || areaDropAnimal.TrueCount == 0)
@@ -309,15 +308,15 @@ internal static class MountUtility
         else
         {
             dismountLocationType = DismountLocationType.Spot;
-            parkLoc = areaDropAnimal.GetClosestAreaLoc(riderDestinaton);
+            parkLoc = areaDropAnimal.GetClosestAreaLoc(riderDestination);
         }
 
         //Invalidate the results if not reachable
         if (!map.reachability.CanReach(rider.Position, parkLoc, PathEndMode.Touch, TraverseParms.For(rider)))
             parkLoc = IntVec3.Invalid;
 
-        //Dropoff is too far away, setup a hitching point instead
-        if (parkLoc.DistanceTo(riderDestinaton) > Settings.autoHitchDistance)
+        //Drop-off is too far away, setup a hitching point instead
+        if (parkLoc.DistanceTo(riderDestination) > Settings.autoHitchDistance)
         {
             dismountLocationType = DismountLocationType.Auto;
             Predicate<IntVec3> freeCell = delegate(IntVec3 cell)
@@ -332,7 +331,7 @@ internal static class MountUtility
 
             var foundRandomCellNear = false;
             for (var attempt = 1; attempt < 8; attempt++)
-                if (CellFinder.TryFindRandomCellNear(riderDestinaton, map, attempt * 5, freeCell, out parkLoc))
+                if (CellFinder.TryFindRandomCellNear(riderDestination, map, attempt * 5, freeCell, out parkLoc))
                 {
                     foundRandomCellNear = true;
                     break;
@@ -379,8 +378,7 @@ internal static class MountUtility
     public static bool GenerateMounts(ref List<Pawn> list, IncidentParms parms)
     {
         //if (MP.enabled) return false; // Best we can do for now
-        var map = parms.target as Map;
-        if (map == null)
+        if (parms.target is not Map map)
         {
             var caravan = (Caravan)parms.target;
             int tile = caravan.Tile;
@@ -486,8 +484,8 @@ internal static class MountUtility
                     Settings.mountableCache.Contains(pawnKindDef.race.shortHash) && //Is mountable?
                     parms.points >
                     pawnKindDef.combatPower *
-                    ResourceBank.combatPowerFactor && //Is not too powerful for this particular raid?
-                    (pawnKindDef.combatPower * ResourceBank.combatPowerFactor >
+                    ResourceBank.CombatPowerFactor && //Is not too powerful for this particular raid?
+                    (pawnKindDef.combatPower * ResourceBank.CombatPowerFactor >
                      pawn.kindDef.combatPower || //Rider considers this a worthy creature, or...
                      pawnKindDef.race.GetStatValueAbstract(StatDefOf.MoveSpeed) >=
                      pawn.GetStatValue(StatDefOf.MoveSpeed)); //Rider sees this as a faster creature?

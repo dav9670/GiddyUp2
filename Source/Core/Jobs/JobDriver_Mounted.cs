@@ -150,7 +150,7 @@ public class JobDriver_Mounted : JobDriver
                     //Check if the mount was meant to despawn along with the rider. This is already handled in the RiderShouldDismount but some spaghetti code elsewhere could bypass it
                     //TODO: See if the two could be unified
                     if (!isDespawning && rider != null && !pawn.Faction.IsPlayer && !rider.Spawned &&
-                        pawn.Position.CloseToEdge(map, ResourceBank.mapEdgeIgnore))
+                        pawn.Position.CloseToEdge(map, ResourceBank.MapEdgeIgnore))
                     {
                         isDespawning = true; //Avoid recurssive loop
                         pawn.ExitMap(false, CellRect.WholeMap(map).GetClosestEdge(pawn.Position));
@@ -257,7 +257,7 @@ public class JobDriver_Mounted : JobDriver
         else
         {
             if (!allowedJob && rider.Position.DistanceTo(rider.pather.Destination.Cell) <
-                ResourceBank.autoHitchDistance)
+                ResourceBank.AutoHitchDistance)
                 return DismountReason.BadJob;
             if (!pawn.Faction.def.isPlayer)
                 return DismountReason.False;
@@ -272,7 +272,7 @@ public class JobDriver_Mounted : JobDriver
                 riderMindstateDef == DutyDefOf.PrepareCaravan_GatherDownedPawns)
                 return riderData.reservedMount == pawn ? DismountReason.False : DismountReason.WrongMount;
 
-            if (rider.Position.CloseToEdge(map, ResourceBank.mapEdgeIgnore))
+            if (rider.Position.CloseToEdge(map, ResourceBank.MapEdgeIgnore))
                 return DismountReason.False; //Caravan just entered map and has not picked a job yet on this tick.
         }
 

@@ -5,6 +5,7 @@ using RimWorld;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using GiddyUpCore.RideAndRoll;
 using Verse;
 using UnityEngine;
 using static GiddyUp.ModSettings_GiddyUp;
@@ -14,40 +15,39 @@ namespace GiddyUp;
 [StaticConstructorOnStartup]
 public static class Setup
 {
-    public static ThingDef[] allAnimals; //Only used during setup and for the mod options UI
-    private static HashSet<ushort> defEditLedger = new();
+    public static readonly List<ThingDef?> AllAnimals = []; //Only used during setup and for the mod options UI
+    
+    private static readonly HashSet<ushort> DefEditLedger = [];
+    private static readonly HashSet<int> PatchLedger = [];
 
-    private static HashSet<int> patchLedger = new();
+    private static readonly SimpleCurve SizeFactor =
+    [
+        new CurvePoint(1.2f, 0.9f),
+        new CurvePoint(1.5f, 1f),
+        new CurvePoint(2.4f, 1.15f),
+        new CurvePoint(4f, 1.25f)
+    ];
 
-    //TODO: could make these not static to save some memory
-    private static SimpleCurve sizeFactor = new()
-    {
-        { new CurvePoint(1.2f, 0.9f) },
-        { new CurvePoint(1.5f, 1f) },
-        { new CurvePoint(2.4f, 1.15f) },
-        { new CurvePoint(4f, 1.25f) }
-    };
+    private static readonly SimpleCurve SpeedFactor =
+    [
+        new CurvePoint(4.3f, 1f),
+        new CurvePoint(5.8f, 1.2f),
+        new CurvePoint(8f, 1.4f)
+    ];
 
-    private static SimpleCurve speedFactor = new()
-    {
-        { new CurvePoint(4.3f, 1f) },
-        { new CurvePoint(5.8f, 1.2f) },
-        { new CurvePoint(8f, 1.4f) }
-    };
+    private static readonly SimpleCurve ValueFactor =
+    [
+        new CurvePoint(300f, 1f),
+        new CurvePoint(550f, 1.15f),
+        new CurvePoint(5000f, 1.3f)
+    ];
 
-    private static SimpleCurve valueFactor = new()
-    {
-        { new CurvePoint(300f, 1f) },
-        { new CurvePoint(550f, 1.15f) },
-        { new CurvePoint(5000f, 1.3f) }
-    };
-
-    private static SimpleCurve wildnessFactor = new()
-    {
-        { new CurvePoint(0.2f, 1f) },
-        { new CurvePoint(0.6f, 0.9f) },
-        { new CurvePoint(1f, 0.85f) }
-    };
+    private static readonly SimpleCurve WildnessFactor =
+    [
+        new CurvePoint(0.2f, 1f),
+        new CurvePoint(0.6f, 0.9f),
+        new CurvePoint(1f, 0.85f)
+    ];
 
     static Setup()
     {
@@ -69,7 +69,7 @@ public static class Setup
         //VE Classical mod support
         var type = HarmonyLib.AccessTools.TypeByName("AnimalBehaviours.AnimalCollectionClass");
         if (type != null)
-            ExtendedDataStorage.nofleeingAnimals = HarmonyLib.Traverse.Create(type).Field("nofleeing_animals")
+            ExtendedDataStorage.noFleeingAnimals = HarmonyLib.Traverse.Create(type).Field("nofleeing_animals")
                 ?.GetValue<HashSet<Thing>>();
     }
 
@@ -106,46 +106,46 @@ public static class Setup
         for (var i = 0; i < length; i++)
         {
             var def = list[i];
-            if (def.race != null && def.race.Animal)
+            if (def.race is not { Animal: true })
+                continue;
+            
+            workingList.Add(def);
+
+            var setting = def.race.baseBodySize > ResourceBank.DefaultSizeThreshold;
+            if (def.HasModExtension<NotMountable>())
+                setting = false;
+            else if (def.HasModExtension<Mountable>())
+                setting = true;
+            if (invertMountingRules.Contains(def.defName))
+                setting = !setting; //Player customization says to invert rule.
+
+            if (setting)
             {
-                workingList.Add(def);
-
-                var setting = def.race.baseBodySize > ResourceBank.defaultSizeThreshold;
-                if (def.HasModExtension<NotMountable>())
-                    setting = false;
-                else if (def.HasModExtension<Mountable>())
-                    setting = true;
-                if (invertMountingRules.Contains(def.defName))
-                    setting = !setting; //Player customization says to invert rule.
-
-                if (setting)
-                {
-                    mountableCache.Add(def.shortHash);
-                    CalculateCaravanSpeed(def);
-                }
-                else
-                {
-                    mountableCache.Remove(def.shortHash);
-                }
-
-                //Handle the draw front/behind draw instruction cache
-                setting = def.HasModExtension<DrawInFront>();
-                if (invertDrawRules.Contains(def.defName))
-                    setting = !setting;
-
-                if (setting)
-                    drawRulesCache.Add(def.shortHash);
-                else
-                    drawRulesCache.Remove(def.shortHash);
+                mountableCache.Add(def.shortHash);
+                CalculateCaravanSpeed(def);
             }
+            else
+            {
+                mountableCache.Remove(def.shortHash);
+            }
+
+            //Handle the draw front/behind draw instruction cache
+            setting = def.HasModExtension<DrawInFront>();
+            if (invertDrawRules.Contains(def.defName))
+                setting = !setting;
+
+            if (setting)
+                drawRulesCache.Add(def.shortHash);
+            else
+                drawRulesCache.Remove(def.shortHash);
         }
 
         workingList.SortBy(x => x.label);
-        allAnimals = workingList.ToArray();
+        AllAnimals.AddRange(workingList);
     }
 
     //Responsible for setting up the draw offsets and custom stat overrides
-    public static void ProcessPawnKinds(HarmonyLib.Harmony harmony = null)
+    public static void ProcessPawnKinds(HarmonyLib.Harmony? harmony = null)
     {
         var newEntries = false;
         var usingCustomStats = false;
@@ -167,7 +167,7 @@ public static class Setup
                 //Determine which life stages are considered mature enough to ride
                 var lifeStages = pawnKindDef.lifeStages;
                 var lifeIndexes = lifeStages?.Count;
-                AllowedLifeStages customLifeStages;
+                AllowedLifeStages? customLifeStages;
                 if (lifeIndexes > 0)
                     customLifeStages = pawnKindDef.race.GetModExtension<AllowedLifeStages>();
                 else
@@ -199,7 +199,7 @@ public static class Setup
             LoadedModManager.GetMod<Mod_GiddyUp>().modSettings.Write();
 
         //Only bother applying this harmony patch if using a mod that utilizes this extension
-        if (usingCustomStats && harmony != null && !patchLedger.Add(1))
+        if (usingCustomStats && harmony != null && !PatchLedger.Add(1))
             harmony.Patch(HarmonyLib.AccessTools.Method(typeof(ArmorUtility), nameof(ArmorUtility.ApplyArmor)),
                 postfix: new HarmonyLib.HarmonyMethod(typeof(Harmony.Patch_ApplyArmor),
                     nameof(Harmony.Patch_ApplyArmor.Postfix)));
@@ -242,7 +242,7 @@ public static class Setup
         invertMountingRules = new HashSet<string>();
         invertDrawRules = new HashSet<string>();
 
-        foreach (var animalDef in allAnimals)
+        foreach (var animalDef in AllAnimals)
         {
             var hash = animalDef.shortHash;
             //Search for abnormalities, meaning the player wants to invert the rules
@@ -256,7 +256,7 @@ public static class Setup
                 if (!mountableCache.Contains(hash))
                     invertMountingRules.Add(animalDef.defName);
             }
-            else if (animalDef.race.baseBodySize <= ResourceBank.defaultSizeThreshold)
+            else if (animalDef.race.baseBodySize <= ResourceBank.DefaultSizeThreshold)
             {
                 if (mountableCache.Contains(hash))
                     invertMountingRules.Add(animalDef.defName);
@@ -273,9 +273,7 @@ public static class Setup
             if (modExt != null)
                 drawFront = true;
 
-            if (drawFront && !drawRulesCache.Contains(hash))
-                invertDrawRules.Add(animalDef.defName);
-            else if (!drawFront && drawRulesCache.Contains(hash))
+            if (drawFront && !drawRulesCache.Contains(hash) || !drawFront && drawRulesCache.Contains(hash))
                 invertDrawRules.Add(animalDef.defName);
         }
     }
@@ -332,24 +330,24 @@ public static class Setup
         float speed;
 
         //This would pass if the animal has an XML-defined bonus that we didn't apply, leave it alone
-        if (def.StatBaseDefined(StatDefOf.CaravanRidingSpeedFactor) && !defEditLedger.Contains(def.shortHash))
+        if (def.StatBaseDefined(StatDefOf.CaravanRidingSpeedFactor) && !DefEditLedger.Contains(def.shortHash))
         {
             return;
         }
         //This would pass if mod options are changed, the mount is no longer rideable, and it was once given a bonus
-        else if (check && !mountableCache.Contains(def.shortHash) && defEditLedger.Contains(def.shortHash))
+        else if (check && !mountableCache.Contains(def.shortHash) && DefEditLedger.Contains(def.shortHash))
         {
-            defEditLedger.Remove(def.shortHash);
+            DefEditLedger.Remove(def.shortHash);
             speed = 1f;
         }
-        //Give a the bonus
+        //Give the bonus
         else if (giveCaravanSpeed)
         {
-            defEditLedger.Add(def.shortHash);
-            speed = sizeFactor.Evaluate(def.race.baseBodySize) *
-                    speedFactor.Evaluate(def.GetStatValueAbstract(StatDefOf.MoveSpeed)) *
-                    valueFactor.Evaluate(def.BaseMarketValue) *
-                    wildnessFactor.Evaluate(def.GetStatValueAbstract(StatDefOf.Wildness)) *
+            DefEditLedger.Add(def.shortHash);
+            speed = SizeFactor.Evaluate(def.race.baseBodySize) *
+                    SpeedFactor.Evaluate(def.GetStatValueAbstract(StatDefOf.MoveSpeed)) *
+                    ValueFactor.Evaluate(def.BaseMarketValue) *
+                    WildnessFactor.Evaluate(def.GetStatValueAbstract(StatDefOf.Wildness)) *
                     (def.race.packAnimal ? 1.1f : 0.95f);
             if (speed < 1.00001f)
                 speed = 1.00001f;
@@ -357,7 +355,7 @@ public static class Setup
         //Don't give a bonus and instead just set the value to be above 1f so the game thinks it's a rideable mount on the caravan UI, but low enough to render as 100%
         else
         {
-            defEditLedger.Remove(def.shortHash);
+            DefEditLedger.Remove(def.shortHash);
             speed = speed = 1.00001f;
         }
 
@@ -377,29 +375,37 @@ public class Mod_GiddyUp : Mod
         //========Setup tabs=========
         GUI.BeginGroup(inRect);
         var tabs = new List<TabRecord>();
-        tabs.Add(new TabRecord("GUC_Core_Tab".Translate(), delegate { selectedTab = SelectedTab.core; },
-            selectedTab == SelectedTab.core || selectedTab == SelectedTab.bodySize ||
-            selectedTab == SelectedTab.drawBehavior));
-        tabs.Add(new TabRecord("GUC_RnR_Tab".Translate(), delegate { selectedTab = SelectedTab.rnr; },
-            selectedTab == SelectedTab.rnr));
-        tabs.Add(new TabRecord("GUC_BattleMounts_Tab".Translate(), delegate { selectedTab = SelectedTab.battlemounts; },
-            selectedTab == SelectedTab.battlemounts));
-        tabs.Add(new TabRecord("GUC_Caravans_Tab".Translate(), delegate { selectedTab = SelectedTab.caravans; },
-            selectedTab == SelectedTab.caravans));
+        tabs.Add(new TabRecord("GUC_Core_Tab".Translate(), delegate { selectedTab = SelectedTab.Core; },
+            selectedTab == SelectedTab.Core || selectedTab == SelectedTab.BodySize ||
+            selectedTab == SelectedTab.DrawBehavior));
+        tabs.Add(new TabRecord("GUC_RnR_Tab".Translate(), delegate { selectedTab = SelectedTab.Rnr; },
+            selectedTab == SelectedTab.Rnr));
+        tabs.Add(new TabRecord("GUC_BattleMounts_Tab".Translate(), delegate { selectedTab = SelectedTab.BattleMounts; },
+            selectedTab == SelectedTab.BattleMounts));
+        tabs.Add(new TabRecord("GUC_Caravans_Tab".Translate(), delegate { selectedTab = SelectedTab.Caravans; },
+            selectedTab == SelectedTab.Caravans));
 
         var rect = new Rect(0f, 32f, inRect.width, inRect.height - 32f);
         Widgets.DrawMenuSection(rect);
         TabDrawer.DrawTabs(new Rect(0f, 32f, inRect.width, Text.LineHeight), tabs);
 
-        if (selectedTab == SelectedTab.core || selectedTab == SelectedTab.bodySize ||
-            selectedTab == SelectedTab.drawBehavior)
-            DrawCore();
-        else if (selectedTab == SelectedTab.rnr)
-            DrawRnR();
-        else if (selectedTab == SelectedTab.battlemounts)
-            DrawBattleMounts();
-        else
-            DrawCaravan();
+        switch (selectedTab)
+        {
+            case SelectedTab.Core:
+            case SelectedTab.BodySize:
+            case SelectedTab.DrawBehavior:
+                DrawCore();
+                break;
+            case SelectedTab.Rnr:
+                DrawRnR();
+                break;
+            case SelectedTab.BattleMounts:
+                DrawBattleMounts();
+                break;
+            default:
+                DrawCaravan();
+                break;
+        }
         GUI.EndGroup();
 
         void DrawRnR()
@@ -526,8 +532,8 @@ public class Mod_GiddyUp : Mod
 
         void DrawCore()
         {
-            if (selectedTab == SelectedTab.core)
-                selectedTab = SelectedTab.bodySize;
+            if (selectedTab == SelectedTab.Core)
+                selectedTab = SelectedTab.BodySize;
 
             var options = new Listing_Standard();
             options.Begin(inRect.ContractedBy(15f));
@@ -560,10 +566,10 @@ public class Mod_GiddyUp : Mod
 
             //========Setup tabs=========
             tabs = new List<TabRecord>();
-            tabs.Add(new TabRecord("GUC_Mountable_Tab".Translate(), delegate { selectedTab = SelectedTab.bodySize; },
-                selectedTab == SelectedTab.bodySize));
+            tabs.Add(new TabRecord("GUC_Mountable_Tab".Translate(), delegate { selectedTab = SelectedTab.BodySize; },
+                selectedTab == SelectedTab.BodySize));
             tabs.Add(new TabRecord("GUC_DrawBehavior_Tab".Translate(),
-                delegate { selectedTab = SelectedTab.drawBehavior; }, selectedTab == SelectedTab.drawBehavior));
+                delegate { selectedTab = SelectedTab.DrawBehavior; }, selectedTab == SelectedTab.DrawBehavior));
 
             Widgets.DrawMenuSection(mountableFilterRect); //Used to make the background light grey with white border
             TabDrawer.DrawTabs(
@@ -573,7 +579,7 @@ public class Mod_GiddyUp : Mod
             //========Between tabs and scroll body=========
             options.Begin(new Rect(mountableFilterRect.x + 10, mountableFilterRect.y + 10,
                 mountableFilterRect.width - 10f, mountableFilterRect.height - 10f));
-            if (selectedTab == SelectedTab.bodySize)
+            if (selectedTab == SelectedTab.BodySize)
             {
                 options.Label("GUC_BodySizeFilter_Title".Translate("0", "5", "1.2", bodySizeFilter.ToString()), -1f,
                     "GUC_BodySizeFilter_Description".Translate());
@@ -598,10 +604,7 @@ public class Mod_GiddyUp : Mod
         }
     }
 
-    public override string SettingsCategory()
-    {
-        return "Giddy-Up";
-    }
+    public override string SettingsCategory() => "Giddy-Up";
 
     public override void WriteSettings()
     {
@@ -610,8 +613,8 @@ public class Mod_GiddyUp : Mod
             Setup.RebuildInversions();
             Setup.ProcessPawnKinds();
             if (giveCaravanSpeed)
-                for (var i = 0; i < Setup.allAnimals.Length; i++)
-                    Setup.CalculateCaravanSpeed(Setup.allAnimals[i], true);
+                for (var i = 0; i < Setup.AllAnimals.Count; i++)
+                    Setup.CalculateCaravanSpeed(Setup.AllAnimals[i], true);
 
             //TODO: consider providing a list of all jobdefs users can add/remove to the allowed list
             if (!noMountedHunting)
@@ -630,6 +633,55 @@ public class Mod_GiddyUp : Mod
 
 public class ModSettings_GiddyUp : ModSettings
 {
+    public static float handlingMovementImpact = 2.5f,
+        bodySizeFilter = 0.2f,
+        handlingAccuracyImpact = 0.5f,
+        inBiomeWeight = 20f,
+        outBiomeWeight = 10f,
+        nonWildWeight = 70f,
+        injuredThreshold = 0.75f;
+
+    public static int accuracyPenalty = 10,
+        minAutoMountDistance = 120,
+        minHandlingLevel = 3,
+        enemyMountChance = 15,
+        enemyMountChancePreInd = 33,
+        visitorMountChance = 15,
+        visitorMountChancePreInd = 33,
+        autoHitchDistance = 50,
+        waitForRiderTimer = 10000;
+
+    public static bool rideAndRollEnabled = true,
+        battleMountsEnabled = true,
+        caravansEnabled = true,
+        noMountedHunting,
+        logging,
+        giveCaravanSpeed,
+        automountDisabledByDefault,
+        disableSlavePawnColumn,
+        ridePackAnimals = true;
+
+    public static HashSet<string>?
+        invertMountingRules,
+        invertDrawRules; //These are only used on game start to setup the below, fast cache collections
+
+    public static HashSet<ushort>? mountableCache, drawRulesCache;
+    public static string? tabsHandler;
+    public static Vector2 scrollPos;
+    public static SelectedTab selectedTab = SelectedTab.BodySize;
+
+    public enum SelectedTab
+    {
+        BodySize,
+        DrawBehavior,
+        Core,
+        Rnr,
+        BattleMounts,
+        Caravans
+    };
+    
+    public static Dictionary<string, float>? offsetCache;
+    
     public override void ExposeData()
     {
         Scribe_Values.Look(ref handlingMovementImpact, "handlingMovementImpact", 2.5f);
@@ -662,53 +714,4 @@ public class ModSettings_GiddyUp : ModSettings
 
         base.ExposeData();
     }
-
-    public static float handlingMovementImpact = 2.5f,
-        bodySizeFilter = 0.2f,
-        handlingAccuracyImpact = 0.5f,
-        inBiomeWeight = 20f,
-        outBiomeWeight = 10f,
-        nonWildWeight = 70f,
-        injuredThreshold = 0.75f;
-
-    public static int accuracyPenalty = 10,
-        minAutoMountDistance = 120,
-        minHandlingLevel = 3,
-        enemyMountChance = 15,
-        enemyMountChancePreInd = 33,
-        visitorMountChance = 15,
-        visitorMountChancePreInd = 33,
-        autoHitchDistance = 50,
-        waitForRiderTimer = 10000;
-
-    public static bool rideAndRollEnabled = true,
-        battleMountsEnabled = true,
-        caravansEnabled = true,
-        noMountedHunting,
-        logging,
-        giveCaravanSpeed,
-        automountDisabledByDefault,
-        disableSlavePawnColumn,
-        ridePackAnimals = true;
-
-    public static HashSet<string>
-        invertMountingRules,
-        invertDrawRules; //These are only used on game start to setup the below, fast cache collections
-
-    public static HashSet<ushort> mountableCache, drawRulesCache;
-    public static string tabsHandler;
-    public static Vector2 scrollPos;
-    public static SelectedTab selectedTab = SelectedTab.bodySize;
-
-    public enum SelectedTab
-    {
-        bodySize,
-        drawBehavior,
-        core,
-        rnr,
-        battlemounts,
-        caravans
-    };
-
-    public static Dictionary<string, float> offsetCache;
 }
