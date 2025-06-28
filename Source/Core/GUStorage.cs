@@ -185,6 +185,11 @@ public class ExtendedPawnData : IExposable
         Slaves
     };
 
+    // ReSharper disable once UnusedMember.Global
+    public ExtendedPawnData()
+    {
+    }
+    
     public ExtendedPawnData(Pawn pawn)
     {
         this.pawn = pawn;
