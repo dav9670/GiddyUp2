@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using GiddyUp;
+﻿using GiddyUp;
 using HarmonyLib;
 using Verse;
 
@@ -14,9 +13,10 @@ public class Patch_PathUtility_GetAllowedArea
      static void Postfix(ref Area? __result, Pawn? pawn)
      {
          //Prepare variables and check if an area merge for riders should be done
-         if (pawn == null || !pawn.IsMounted() || pawn.Faction == null || !pawn.Faction.def.isPlayer) return;
+         if (pawn == null || !pawn.IsMounted() || pawn.Faction == null || !pawn.Faction.def.isPlayer) 
+             return;
          var map = pawn.Map;
-         ExtendedDataStorage.GUComp.areaNoMount.TryGetValue(map.uniqueID, out var areaNoMount);
+         ExtendedDataStorage.Singleton.AreaNoMount.TryGetValue(map.uniqueID, out var areaNoMount);
          if (areaNoMount == null) return;
          var length = areaNoMount.innerGrid.arr.Length;
 

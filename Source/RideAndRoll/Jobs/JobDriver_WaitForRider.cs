@@ -10,32 +10,32 @@ namespace GiddyUpRideAndRoll.Jobs;
 
 internal class JobDriver_WaitForRider : JobDriver
 {
-    private JobDef initialJob; //Keep track of the pawn's job
-    private int ticker = 1;
-    private bool riderReturning;
+    private JobDef _initialJob = null!; //Keep track of the pawn's job
+    private int _ticker = 1;
+    private bool _riderReturning;
 
     public override bool TryMakePreToilReservations(bool errorOnFailed) => true;
 
     public override void ExposeData()
     {
         base.ExposeData();
-        Scribe_Values.Look(ref riderReturning, "riderReturning");
-        Scribe_Values.Look(ref ticker, "ticker");
-        Scribe_Defs.Look(ref initialJob, "initialJob");
+        Scribe_Values.Look(ref _riderReturning, "riderReturning");
+        Scribe_Values.Look(ref _ticker, "ticker");
+        Scribe_Defs.Look(ref _initialJob, "initialJob");
     }
 
     public override IEnumerable<Toil> MakeNewToils()
     {
         var waitingFor = TargetA.Thing as Pawn;
         this.FailOn(() => pawn.Map == null || waitingFor == null);
-        initialJob = waitingFor.CurJobDef;
+        _initialJob = waitingFor!.CurJobDef;
         yield return new Toil { initAction = () => WalkRandomNearby(waitingFor), defaultCompleteMode = ToilCompleteMode.Instant };
         yield return new Toil
         {
             defaultCompleteMode = ToilCompleteMode.Never,
             tickAction = delegate
             {
-                if (ticker % 30 == 0)
+                if (_ticker % 30 == 0)
                 {
                     if (waitingFor.Map == null ||
                         waitingFor.Dead ||
@@ -61,21 +61,21 @@ internal class JobDriver_WaitForRider : JobDriver
                     }
 
                     //Wait a bit longer if the rider's job is just taking awhile
-                    if (job.expiryInterval - 30 < 31 && waitingFor.CurJobDef == initialJob)
+                    if (job.expiryInterval - 30 < 31 && waitingFor.CurJobDef == _initialJob)
                         pawn.CurJob.expiryInterval += 1000;
 
                     //Check if the rider is attempting to abandon the mount
                     var destinationCell = waitingFor.pather.Destination.Cell;
-                    if (!riderReturning && destinationCell != IntVec3.Zero &&
+                    if (!_riderReturning && destinationCell != IntVec3.Zero &&
                         destinationCell.DistanceTo(pawn.Position) > 50f)
                     {
                         //"Wait, come pick me up!"
                         if (waitingFor.Position.DistanceTo(pawn.Position) < 15f)
                         {
-                            riderReturning = true;
+                            _riderReturning = true;
                             if (Settings.logging)
                                 Log.Message("[Giddy-Up] " + pawn.Label + " wants  " + waitingFor.Label +
-                                            " to come get them before they head to " + destinationCell.ToString());
+                                            " to come get them before they head to " + destinationCell);
                             waitingFor.GoMount(pawn, MountUtility.GiveJobMethod.Inject, currentJob: waitingFor.CurJob);
                         }
                         //"Fine, I'll follow you instead :pouting_cat:"
@@ -84,22 +84,22 @@ internal class JobDriver_WaitForRider : JobDriver
                             pawn.pather.StartPath(destinationCell, PathEndMode.ClosestTouch);
                         }
                     }
-                    //Did the rider get interupted?
-                    else if (riderReturning && waitingFor.CurJobDef != ResourceBank.JobDefOf.Mount)
+                    //Did the rider get interrupted?
+                    else if (_riderReturning && waitingFor.CurJobDef != ResourceBank.JobDefOf.Mount)
                     {
-                        riderReturning = false;
+                        _riderReturning = false;
                     }
                 }
 
-                if (ticker-- == 0)
-                {
-                    ticker = Rand.Range(300, 600);
-                    if (!pawn.pather.Moving)
-                        WalkRandomNearby(waitingFor);
-                }
+                if (_ticker-- != 0)
+                    return;
+                
+                _ticker = Rand.Range(300, 600);
+                if (!pawn.pather.Moving)
+                    WalkRandomNearby(waitingFor);
             },
-            finishActions = new List<Action>
-            {
+            finishActions =
+            [
                 delegate
                 {
                     if (waitingFor.CurJobDef != ResourceBank.JobDefOf.Mount)
@@ -113,17 +113,17 @@ internal class JobDriver_WaitForRider : JobDriver
 
                     UnsetOwnership();
                 }
-            }
+            ]
         };
     }
 
     private void UnsetOwnership()
     {
-        var animalData = pawn.GetGUData();
-        if (animalData.reservedBy != null)
+        var animalData = pawn.GetExtendedPawnData();
+        if (animalData.ReservedBy != null)
         {
-            var riderData = animalData.reservedBy.GetGUData();
-            if (riderData.reservedMount == pawn)
+            var riderData = animalData.ReservedBy.GetExtendedPawnData();
+            if (riderData.ReservedMount == pawn)
                 riderData.ReservedMount = null;
         }
 

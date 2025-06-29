@@ -49,7 +49,7 @@ internal class Patch_DrawPawnGUIOverlay
     {
         if (!__instance.pawn.IsMounted())
             return true;
-        var data = __instance.pawn.GetGUData();
+        var data = __instance.pawn.GetExtendedPawnData();
 
         var pos = GenMapUI.LabelDrawPosFor(__instance.pawn, -(data.drawOffset + 0.75f));
         GenMapUI.DrawPawnLabel(__instance.pawn, pos, 1f, 9999f, null, GameFont.Tiny, true, true);

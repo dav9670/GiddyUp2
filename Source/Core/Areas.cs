@@ -31,7 +31,7 @@ public class Area_GU : Area
     {
         base.ExposeData();
         Scribe_Values.Look<string>(ref _label, "label", null, false);
-        Scribe_Values.Look<Color>(ref _color, "color", default, false);
+        Scribe_Values.Look(ref _color, "color", default, false);
     }
 }
 

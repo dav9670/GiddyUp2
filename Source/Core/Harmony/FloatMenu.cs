@@ -40,9 +40,9 @@ internal static class FloatMenuUtility
 {
     public static bool AddMountingOptions(Pawn animal, Pawn pawn, List<FloatMenuOption> opts)
     {
-        var pawnData = pawn.GetGUData();
+        var pawnData = pawn.GetExtendedPawnData();
         //Right click to dismount...
-        if (animal == pawnData.mount)
+        if (animal == pawnData.Mount)
         {
             if (animal.RaceProps.Roamer && AnimalPenUtility.GetCurrentPenOf(animal, true) == null)
                 opts.GenerateFloatMenuOption("GUC_DismountWithoutHitching".Translate(), true,
@@ -57,14 +57,14 @@ internal static class FloatMenuUtility
             if (animal.IsMountable(out var reason, pawn, true, true) && riderReason == Reason.False)
             {
                 //New mount
-                if (pawnData.mount == null)
+                if (pawnData.Mount == null)
                     return opts.GenerateFloatMenuOption("GUC_Mount".Translate(), true,
                         () => pawn.GoMount(animal, MountUtility.GiveJobMethod.Try));
                 //Switch mount
                 else
                     return opts.GenerateFloatMenuOption("GUC_SwitchMount".Translate(), true, delegate
                     {
-                        pawn.Dismount(pawnData.mount, pawnData, true);
+                        pawn.Dismount(pawnData.Mount, pawnData, true);
                         pawn.GoMount(animal, MountUtility.GiveJobMethod.Try);
                     });
             }

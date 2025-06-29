@@ -30,14 +30,14 @@ internal static class Patch_PrepareCaravan_Leave
         {
             if (pawn.RaceProps.Animal)
                 continue;
-            var pawnData = pawn.GetGUData();
-            if (pawnData.reservedMount != null)
+            var pawnData = pawn.GetExtendedPawnData();
+            if (pawnData.ReservedMount != null)
             {
-                if (pawnData.reservedMount.IsStillMountable(pawn, out var reason))
-                    pawn.GoMount(pawnData.reservedMount);
+                if (pawnData.ReservedMount.IsStillMountable(pawn, out var reason))
+                    pawn.GoMount(pawnData.ReservedMount);
                 else if (Settings.logging)
-                    Log.Message("[Giddy-Up] " + pawn.thingIDNumber.ToString() +
-                                " cannot mount their assigned caravan animal. Reason: " + reason.ToString());
+                    Log.Message("[Giddy-Up] " + pawn.thingIDNumber +
+                                " cannot mount their assigned caravan animal. Reason: " + reason);
             }
         }
     }

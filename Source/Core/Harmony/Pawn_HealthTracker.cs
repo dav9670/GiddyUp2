@@ -10,13 +10,13 @@ internal static class Patch_MakeDowned
     private static void Postfix(Pawn_HealthTracker __instance)
     {
         var pawn = __instance.pawn;
-        if (pawn.Faction == null || ExtendedDataStorage.GUComp == null)
-            return; //Null checking the GUcomp 'cause this could happen before the world sets up.
+        if (pawn.Faction == null || ExtendedDataStorage.Singleton == null)
+            return; //Null checking the singleton 'cause this could happen before the world sets up.
 
-        var pawnData = pawn.GetGUData();
+        var pawnData = pawn.GetExtendedPawnData();
         if (pawn.RaceProps.Humanlike)
-            pawn.InvoluntaryDismount(pawnData.reservedMount, pawnData);
-        else if (pawnData.reservedBy != null && pawn.HostileTo(Current.gameInt.worldInt.factionManager.ofPlayer))
+            pawn.InvoluntaryDismount(pawnData.ReservedMount, pawnData);
+        else if (pawnData.ReservedBy != null && pawn.HostileTo(Current.gameInt.worldInt.factionManager.ofPlayer))
             pawn.SetFaction(null); //If an enemy animal is downed, make it a wild animal so it can be rescued.
     }
 }
@@ -29,8 +29,8 @@ internal static class Patch_SetDead
         var pawn = __instance.pawn;
         if (pawn.Faction != null && pawn.RaceProps.Humanlike)
         {
-            var pawnData = pawn.GetGUData();
-            pawn.InvoluntaryDismount(pawnData.reservedMount, pawnData);
+            var pawnData = pawn.GetExtendedPawnData();
+            pawn.InvoluntaryDismount(pawnData.ReservedMount, pawnData);
         }
     }
 }

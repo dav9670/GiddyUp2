@@ -15,13 +15,13 @@ internal class PawnColumnWorker_Mountable_Colonists : PawnColumnWorker_Checkbox
 
     public override bool GetValue(Pawn pawn)
     {
-        var isChecked = pawn.GetGUData().automount;
+        var isChecked = pawn.GetExtendedPawnData().automount;
         return isChecked == Automount.Anyone || isChecked == Automount.Colonists;
     }
 
     public override void SetValue(Pawn pawn, bool value, PawnTable table)
     {
-        var pawnData = pawn.GetGUData();
+        var pawnData = pawn.GetExtendedPawnData();
         //Enabling?
         if (value)
         {
@@ -49,14 +49,14 @@ internal class PawnColumnWorker_Mountable_Slaves : PawnColumnWorker_Checkbox
 
     public override bool GetValue(Pawn pawn)
     {
-        var isChecked = pawn.GetGUData().automount;
+        var isChecked = pawn.GetExtendedPawnData().automount;
         return isChecked == Automount.Anyone || isChecked == Automount.Slaves;
     }
 
     //[SyncMethod]
     public override void SetValue(Pawn pawn, bool value, PawnTable table)
     {
-        var pawnData = pawn.GetGUData();
+        var pawnData = pawn.GetExtendedPawnData();
         //Enabling?
         if (value)
         {
@@ -89,6 +89,6 @@ internal class PawnColumnWorker_AllowedToRide : PawnColumnWorker_Checkbox
 
     public override void SetValue(Pawn pawn, bool value, PawnTable table)
     {
-        pawn.GetGUData().canRide = !pawn.CanRide();
+        pawn.GetExtendedPawnData().canRide = !pawn.CanRide();
     }
 }

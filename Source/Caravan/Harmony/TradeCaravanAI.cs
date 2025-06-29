@@ -28,7 +28,7 @@ internal static class Patch_TradeCaravanAI
 
     private static bool Prefix(Job __result, Pawn pawn)
     {
-        if (pawn.RaceProps.Animal && pawn.GetGUData().reservedBy != null)
+        if (pawn.RaceProps.Animal && pawn.GetExtendedPawnData().ReservedBy != null)
         {
             __result = null;
             return false;
@@ -52,14 +52,14 @@ internal static class Patch_GetClosestCarrier
     {
         if (__result != null)
         {
-            var animalData = __result.GetGUData();
-            if (animalData.reservedBy != null)
+            var animalData = __result.GetExtendedPawnData();
+            if (animalData.ReservedBy != null)
             {
                 var trader = TraderCaravanUtility.FindTrader(__instance.lord);
                 if (trader != null)
                     return trader;
                 else
-                    animalData.reservedBy.Dismount(__result, null, true, ropeIfNeeded: false);
+                    animalData.ReservedBy.Dismount(__result, null, true, ropeIfNeeded: false);
             }
         }
 

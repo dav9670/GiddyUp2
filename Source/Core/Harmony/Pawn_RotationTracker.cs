@@ -29,6 +29,6 @@ internal static class Patch_Rotation
             return;
 
         if (pawn.jobs != null && pawn.jobs.curDriver is JobDriver_Mounted jobDriver)
-            __instance.rotationInt = jobDriver.rider.Rotation;
+            __instance.rotationInt = jobDriver.Rider.Rotation;
     }
 }

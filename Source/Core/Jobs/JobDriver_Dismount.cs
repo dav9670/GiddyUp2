@@ -19,8 +19,8 @@ internal class JobDriver_Dismount : JobDriver
             defaultCompleteMode = ToilCompleteMode.Never,
             initAction = delegate
             {
-                var pawnData = pawn.GetGUData();
-                pawn.Dismount(pawnData.mount, pawnData, false, job.GetFirstTarget(TargetIndex.A));
+                var pawnData = pawn.GetExtendedPawnData();
+                pawn.Dismount(pawnData.Mount, pawnData, false, job.GetFirstTarget(TargetIndex.A));
                 ReadyForNextToil();
             }
         };

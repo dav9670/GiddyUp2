@@ -42,25 +42,25 @@ internal static class Pawn_DrawTracker_DrawPos
     public static Vector3 DrawOffset(Pawn_DrawTracker __instance)
     {
         var pawn = __instance.pawn;
-        var pawnData = pawn.GetGUData();
+        var pawnData = pawn.GetExtendedPawnData();
 
         //Failsafe. Should never happen but too dangerous to chance
-        if (pawnData.mount == null)
+        if (pawnData.Mount == null)
         {
             pawn.Dismount(null, pawnData, true);
             return Vector3.zero;
         }
 
-        var offset = pawnData.mount.Drawer.DrawPos;
+        var offset = pawnData.Mount.Drawer.DrawPos;
         if (pawnData.drawOffset != -1)
             offset.z = offset.z + pawnData.drawOffset;
         //Apply custom offsets
         var rotation = pawn.rotationInt;
-        var modX = pawnData.mount.def.GetModExtension<DrawingOffset>();
+        var modX = pawnData.Mount.def.GetModExtension<DrawingOffset>();
         if (modX != null)
             offset += AddCustomOffsets(rotation, modX);
 
-        if (rotation == Rot4.South && Settings.drawRulesCache.Contains(pawnData.mount.def.shortHash))
+        if (rotation == Rot4.South && Settings.DrawRulesCache.Contains(pawnData.Mount.def.shortHash))
             offset.y -= 0.01f;
         else
             offset.y += 0.01f;

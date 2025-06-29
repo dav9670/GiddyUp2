@@ -18,14 +18,14 @@ internal class Patch_NeedsToBeManagedByRope
         if (__result)
         {
             if ((pawn.IsMountedAnimal() && pawn.jobs != null && pawn.jobs.curDriver is Jobs.JobDriver_Mounted mounted &&
-                 !mounted.isParking) ||
+                 !mounted.IsParking) ||
                 pawn.CurJobDef == ResourceBank.JobDefOf.WaitForRider)
             {
                 return false;
             }
             else
             {
-                var reservedBy = pawn.GetGUData().reservedBy;
+                var reservedBy = pawn.GetExtendedPawnData().ReservedBy;
                 if (reservedBy != null && reservedBy.IsFormingCaravan())
                     return false;
             }

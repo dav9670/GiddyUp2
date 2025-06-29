@@ -35,9 +35,9 @@ public static class OptionsDrawUtility
         bool checkOn;
         var hash = def.shortHash;
         if (selectedTab == SelectedTab.BodySize)
-            checkOn = mountableCache.Contains(hash);
+            checkOn = MountableCache.Contains(hash);
         else
-            checkOn = drawRulesCache.Contains(hash);
+            checkOn = DrawRulesCache.Contains(hash);
 
         //Fetch bounding rect
         var rect = options.GetRect(LineHeight);
@@ -57,17 +57,17 @@ public static class OptionsDrawUtility
 
         if (selectedTab == SelectedTab.BodySize)
         {
-            if (checkOn && !mountableCache.Contains(hash))
-                mountableCache.Add(hash);
-            else if (!checkOn && mountableCache.Contains(hash))
-                mountableCache.Remove(hash);
+            if (checkOn && !MountableCache.Contains(hash))
+                MountableCache.Add(hash);
+            else if (!checkOn && MountableCache.Contains(hash))
+                MountableCache.Remove(hash);
         }
         else
         {
-            if (checkOn && !drawRulesCache.Contains(hash))
-                drawRulesCache.Add(hash);
-            else if (!checkOn && drawRulesCache.Contains(hash))
-                drawRulesCache.Remove(hash);
+            if (checkOn && !DrawRulesCache.Contains(hash))
+                DrawRulesCache.Add(hash);
+            else if (!checkOn && DrawRulesCache.Contains(hash))
+                DrawRulesCache.Remove(hash);
         }
     }
 

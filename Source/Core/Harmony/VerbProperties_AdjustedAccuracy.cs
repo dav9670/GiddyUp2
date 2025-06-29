@@ -18,7 +18,7 @@ internal static class VerbProperties_AdjustedAccuracy
         if (pawn == null || pawn.stances == null)
             return __result;
 
-        var mount = pawn.GetGUData().mount;
+        var mount = pawn.GetExtendedPawnData().Mount;
         if (mount == null)
             return __result;
 

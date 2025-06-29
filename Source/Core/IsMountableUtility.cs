@@ -31,7 +31,7 @@ public static class IsMountableUtility
         Forbidden
     };
 
-    private static HashSet<JobDef> busyJobs = new()
+    private static readonly HashSet<JobDef> BusyJobs = new()
     {
         ResourceBank.JobDefOf.Mounted, JobDefOf.LayEgg, JobDefOf.Nuzzle, JobDefOf.Lovin, JobDefOf.Vomit,
         JobDefOf.Wait_Downed
@@ -42,7 +42,7 @@ public static class IsMountableUtility
         return IsMountedAnimal(animal, out var rider);
     }
 
-    public static bool IsMountedAnimal(this Pawn animal, out Thing rider)
+    public static bool IsMountedAnimal(this Pawn animal, out Thing? rider)
     {
         if (animal.CurJobDef != ResourceBank.JobDefOf.Mounted)
         {
@@ -64,11 +64,19 @@ public static class IsMountableUtility
         return IsMountable(pawn, out reason, null, false, false, false);
     }
 
-    public static bool IsMountable(this Pawn animal, out Reason reason, Pawn rider, bool checkState = true,
+    public static bool IsMountable(this Pawn? animal, out Reason reason, Pawn? rider, bool checkState = true,
         bool checkFaction = false, bool checkTraining = true,
-        List<ReservationManager.Reservation> reservationsToCheck = null)
+        List<ReservationManager.Reservation>? reservationsToCheck = null)
     {
         reason = Reason.CanMount;
+        
+        //Check mod options
+        if (animal == null)
+        {
+            reason = Reason.NotInModOptions;
+            return false;
+        }
+        
         //Is even an animal?
         if (!animal.RaceProps.Animal || animal == rider)
         {
@@ -84,7 +92,7 @@ public static class IsMountableUtility
         }
 
         //Check mod options
-        if (animal == null || !Settings.mountableCache.Contains(animal.def.shortHash))
+        if (!Settings.MountableCache.Contains(animal.def.shortHash))
         {
             reason = Reason.NotInModOptions;
             return false;
@@ -94,16 +102,16 @@ public static class IsMountableUtility
         if (checkState)
         {
             //Animal is busy with a job?
-            if (busyJobs.Contains(animal.CurJobDef))
+            if (BusyJobs.Contains(animal.CurJobDef))
             {
                 //Is that job mounted?
                 if (animal.CurJobDef == ResourceBank.JobDefOf.Mounted)
                 {
                     //Is the rider of this mounted job this same pawn? Skip
-                    var animalData = animal.GetGUData();
-                    if (animalData.reservedBy != null &&
-                        animalData.reservedBy.CurJobDef == ResourceBank.JobDefOf.Mount &&
-                        animalData.reservedBy.GetGUData().reservedMount == animal)
+                    var animalData = animal.GetExtendedPawnData();
+                    if (animalData.ReservedBy != null &&
+                        animalData.ReservedBy.CurJobDef == ResourceBank.JobDefOf.Mount &&
+                        animalData.ReservedBy.GetExtendedPawnData().ReservedMount == animal)
                     {
                         goto RiderSkip;
                     }
@@ -133,7 +141,7 @@ public static class IsMountableUtility
             var animalLord = animal.GetLord();
             if (animalLord != null)
                 if (animalLord.LordJob != null && animalLord.LordJob is LordJob_FormAndSendCaravan &&
-                    animal.GetGUData().reservedBy != rider)
+                    animal.GetExtendedPawnData().ReservedBy != rider)
                 {
                     reason = Reason.IsBusyWithCaravan;
                     return false;
@@ -184,31 +192,33 @@ public static class IsMountableUtility
             return false;
         }
 
-        if (rider != null)
+        if (rider == null)
+            return true;
+        
+        //Is the pawn too much of a hefty lad?
+        if (rider.IsTooHeavy(animal))
         {
-            //Is the pawn too much of a hefty lad?
-            if (rider.IsTooHeavy(animal))
-            {
-                reason = Reason.TooHeavy;
-                return false;
-            }
-
-            //Can reserve? Null check as this may be a non-specific check like the UI
-            if (ReserversOfFast(animal, reservationsToCheck, out var claimants))
-                for (var i = claimants.Count; i-- > 0;)
-                {
-                    var claimant = claimants[i];
-                    if (claimant.CurJobDef != JobDefOf.RopeToPen)
-                    {
-                        reason = Reason.IsReserved;
-                        return false;
-                    }
-                }
+            reason = Reason.TooHeavy;
+            return false;
         }
 
+        //Can reserve? Null check as this may be a non-specific check like the UI
+        if (!ReserversOfFast(animal, reservationsToCheck, out var claimants))
+            return true;
+        
+        for (var i = claimants.Count; i-- > 0;)
+        {
+            var claimant = claimants[i];
+            if (claimant.CurJobDef == JobDefOf.RopeToPen)
+                continue;
+                
+            reason = Reason.IsReserved;
+            return false;
+        }
+        
         return true;
 
-        static bool ReserversOfFast(Pawn animal, List<ReservationManager.Reservation> reservations,
+        static bool ReserversOfFast(Pawn animal, List<ReservationManager.Reservation>? reservations,
             out List<Pawn> claimants)
         {
             claimants = new List<Pawn>();
@@ -227,36 +237,34 @@ public static class IsMountableUtility
 
     public static bool IsStillMountable(this Pawn animal, Pawn rider, out Reason reason)
     {
-        if (!animal.IsMountable(out reason, rider))
-        {
-            var animalData = animal.GetGUData();
-            if (animalData.reservedBy != null)
-            {
-                animalData.reservedBy.GetGUData().ReservedMount = null;
-                animalData.ReservedBy = null;
-            }
-
+        if (animal.IsMountable(out reason, rider))
+            return true;
+        
+        var animalData = animal.GetExtendedPawnData();
+        if (animalData.ReservedBy == null)
             return false;
-        }
+            
+        animalData.ReservedBy.GetExtendedPawnData().ReservedMount = null;
+        animalData.ReservedBy = null;
 
-        return true;
+        return false;
+
     }
 
-    public static bool IsAllowed(this Pawn rider, Pawn animal)
-    {
-        return rider.IsAllowed(animal.GetGUData());
-    }
+    public static bool IsAllowed(this Pawn rider, Pawn animal) => rider.IsAllowed(animal.GetExtendedPawnData());
 
     public static bool IsAllowed(this Pawn rider, ExtendedPawnData animalData)
     {
         var automount = animalData.automount;
-        if (automount == ExtendedPawnData.Automount.Anyone)
-            return true;
-        else if (automount == ExtendedPawnData.Automount.Colonists && rider.GuestStatus == null)
-            return true;
-        else if (automount == ExtendedPawnData.Automount.Slaves && rider.GuestStatus == GuestStatus.Slave)
-            return true;
-        return false;
+        switch (automount)
+        {
+            case ExtendedPawnData.Automount.Anyone:
+            case ExtendedPawnData.Automount.Colonists when rider.GuestStatus == null:
+            case ExtendedPawnData.Automount.Slaves when rider.GuestStatus == GuestStatus.Slave:
+                return true;
+            default:
+                return false;
+        }
     }
 
     public static bool IsCapableOfRiding(this Pawn pawn, out Reason reason)

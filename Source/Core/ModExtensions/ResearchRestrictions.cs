@@ -6,6 +6,6 @@ namespace GiddyUp;
 //For ThingDef
 internal class ResearchRestrictions : DefModExtension
 {
-    public ResearchProjectDef researchProjectDefToAttack = null;
-    public List<ResearchProjectDef> researchProjectDefs = new();
+    public ResearchProjectDef? researchProjectDefToAttack = null;
+    public List<ResearchProjectDef> researchProjectDefs = [];
 }

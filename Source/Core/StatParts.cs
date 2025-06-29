@@ -17,7 +17,7 @@ public class StatPart_Riding : StatPart
         {
             if (ExtendedDataStorage.isMounted.Contains(pawn.thingIDNumber))
             {
-                var mountSpeed = pawn.GetGUData().mount.GetStatValue(StatDefOf.MoveSpeed);
+                var mountSpeed = pawn.GetExtendedPawnData().Mount.GetStatValue(StatDefOf.MoveSpeed);
                 sb.AppendLine("GUC_StatPart_Mounted".Translate());
                 sb.AppendLine("    " + "GUC_StatPart_MountMoveSpeed".Translate() + ": " +
                               mountSpeed.ToStringByStyle(ToStringStyle.FloatTwo));
@@ -27,9 +27,9 @@ public class StatPart_Riding : StatPart
             {
                 sb.AppendLine("GUC_StatPart_Mounted".Translate());
                 float adjustedLevel = 0;
-                if (jobDriver.rider.skills != null)
+                if (jobDriver.Rider.skills != null)
                 {
-                    var skill = jobDriver.rider.skills.GetSkill(SkillDefOf.Animals).Level;
+                    var skill = jobDriver.Rider.skills.GetSkill(SkillDefOf.Animals).Level;
                     adjustedLevel = skill - (int)Math.Round(pawn.GetStatValue(StatDefOf.MinimumHandlingSkill, true));
                     var animalHandlingOffset = 1f + adjustedLevel * Settings.handlingMovementImpact / 100f;
                     sb.AppendLine("    " + "GUC_StatPart_HandlingMultiplier".Translate() + ": " +
@@ -59,7 +59,7 @@ public class StatPart_Riding : StatPart
         if (req.Thing is Pawn pawn)
         {
             if (ExtendedDataStorage.isMounted.Contains(pawn.thingIDNumber))
-                val = pawn.GetGUData().mount.GetStatValue(StatDefOf.MoveSpeed);
+                val = pawn.GetExtendedPawnData().Mount.GetStatValue(StatDefOf.MoveSpeed);
             else if (pawn.IsMountedAnimal(out var thing) && thing is Pawn rider)
                 val = GetRidingSpeed(val, pawn, rider.skills);
         }

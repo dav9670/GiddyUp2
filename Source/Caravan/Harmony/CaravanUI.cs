@@ -65,13 +65,11 @@ internal static class Patch_TransferableOneWayWidget
 
         var pawns = new List<Pawn>();
 
-        if (cachedTransferables != null)
-            foreach (var tow in cachedTransferables)
-            {
-                var towPawn = tow.AnyThing as Pawn;
-                if (towPawn != null)
-                    pawns.Add(tow.AnyThing as Pawn);
-            }
+        foreach (var tow in cachedTransferables)
+        {
+            if (tow.AnyThing is Pawn towPawn)
+                pawns.Add(towPawn);
+        }
 
         //It quacks like a duck, so it is one!
         SetSelectedForCaravan(pawn, trad);
@@ -85,15 +83,15 @@ internal static class Patch_TransferableOneWayWidget
 
     private static void SetSelectedForCaravan(Pawn pawn, TransferableOneWay trad)
     {
-        var pawnData = pawn.GetGUData();
-        var reservedMount = pawnData.reservedMount;
+        var pawnData = pawn.GetExtendedPawnData();
+        var reservedMount = pawnData.ReservedMount;
 
         if (trad.CountToTransfer == 0) //unset pawndata when pawn is not selected for caravan. 
         {
             pawnData.selectedForCaravan = false;
             if (reservedMount != null)
                 UnsetDataForRider(pawnData);
-            if (pawnData.reservedBy != null)
+            if (pawnData.ReservedBy != null)
                 UnsetDataForMount(pawnData);
         }
 
@@ -106,19 +104,19 @@ internal static class Patch_TransferableOneWayWidget
 
     private static void UnsetDataForRider(ExtendedPawnData pawnData)
     {
-        pawnData.reservedMount.GetGUData().ReservedBy = null;
+        pawnData.ReservedMount.GetExtendedPawnData().ReservedBy = null;
         pawnData.ReservedMount = null;
     }
 
     private static void UnsetDataForMount(ExtendedPawnData pawnData)
     {
-        pawnData.reservedBy.GetGUData().ReservedMount = null;
+        pawnData.ReservedBy.GetExtendedPawnData().ReservedMount = null;
         pawnData.ReservedBy = null;
     }
 
     private static void HandleAnimal(float num, Rect buttonRect, Pawn animal, List<Pawn> pawns, TransferableOneWay trad)
     {
-        var animalData = animal.GetGUData();
+        var animalData = animal.GetExtendedPawnData();
         Text.Anchor = TextAnchor.MiddleLeft;
 
         var list = new List<FloatMenuOption>();
@@ -135,8 +133,8 @@ internal static class Patch_TransferableOneWayWidget
         }
         else
         {
-            buttonText = animalData.reservedBy != null && animalData.reservedBy.GetGUData().selectedForCaravan
-                ? animalData.reservedBy.Name.ToStringShort
+            buttonText = animalData.ReservedBy != null && animalData.ReservedBy.GetExtendedPawnData().selectedForCaravan
+                ? animalData.ReservedBy.Name.ToStringShort
                 : "GU_Car_Set_Rider".Translate();
             canMount = true;
         }
@@ -153,7 +151,7 @@ internal static class Patch_TransferableOneWayWidget
                 var rider = pawns[i];
                 if (rider.IsColonist)
                 {
-                    var pawnData = rider.GetGUData();
+                    var pawnData = rider.GetExtendedPawnData();
                     if (!pawnData.selectedForCaravan)
                     {
                         list.Add(new FloatMenuOption(
@@ -162,7 +160,7 @@ internal static class Patch_TransferableOneWayWidget
                         continue;
                     }
 
-                    if (pawnData.reservedMount != null)
+                    if (pawnData.ReservedMount != null)
                         continue;
                     if (!rider.IsCapableOfRiding(out var riderReason))
                     {
@@ -172,15 +170,13 @@ internal static class Patch_TransferableOneWayWidget
                         else
                             cannotRideReason = rider.Name.ToStringShort + " (" + "GU_CannotRide".Translate() + ")";
 
-                        list.Add(new FloatMenuOption(cannotRideReason, null, MenuOptionPriority.Default, null, null, 0f,
-                            null, null));
+                        list.Add(new FloatMenuOption(cannotRideReason, null));
                         continue;
                     }
 
                     if (rider.IsTooHeavy(animal))
                     {
-                        list.Add(new FloatMenuOption(rider.Name.ToStringShort + " (" + "GUC_TooHeavy".Translate() + ")",
-                            null, MenuOptionPriority.Default, null, null, 0f, null, null));
+                        list.Add(new FloatMenuOption(rider.Name.ToStringShort + " (" + "GUC_TooHeavy".Translate() + ")", null));
                         continue;
                     }
 
@@ -190,7 +186,7 @@ internal static class Patch_TransferableOneWayWidget
                             SelectMountRider(animalData, pawnData, animal, rider);
                             trad.CountToTransfer = 1;
                         }
-                    }, MenuOptionPriority.High, null, null, 0f, null, null));
+                    }, MenuOptionPriority.High));
                 }
             }
 
@@ -201,7 +197,7 @@ internal static class Patch_TransferableOneWayWidget
                     ClearMountRider(animalData);
                     trad.CountToTransfer = 1;
                 }
-            }, MenuOptionPriority.Low, null, null, 0f, null, null));
+            }, MenuOptionPriority.Low));
 
             //Print list
             Find.WindowStack.Add(new FloatMenu(list));
@@ -211,8 +207,8 @@ internal static class Patch_TransferableOneWayWidget
     //[SyncMethod]
     private static void SelectMountRider(ExtendedPawnData animalData, ExtendedPawnData pawnData, Pawn animal, Pawn pawn)
     {
-        if (animalData.reservedBy != null)
-            animalData.reservedBy.GetGUData().ReservedMount = null;
+        if (animalData.ReservedBy != null)
+            animalData.ReservedBy.GetExtendedPawnData().ReservedMount = null;
 
         pawnData.ReservedMount = animal;
         animalData.ReservedBy = pawn;
@@ -223,9 +219,9 @@ internal static class Patch_TransferableOneWayWidget
     //[SyncMethod]
     private static void ClearMountRider(ExtendedPawnData animalData)
     {
-        if (animalData.reservedBy != null)
+        if (animalData.ReservedBy != null)
         {
-            var riderData = animalData.reservedBy.GetGUData();
+            var riderData = animalData.ReservedBy.GetExtendedPawnData();
             riderData.ReservedMount = null;
         }
 

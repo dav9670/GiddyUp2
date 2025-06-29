@@ -27,6 +27,11 @@ public static class ResourceBank
 
     public const int MapEdgeIgnore = 8;
 
+    /// <summary>
+    /// Animal under this value are considered rideable by default
+    /// </summary>
+    public const float WildnessThreshold = 0.6f;
+    
     [DefOf]
     public class ConceptDefOf
     {

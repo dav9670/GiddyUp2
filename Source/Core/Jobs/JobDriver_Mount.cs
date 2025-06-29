@@ -10,27 +10,24 @@ namespace GiddyUp.Jobs;
 
 public class JobDriver_Mount : JobDriver
 {
-    public override bool TryMakePreToilReservations(bool errorOnFailed)
-    {
-        return true;
-    }
+    public override bool TryMakePreToilReservations(bool errorOnFailed) => true;
 
     public Pawn Mount => job.targetA.Thing as Pawn;
 
-    private static SimpleCurve skillFactor = new()
+    private static readonly SimpleCurve SkillFactor = new()
     {
         { new CurvePoint(0f, 1.4f) },
         { new CurvePoint(8f, 1f) },
         { new CurvePoint(20f, 0.33f) }
     };
 
-    private static SimpleCurve wildnessFactor = new()
+    private static readonly SimpleCurve WildnessFactor = new()
     {
         { new CurvePoint(0.35f, 0.8f) },
         { new CurvePoint(1f, 2f) }
     };
 
-    private static SimpleCurve bodySizeFactor = new()
+    private static readonly SimpleCurve BodySizeFactor = new()
     {
         { new CurvePoint(2f, 200f) },
         { new CurvePoint(4f, 300f) }
@@ -66,10 +63,10 @@ public class JobDriver_Mount : JobDriver
     private Toil TalkToAnimal()
     {
         var mount = Mount;
-        var mountComplexity = (int)(bodySizeFactor.Evaluate(mount.BodySize) *
-                                    wildnessFactor.Evaluate(
+        var mountComplexity = (int)(BodySizeFactor.Evaluate(mount.BodySize) *
+                                    WildnessFactor.Evaluate(
                                         mount.kindDef.race.GetStatValueAbstract(StatDefOf.Wildness)) *
-                                    skillFactor.Evaluate(pawn.skills?.GetSkill(SkillDefOf.Animals).Level ?? 0));
+                                    SkillFactor.Evaluate(pawn.skills?.GetSkill(SkillDefOf.Animals).Level ?? 0));
         if (Settings.logging)
             Log.Message("[Giddy-Up] Number of ticks for " + pawn.Label + " to mount " + mount.def.defName + " : " +
                         mountComplexity.ToString());
@@ -81,16 +78,13 @@ public class JobDriver_Mount : JobDriver
             {
                 delegate
                 {
-                    if (mount?.CurJobDef != ResourceBank.JobDefOf.Mounted)
-                        return JobCondition.Incompletable;
-                    return JobCondition.Ongoing;
+                    return mount?.CurJobDef != ResourceBank.JobDefOf.Mounted ? JobCondition.Incompletable : JobCondition.Ongoing;
                 }
             },
             initAction = delegate
             {
                 var actor = GetActor();
-                if (actor.interactions != null)
-                    actor.interactions.TryInteractWith(mount, InteractionDefOf.AnimalChat);
+                actor.interactions?.TryInteractWith(mount, InteractionDefOf.AnimalChat);
             },
             finishActions = new List<Action>
             {
@@ -98,7 +92,7 @@ public class JobDriver_Mount : JobDriver
                 {
                     //Final checks
                     if (!pawn.CanReserve(mount) || //Can reserve?
-                        (mount.GetGUData().reservedBy != pawn &&
+                        (mount.GetExtendedPawnData().ReservedBy != pawn &&
                          mount.IsFormingCaravan()) || //Involved in someone else's caravan?
                         mount.Faction != pawn.Faction) //Switched factions mid-step? (quests)
                         return;

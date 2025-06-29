@@ -12,8 +12,9 @@ namespace GiddyUp;
 
 internal static class MountUtility
 {
-    public static HashSet<PawnKindDef> allWildAnimals = new(), allDomesticAnimals = new();
-
+    private static readonly HashSet<PawnKindDef> AllWildAnimals = [];
+    private static readonly HashSet<PawnKindDef> AllDomesticAnimals = [];
+    
     public enum GiveJobMethod
     {
         Inject,
@@ -36,79 +37,107 @@ internal static class MountUtility
         Auto
     };
 
+    //Processes biome information to determine where animals come from, used for NPC mount spawning
+    public static void BuildAnimalBiomeCache()
+    {
+        for (var i = DefDatabase<BiomeDef>.DefCount; i-- > 0;)
+        {
+            var biomeDef = DefDatabase<BiomeDef>.defsList[i];
+            try
+            {
+                foreach (var animalKind in biomeDef.AllWildAnimals)
+                    AllWildAnimals.Add(animalKind);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(
+                    "[Giddy-Up] An error occured calling AllWildAnimals. This may happen if a mod has malformed PawnKindDef when the game is trying to process the def database for the first time. Skipping...\n" +
+                    ex);
+            }
+        }
+
+        for (var i = DefDatabase<PawnKindDef>.DefCount; i-- > 0;)
+        {
+            var pawnKindDef = DefDatabase<PawnKindDef>.defsList[i];
+            if (pawnKindDef.race != null && pawnKindDef.race.GetStatValueAbstract(StatDefOf.Wildness) <= ResourceBank.WildnessThreshold &&
+                pawnKindDef.race.tradeTags != null &&
+                (pawnKindDef.race.tradeTags.Contains("AnimalFighter") ||
+                 pawnKindDef.race.tradeTags.Contains("AnimalFarm")))
+                AllDomesticAnimals.Add(pawnKindDef);
+        }
+    }
+    
     public static ThinkResult? GoMount(this Pawn rider, Pawn animal, GiveJobMethod giveJobMethod = GiveJobMethod.Inject,
-        ThinkResult? thinkResult = null, Job currentJob = null)
+        ThinkResult? thinkResult = null, Job? currentJob = null)
     {
         //Cancel any reservations. The IsMountable method already checked if the reservation was fine to abort
         animal.CancelRopers();
 
-        //Immediately mount the pawn on the animal. This is done when the mount job finishes, or emulating that it has already finished such as when pawns come in pre-mounted
-        if (giveJobMethod == GiveJobMethod.Instant)
+        switch (giveJobMethod)
         {
-            rider.Mount(animal);
-        }
-
-        //This prompts them to mount up before they carry out another job they were planning to do
-        else if (giveJobMethod == GiveJobMethod.Inject)
-        {
-            if (currentJob != null)
-                rider.jobs?.jobQueue?.EnqueueFirst(currentJob);
-            if (thinkResult != null)
-                return new ThinkResult(new Job(ResourceBank.JobDefOf.Mount, animal) { count = 1 },
-                    thinkResult.Value.SourceNode, thinkResult.Value.Tag, false);
-            else
-                rider.jobs?.StartJob(new Job(
-                        ResourceBank.JobDefOf.Mount, animal) { count = 1 },
-                    JobCondition.InterruptOptional,
-                    resumeCurJobAfterwards: currentJob == null,
-                    cancelBusyStances: false,
-                    keepCarryingThingOverride: true);
-        }
-
-        //This has them mount after they're done doing their current task
-        else if (giveJobMethod == GiveJobMethod.Try)
-        {
-            animal.jobs.StopAll();
-            animal.jobs.EndCurrentJob(JobCondition.InterruptForced, false,
-                false); //The StopAll above will trigger the WaitForRider job. This will stop it.
-            animal.pather.StopDead();
-            rider.jobs.TryTakeOrderedJob(new Job(ResourceBank.JobDefOf.Mount, animal) { count = 1 });
+            //Immediately mount the pawn on the animal. This is done when the mount job finishes, or emulating that it has already finished such as when pawns come in pre-mounted
+            case GiveJobMethod.Instant:
+                rider.Mount(animal);
+                break;
+            //This prompts them to mount up before they carry out another job they were planning to do
+            case GiveJobMethod.Inject:
+            {
+                if (currentJob != null)
+                    rider.jobs?.jobQueue?.EnqueueFirst(currentJob);
+                if (thinkResult != null)
+                    return new ThinkResult(new Job(ResourceBank.JobDefOf.Mount, animal) { count = 1 },
+                        thinkResult.Value.SourceNode, thinkResult.Value.Tag, false);
+                else
+                    rider.jobs?.StartJob(new Job(
+                            ResourceBank.JobDefOf.Mount, animal) { count = 1 },
+                        JobCondition.InterruptOptional,
+                        resumeCurJobAfterwards: currentJob == null,
+                        cancelBusyStances: false,
+                        keepCarryingThingOverride: true);
+                break;
+            }
+            //This has them mount after they're done doing their current task
+            case GiveJobMethod.Try:
+                animal.jobs.StopAll();
+                animal.jobs.EndCurrentJob(JobCondition.InterruptForced, false,
+                    false); //The StopAll above will trigger the WaitForRider job. This will stop it.
+                animal.pather.StopDead();
+                rider.jobs.TryTakeOrderedJob(new Job(ResourceBank.JobDefOf.Mount, animal) { count = 1 });
+                break;
         }
 
         return null;
     }
 
-    private static void Mount(this Pawn rider, Pawn animal)
+    private static void Mount(this Pawn rider, Pawn? animal)
     {
         //First check if the pawn had a mount to begin with...
-        var pawnData = rider.GetGUData();
+        var pawnData = rider.GetExtendedPawnData();
+        animal ??= pawnData.ReservedMount;
+        
         if (animal == null)
-            animal = pawnData.reservedMount;
+            return;
+        
+        //Instantly mount, as if the mount jobDriver had just finished
+        pawnData.Mount = animal;
+        ExtendedDataStorage.isMounted.Add(rider.thingIDNumber);
+        pawnData.ReservedMount = animal;
+        animal.GetExtendedPawnData().ReservedBy = rider;
 
-        //If they did...
-        if (animal != null)
-        {
-            //Instantly mount, as if the mount jobdriver had just finished
-            pawnData.mount = animal;
-            ExtendedDataStorage.isMounted.Add(rider.thingIDNumber);
-            pawnData.ReservedMount = animal;
-            animal.GetGUData().ReservedBy = rider;
+        //Break ropes if there are any
+        if (animal.roping?.IsRoped ?? false)
+            animal.roping.BreakAllRopes();
 
-            //Break ropes if there are any
-            if (animal.roping?.IsRoped ?? false)
-                animal.roping.BreakAllRopes();
+        //Set the offset
+        pawnData.drawOffset = TextureUtility.FetchCache(animal);
 
-            //Set the offset
-            pawnData.drawOffset = TextureUtility.FetchCache(animal);
-
-            //Set the animal job and state
-            if (animal.CurJobDef != ResourceBank.JobDefOf.Mounted)
-            {
-                if (animal.HostileTo(Current.gameInt.worldInt.factionManager.ofPlayer))
-                    animal.mindState.duty = new PawnDuty(DutyDefOf.Defend);
-                animal.jobs.TryTakeOrderedJob(new Job(ResourceBank.JobDefOf.Mounted, rider) { count = 1 });
-            }
-        }
+        //Set the animal job and state
+        if (animal.CurJobDef == ResourceBank.JobDefOf.Mounted)
+            return;
+        
+        if (animal.HostileTo(Current.gameInt.worldInt.factionManager.ofPlayer))
+            animal.mindState.duty = new PawnDuty(DutyDefOf.Defend);
+        animal.jobs.TryTakeOrderedJob(new Job(ResourceBank.JobDefOf.Mounted, rider) { count = 1 });
     }
 
     public static void TryAutoMount(this Pawn pawn, Pawn_JobTracker jobTracker, ref ThinkResult thinkResult)
@@ -141,7 +170,7 @@ internal static class MountUtility
         else
             firstToSecondTargetDistance = 0;
 
-        var pawnData = pawn.GetGUData();
+        var pawnData = pawn.GetExtendedPawnData();
         if (!pawnData.canRide)
             return;
 
@@ -163,7 +192,7 @@ internal static class MountUtility
             if (GetBestAnimal(pawn, out var bestAnimal, firstTarget, secondTarget, pawnTargetDistance,
                     firstToSecondTargetDistance, pawnData))
             {
-                //Check if the mount is too close to the destination to be worht it
+                //Check if the mount is too close to the destination to be worth it
                 if (bestAnimal.Position.DistanceTo(firstTarget) < Settings.minAutoMountDistance / 4)
                     return;
 
@@ -188,8 +217,8 @@ internal static class MountUtility
             targetLoc = areaFound.GetClosestAreaLoc(target == default ? rider.Position : target);
             if (isGuest && targetLoc.DistanceTo(rider.Position) > ResourceBank.GuestSpotCheckRange)
             {
-                var guestData = rider.GetGUData();
-                rider.Dismount(guestData.mount, guestData);
+                var guestData = rider.GetExtendedPawnData();
+                rider.Dismount(guestData.Mount, guestData);
                 return false;
             }
         }
@@ -225,17 +254,17 @@ internal static class MountUtility
     {
         ExtendedDataStorage.isMounted.Remove(rider.thingIDNumber);
         if (pawnData == null)
-            pawnData = rider.GetGUData();
-        pawnData.mount = null;
+            pawnData = rider.GetExtendedPawnData();
+        pawnData.Mount = null;
         if (Settings.logging)
             Log.Message("[Giddy-Up] " + rider.Label + " no longer riding  " + (animal?.Label ?? "NULL"));
 
         //Normally should not happen, may come in null from sanity checks. Odd bugs or save/reload conflicts between version changes
         ExtendedPawnData? animalData;
         if (animal == null)
-            animalData = ExtendedDataStorage.GUComp.ReverseLookup(rider.thingIDNumber);
+            animalData = ExtendedDataStorage.Singleton.GetExtendedPawnDataReverseLookup(rider.thingIDNumber);
         else
-            animalData = animal.GetGUData();
+            animalData = animal.GetExtendedPawnData();
 
         //Reservation handling
         if (clearReservation)
@@ -275,9 +304,9 @@ internal static class MountUtility
         }
 
         //Follow the rider for a while to give it an opportunity to take a ride back
-        if (Settings.rideAndRollEnabled && !rider.Drafted && rider.Faction.def.isPlayer && animalData?.reservedBy != null)
+        if (Settings.rideAndRollEnabled && !rider.Drafted && rider.Faction.def.isPlayer && animalData?.ReservedBy != null)
             if (waitForRider)
-                animal.jobs.jobQueue.EnqueueFirst(new Job(ResourceBank.JobDefOf.WaitForRider, animalData.reservedBy)
+                animal.jobs.jobQueue.EnqueueFirst(new Job(ResourceBank.JobDefOf.WaitForRider, animalData.ReservedBy)
                 {
                     expiryInterval = Settings.waitForRiderTimer,
                     checkOverrideOnExpire = true,
@@ -296,8 +325,13 @@ internal static class MountUtility
         Dismount(rider, animal, pawnData, true, ropeIfNeeded: false, waitForRider: false);
     }
 
-    public static bool FindPlaceToDismount(this Pawn rider, Area? areaDropAnimal, Area? areaNoMount,
-        IntVec3 riderDestination, out IntVec3 parkLoc, Pawn animal, out DismountLocationType dismountLocationType)
+    public static bool FindPlaceToDismount(this Pawn rider, 
+        Area? areaDropAnimal, 
+        Area? areaNoMount, 
+        IntVec3 riderDestination, 
+        out IntVec3 parkLoc, 
+        Pawn? animal, 
+        out DismountLocationType dismountLocationType)
     {
         var map = rider.Map;
         if (areaDropAnimal == null || areaDropAnimal.TrueCount == 0)
@@ -319,15 +353,12 @@ internal static class MountUtility
         if (parkLoc.DistanceTo(riderDestination) > Settings.autoHitchDistance)
         {
             dismountLocationType = DismountLocationType.Auto;
-            Predicate<IntVec3> freeCell = delegate(IntVec3 cell)
-            {
-                return cell.Standable(map) &&
-                       cell.GetDangerFor(animal, map) == Danger.None &&
-                       !cell.Fogged(map) &&
-                       cell.InBounds(map) &&
-                       (areaNoMount == null || !areaNoMount.innerGrid[map.cellIndices.CellToIndex(cell)]) &&
-                       rider.CanReserveAndReach(cell, PathEndMode.OnCell, Danger.None);
-            };
+            Predicate<IntVec3> freeCell = cell => cell.Standable(map) &&
+                                                  cell.GetDangerFor(animal, map) == Danger.None &&
+                                                  !cell.Fogged(map) &&
+                                                  cell.InBounds(map) &&
+                                                  (areaNoMount == null || !areaNoMount.innerGrid[map.cellIndices.CellToIndex(cell)]) &&
+                                                  rider.CanReserveAndReach(cell, PathEndMode.OnCell, Danger.None);
 
             var foundRandomCellNear = false;
             for (var attempt = 1; attempt < 8; attempt++)
@@ -341,7 +372,7 @@ internal static class MountUtility
             {
                 if (Settings.logging)
                     Log.Message("[Giddy-Up] " + rider.Label + " could not find a valid autohitch spot near " +
-                                parkLoc.ToString());
+                                parkLoc);
                 parkLoc = IntVec3.Invalid;
             }
         }
@@ -420,7 +451,7 @@ internal static class MountUtility
 
             var random = Rand.Range(1, 100);
 
-            PawnKindDef pawnKindDef;
+            PawnKindDef? pawnKindDef;
             Pawn animal;
             var modExtension = pawn.kindDef.GetModExtension<CustomMounts>();
             if (hasUnmountedPackAnimals)
@@ -481,7 +512,7 @@ internal static class MountUtility
                 }
 
                 Predicate<PawnKindDef> commonPredicate = pawnKindDef =>
-                    Settings.mountableCache.Contains(pawnKindDef.race.shortHash) && //Is mountable?
+                    Settings.MountableCache.Contains(pawnKindDef.race.shortHash) && //Is mountable?
                     parms.points >
                     pawnKindDef.combatPower *
                     ResourceBank.CombatPowerFactor && //Is not too powerful for this particular raid?
@@ -571,7 +602,7 @@ internal static class MountUtility
                 domesticAnimals = factionRules.allowedNonWildAnimals.ToArray();
                 localAnimals = map.Biome.AllWildAnimals.Where(x =>
                     wildAnimalsReadonly.Contains(x) && map.mapTemperature.SeasonAcceptableFor(x.race) &&
-                    Settings.mountableCache.Contains(x.shortHash) && parms.points > x.combatPower * 2f).ToArray();
+                    Settings.MountableCache.Contains(x.shortHash) && parms.points > x.combatPower * 2f).ToArray();
 
                 //Override mount chance
                 if (factionRules.mountChance > -1)
@@ -590,10 +621,10 @@ internal static class MountUtility
             }
             else
             {
-                wildAnimals = allWildAnimals.ToArray();
-                domesticAnimals = allDomesticAnimals.ToArray();
+                wildAnimals = AllWildAnimals.ToArray();
+                domesticAnimals = AllDomesticAnimals.ToArray();
                 localAnimals = map.Biome.AllWildAnimals.Where(x =>
-                    map.mapTemperature.SeasonAcceptableFor(x.race) && Settings.mountableCache.Contains(x.shortHash) &&
+                    map.mapTemperature.SeasonAcceptableFor(x.race) && Settings.MountableCache.Contains(x.shortHash) &&
                     parms.points > x.combatPower * 2f).ToArray();
             }
         }
@@ -657,29 +688,17 @@ internal static class MountUtility
     }
 
     //Gets animal that'll get the pawn to the target the quickest. Returns null if no animal is found or if walking is faster. 
-    public static bool GetBestAnimal(Pawn pawn, out Pawn bestAnimal, IntVec3 firstTarget, IntVec3 secondTarget,
+    private static bool GetBestAnimal(Pawn pawn, out Pawn? bestAnimal, IntVec3 firstTarget, IntVec3 secondTarget,
         float pawnTargetDistance, float firstToSecondTargetDistance, ExtendedPawnData pawnData)
     {
         //Prepare locals
         var pawnWalkSpeed = pawn.GetStatValue(StatDefOf.MoveSpeed);
         var timeNormalWalking = (pawnTargetDistance + firstToSecondTargetDistance) / pawnWalkSpeed;
-        var firstTargetInForbiddenArea = false;
-        var secondTargetInForbiddenArea = false;
         var map = pawn.Map;
         map.GetGUAreas(out var areaNoMount, out var areaDropAnimal);
 
-        //This notes that the first destination is in a no-ride zone
-        var areaDropCache = new IntVec3[0];
-        if (areaNoMount != null && areaDropAnimal != null)
-        {
-            firstTargetInForbiddenArea = areaNoMount.innerGrid[map.cellIndices.CellToIndex(firstTarget)];
-            secondTargetInForbiddenArea =
-                secondTarget.y >= 0 && areaNoMount.innerGrid[map.cellIndices.CellToIndex(secondTarget)];
-            areaDropCache = areaDropAnimal.ActiveCells.ToArray();
-        }
-
         //Start looking for an animal
-        Pawn closestAnimal = null;
+        Pawn? closestAnimal = null;
         var timeBestRiding = float.MaxValue;
         var distanceBestRiding = float.MaxValue;
         var reservedAnimals = map.FetchReservedAnimals();
@@ -747,18 +766,12 @@ internal static class MountUtility
         {
             bestAnimal = closestAnimal;
 
-            //Known dead zones
-            if (ExtendedDataStorage.GUComp.badSpots.Contains(firstTarget))
-            {
-                //Check if this blacklisting is still valid
-                if (pawn.FindPlaceToDismount(areaDropAnimal, areaNoMount, firstTarget, out var dismountingAt,
-                        bestAnimal, out var dismountLocationType))
-                    ExtendedDataStorage.GUComp.badSpots.Remove(firstTarget);
-                else
-                    return false;
-            }
-
-            return true;
+            if (!ExtendedDataStorage.Singleton.BadSpots.Contains(firstTarget))
+                return true;
+            
+            //Check if this blacklisting is still valid
+            var badSpotUpdated = ExtendedDataStorage.Singleton.UpdateBadSpot(pawn, areaDropAnimal, areaNoMount, firstTarget, bestAnimal);
+            return badSpotUpdated;
         }
 
         bestAnimal = null;

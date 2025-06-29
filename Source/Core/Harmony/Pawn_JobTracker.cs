@@ -62,17 +62,17 @@ internal static class Patch_DetermineNextJob
             //Sanity check, make sure the mount driver is still valid
             if (pawn.IsMounted() && pawn.IsColonist)
             {
-                var pawnData = pawn.GetGUData();
-                if (pawnData.mount.CurJobDef != ResourceBank.JobDefOf.Mounted ||
-                    (pawnData.mount.jobs.curDriver is JobDriver_Mounted driver && driver.rider != pawn))
+                var pawnData = pawn.GetExtendedPawnData();
+                if (pawnData.Mount.CurJobDef != ResourceBank.JobDefOf.Mounted ||
+                    (pawnData.Mount.jobs.curDriver is JobDriver_Mounted driver && driver.Rider != pawn))
                     pawn.Dismount(null, pawnData, true);
             }
             //If a hostile pawn owns an animal, make sure it mounts it whenever possible
             else if (pawn.Faction.HostileTo(Current.gameInt.worldInt.factionManager.ofPlayer) &&
                      !pawn.Downed && !pawn.IsPrisoner && !pawn.HasAttachment(ThingDefOf.Fire))
             {
-                var pawnData = pawn.GetGUData();
-                var hostileMount = pawnData.reservedMount;
+                var pawnData = pawn.GetExtendedPawnData();
+                var hostileMount = pawnData.ReservedMount;
                 if (hostileMount == null || !hostileMount.IsMountable(out var reason, pawn, true, true))
                     return;
                 var qJob = pawn.jobs.jobQueue.FirstOrFallback(null);
@@ -93,7 +93,7 @@ internal static class Patch_DetermineNextJob
             //Handle failsafe for roped animals belonging to invalid pawns
             if (pawn.IsRoped())
             {
-                var owner = pawn.GetGUData().reservedBy;
+                var owner = pawn.GetExtendedPawnData().ReservedBy;
                 if (owner == null || owner.Dead || !owner.Spawned)
                     pawn.roping.BreakAllRopes();
             }
@@ -141,15 +141,15 @@ internal static class Patch_DetermineNextJob
                     return;
             }
 
-            var pawnData = pawn.GetGUData();
+            var pawnData = pawn.GetExtendedPawnData();
             var curLordToil = lord.CurLordToil;
 
             //Caravan is headin' out, go mount up, boys
             if (curLordToil is LordToil_ExitMapAndEscortCarriers || curLordToil is LordToil_Travel ||
                 curLordToil is LordToil_ExitMap || curLordToil is LordToil_ExitMapTraderFighting)
             {
-                var animal = pawnData.reservedMount;
-                if (animal != null && pawnData.mount == null)
+                var animal = pawnData.ReservedMount;
+                if (animal != null && pawnData.Mount == null)
                 {
                     if (animal.IsMountable(out var reason, pawn, true, true))
                         thinkResult = pawn.GoMount(animal, MountUtility.GiveJobMethod.Inject, thinkResult).Value;
@@ -163,15 +163,15 @@ internal static class Patch_DetermineNextJob
             }
 
             //Caravan just arrived dismount
-            else if (pawnData.mount != null &&
+            else if (pawnData.Mount != null &&
                      curLordToil is LordToil_DefendPoint) //first option is internal class, hence this way of accessing. 
             {
                 //Dismount on-the-spot if it's a pack animal, the guards want to keep it nearby
-                if (pawnData.mount.inventory != null && pawnData.mount.inventory.innerContainer.Count > 0)
-                    pawn.Dismount(pawnData.mount, pawnData);
+                if (pawnData.Mount.inventory != null && pawnData.Mount.inventory.innerContainer.Count > 0)
+                    pawn.Dismount(pawnData.Mount, pawnData);
                 //Other animals go to the assigned dismount spot.
                 else
-                    pawn.GoDismount(pawnData.mount);
+                    pawn.GoDismount(pawnData.Mount);
             }
         }
     }
