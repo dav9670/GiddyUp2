@@ -12,9 +12,13 @@ public class JobDriver_Mounted : JobDriver
 {
     private static readonly Dictionary<JobDef, bool> AllowedJobs = new();
     
-    public Pawn? Rider { get; private set; }
+    private Pawn _rider = null!;
+    public Pawn Rider
+    {
+        get => _rider;
+        private set => _rider = value;
+    }
 
-    
     private bool _isParking;
     public bool IsParking
     {
@@ -25,8 +29,8 @@ public class JobDriver_Mounted : JobDriver
     private bool _isTrained;
     private bool _interrupted;
     private bool _isDespawning;
-    private ExtendedPawnData _riderData;
-    private Map _map;
+    private ExtendedPawnData _riderData = null!;
+    private Map _map = null!;
     private IntVec3 _startingPoint, _dismountingAt, _riderOriginalDestination;
     private PathEndMode _originalPeMode = PathEndMode.Touch;
     private MountUtility.DismountLocationType _dismountLocationType = MountUtility.DismountLocationType.Auto;
@@ -65,7 +69,9 @@ public class JobDriver_Mounted : JobDriver
     public override IEnumerable<Toil> MakeNewToils()
     {
         this.FailOnDespawnedNullOrForbidden(TargetIndex.A);
-        Rider = job.targetA.Thing as Pawn;
+        var rider = job.targetA.Thing as Pawn;
+        this.FailOn(() => rider == null);
+        Rider = rider!;
         _riderData = Rider.GetExtendedPawnData();
         _isTrained = pawn.training != null && pawn.training.HasLearned(TrainableDefOf.Obedience);
         _map = Map;
@@ -90,20 +96,19 @@ public class JobDriver_Mounted : JobDriver
                 if (Current.gameInt.tickManager.ticksGameInt % 15 != 0) //Check 4 times per second
                     return;
                 
-                var curJobDef = Rider.CurJobDef;
-                if (Rider == null || Rider.Dead || !Rider.Spawned || Rider.Downed || Rider.InMentalState ||
+                if (Rider.Dead || !Rider.Spawned || Rider.Downed || Rider.InMentalState ||
                     //Rider changed their mind
-                    (curJobDef != ResourceBank.JobDefOf.Mount &&
-                     curJobDef != JobDefOf.Vomit &&
-                     curJobDef != JobDefOf.Wait_MaintainPosture &&
-                     curJobDef != JobDefOf.Wait &&
+                    (Rider.CurJobDef != ResourceBank.JobDefOf.Mount &&
+                     Rider.CurJobDef != JobDefOf.Vomit &&
+                     Rider.CurJobDef != JobDefOf.Wait_MaintainPosture &&
+                     Rider.CurJobDef != JobDefOf.Wait &&
                      _riderData.Mount == null) ||
                     //Rider is cheating on this mount and went with another
                     (Rider.CurJobDef == ResourceBank.JobDefOf.Mount &&
                      Rider.jobs.curDriver is JobDriver_Mount mountDriver && mountDriver.Mount != pawn))
                 {
                     if (Settings.logging)
-                        Log.Message("[Giddy-Up] " + pawn.Label + " is no longer waiting for " + Rider.Label);
+                        Log.Message("[Giddy-Up] " + pawn.Label + " is no longer waiting for " + Rider?.Label);
                     _interrupted = true;
                     ReadyForNextToil();
                 }
@@ -123,8 +128,8 @@ public class JobDriver_Mounted : JobDriver
                 {
                     if (Settings.logging)
                         Log.Message("[Giddy-Up] " + pawn.Label + " dismounting for reason: " +
-                                    dismountReason.ToString() + " (rider's job was: " +
-                                    (Rider.CurJobDef?.ToString() ?? "NULL" + ")"));
+                                    dismountReason + " (rider's job was: " +
+                                    (Rider?.CurJobDef?.ToString() ?? "NULL" + ")"));
 
                     //Check if something went wrong
                     if (dismountReason == DismountReason.ParkingFailSafe)
@@ -159,7 +164,7 @@ public class JobDriver_Mounted : JobDriver
 
                     //Check if the mount was meant to despawn along with the rider. This is already handled in the RiderShouldDismount but some spaghetti code elsewhere could bypass it
                     //TODO: See if the two could be unified
-                    if (!_isDespawning && Rider != null && !pawn.Faction.IsPlayer && !Rider.Spawned && pawn.Position.CloseToEdge(_map, ResourceBank.MapEdgeIgnore))
+                    if (!_isDespawning && !pawn.Faction.IsPlayer && !Rider.Spawned && pawn.Position.CloseToEdge(_map, ResourceBank.MapEdgeIgnore))
                     {
                         _isDespawning = true; //Avoid recurssive loop
                         pawn.ExitMap(false, CellRect.WholeMap(_map).GetClosestEdge(pawn.Position));
@@ -182,10 +187,7 @@ public class JobDriver_Mounted : JobDriver
                  _dismountingAt.AdjacentTo8Way(Rider.pather.nextCell)))
             {
                 Rider.pather.StartPath(_riderOriginalDestination, _originalPeMode); //Resume original work
-                if (_startingPoint.DistanceTo(_dismountingAt) < 10f)
-                    return DismountReason.ParkingFailSafe;
-                else
-                    return DismountReason.Parking;
+                return _startingPoint.DistanceTo(_dismountingAt) < 10f ? DismountReason.ParkingFailSafe : DismountReason.Parking;
             }
 
             if (Rider.pather.destination.Cell != _dismountingAt)
@@ -220,7 +222,13 @@ public class JobDriver_Mounted : JobDriver
             return DismountReason.LeftMap;
         }
 
-        var allowedJob = AllowedJobs.TryGetValue(Rider.CurJobDef, out var checkTargets);
+        var allowedJob = false;
+        var checkTargets = false;
+        if (Rider.CurJobDef != null)
+        {
+            allowedJob = Rider.CurJobDef != null && AllowedJobs.TryGetValue(Rider.CurJobDef, out checkTargets);
+        }
+        
         var riderDestination = Rider.pather.Destination.Cell;
         _map.GetGUAreas(out var areaNoMount, out var areaDropAnimal);
 
@@ -290,7 +298,7 @@ public class JobDriver_Mounted : JobDriver
 
     private void TryAttackEnemy(Pawn rider)
     {
-        Thing targetThing = null;
+        Thing? targetThing = null;
         var confirmedHostile = false;
 
         //The mount has something targeted but not the rider, so pass the target
@@ -329,5 +337,6 @@ public class JobDriver_Mounted : JobDriver
         Scribe_Values.Look(ref _dismountLocationType, "dismountLocationType");
         Scribe_Values.Look(ref _originalPeMode, "originalPeMode");
         Scribe_Values.Look(ref _riderOriginalDestination, "riderOriginalDestinaton");
+        Scribe_References.Look(ref _rider, "rider");
     }
 }
