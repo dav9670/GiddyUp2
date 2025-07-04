@@ -26,15 +26,13 @@ internal static class Patch_TradeCaravanAI
             nameof(JobGiver_AIDefendEscortee.TryGiveJob));
     }
 
-    private static bool Prefix(Job __result, Pawn pawn)
+    private static bool Prefix(Job? __result, Pawn pawn)
     {
-        if (pawn.RaceProps.Animal && pawn.GetExtendedPawnData().ReservedBy != null)
-        {
-            __result = null;
-            return false;
-        }
-
-        return true;
+        if (!pawn.RaceProps.Animal || pawn.GetExtendedPawnData().ReservedBy == null)
+            return true;
+        
+        __result = null;
+        return false;
     }
 }
 
@@ -48,21 +46,17 @@ internal static class Patch_GetClosestCarrier
         return Settings.caravansEnabled;
     }
 
-    private static Pawn Postfix(Pawn __result, LordToil_ExitMapAndEscortCarriers __instance, Pawn closestTo)
+    private static Pawn? Postfix(Pawn? __result, LordToil_ExitMapAndEscortCarriers __instance, Pawn closestTo)
     {
-        if (__result != null)
-        {
-            var animalData = __result.GetExtendedPawnData();
-            if (animalData.ReservedBy != null)
-            {
-                var trader = TraderCaravanUtility.FindTrader(__instance.lord);
-                if (trader != null)
-                    return trader;
-                else
-                    animalData.ReservedBy.Dismount(__result, null, true, ropeIfNeeded: false);
-            }
-        }
-
+        var animalData = __result?.GetExtendedPawnData();
+        if (animalData?.ReservedBy == null)
+            return __result;
+        
+        var trader = TraderCaravanUtility.FindTrader(__instance.lord);
+        if (trader != null)
+            return trader;
+        
+        animalData.ReservedBy.Dismount(__result, null, true, ropeIfNeeded: false);
         return __result;
     }
 }

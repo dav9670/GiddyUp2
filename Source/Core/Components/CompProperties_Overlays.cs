@@ -6,13 +6,18 @@ namespace GiddyUp;
 
 public class CompProperties_Overlay : CompProperties
 {
-    public GraphicOverlay overlayFront,
+    public CompProperties_Overlay()
+    {
+        compClass = typeof(CompOverlay);
+    }
+    
+    public GraphicOverlay? overlayFront,
         overlaySide,
         overlayBack;
 
     public class GraphicOverlay
     {
-        public GraphicData graphicDataDefault,
+        public GraphicData? graphicDataDefault,
             graphicDataFemale,
             graphicDataMale;
 
@@ -20,21 +25,16 @@ public class CompProperties_Overlay : CompProperties
             offsetFemale = Vector3.zero,
             offsetMale = Vector3.zero;
 
-        public List<GraphicData> allVariants;
+        public List<GraphicData>? allVariants;
         public string stringDelimiter = "_";
     }
 
-    public GraphicOverlay GetOverlay(Rot4 dir)
+    public GraphicOverlay? GetOverlay(Rot4 dir)
     {
         if (dir == Rot4.South)
             return overlayFront;
         if (dir == Rot4.North)
             return overlayBack;
         return overlaySide;
-    }
-
-    public CompProperties_Overlay()
-    {
-        compClass = typeof(CompOverlay);
     }
 }

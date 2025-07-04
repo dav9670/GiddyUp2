@@ -9,8 +9,6 @@ using Verse;
 using Settings = GiddyUp.ModSettings_GiddyUp;
 using static GiddyUp.IsMountableUtility;
 
-//using Multiplayer.API;
-
 namespace GiddyUpCaravan.Harmony;
 
 [HarmonyPatch(typeof(TransferableOneWayWidget), nameof(TransferableOneWayWidget.DoRow))]
@@ -241,7 +239,7 @@ internal static class Patch_TransferableUtility
     private static bool Postfix(bool __result, Thing a, Thing b)
     {
         if (__result && a.def.category == ThingCategory.Pawn && b.def.category == ThingCategory.Pawn &&
-            (IsMountableUtility.IsEverMountable(a as Pawn) || IsMountableUtility.IsEverMountable(b as Pawn)))
+            (IsMountableUtility.IsEverMountable((Pawn)a) || IsMountableUtility.IsEverMountable((Pawn)b)))
             return false;
         return __result;
     }
