@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <Product>Giddy-Up</Product>
-        <AssemblyVersion>2.2.3</AssemblyVersion>
+        <AssemblyVersion>2.2.4</AssemblyVersion>
         <Version>1.6</Version>
         <Copyright>$([System.DateTime]::Now.ToString('yyyy'))</Copyright>
         <Company>Owlchemist</Company>
@@ -42,8 +42,7 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Krafs.Rimworld.Ref" Version="1.6.4489-beta"/>
-        <!-- <PackageReference Include="RimWorld.MultiplayerAPI" Version="0.4.0" /> -->
+        <PackageReference Include="Krafs.Rimworld.Ref" Version="1.6.4519-beta" />
     </ItemGroup>
     <ItemGroup>
         <Publicize Include="Assembly-CSharp;UnityEngine.IMGUIModule;UnityEngine.CoreModule"/>
