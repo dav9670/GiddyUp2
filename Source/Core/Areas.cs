@@ -10,6 +10,11 @@ public class Area_GU : Area
     private string _label;
     private Color _color;
 
+    // Needs to exist for Scribe
+    public Area_GU()
+    {
+    }
+    
     public Area_GU(AreaManager areaManager, string label) : base(areaManager)
     {
         _color = new Color(Rand.Value, Rand.Value, Rand.Value);
