@@ -77,23 +77,13 @@ public static class Setup
     private static void BuildMountCache()
     {
         //Setup collections
-        var workingList = new List<ThingDef>();
-        if (invertMountingRules == null)
-            invertMountingRules = new HashSet<string>();
+        invertMountingRules ??= [];
+        invertDrawRules ??= [];
 
-        if (invertDrawRules == null)
-            invertDrawRules = new HashSet<string>();
-
-        var list = DefDatabase<ThingDef>.AllDefsListForReading;
-        var length = list.Count;
-        for (var i = 0; i < length; i++)
+        var animalDefs = DefDatabase<ThingDef>.AllDefsListForReading.Where(def => def.race is { Animal: true }).ToList();
+        foreach (var def in animalDefs)
         {
-            var def = list[i];
-            if (def.race is not { Animal: true })
-                continue;
-            
-            workingList.Add(def);
-
+            var test = invertMountingRules;
             var setting = def.race.baseBodySize > ResourceBank.DefaultSizeThreshold;
             if (def.HasModExtension<NotMountable>())
                 setting = false;
@@ -123,8 +113,8 @@ public static class Setup
                 DrawRulesCache.Remove(def.shortHash);
         }
 
-        workingList.SortBy(x => x.label);
-        AllAnimals.AddRange(workingList);
+        animalDefs.SortBy(x => x.label);
+        AllAnimals.AddRange(animalDefs);
     }
 
     //Responsible for setting up the draw offsets and custom stat overrides
