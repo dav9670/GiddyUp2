@@ -80,10 +80,9 @@ public static class Setup
         invertMountingRules ??= [];
         invertDrawRules ??= [];
 
-        var animalDefs = DefDatabase<ThingDef>.AllDefsListForReading.Where(def => def.race is { Animal: true }).ToList();
+        var animalDefs = DefDatabase<ThingDef>.AllDefsListForReading.Where(def => def.race is { Animal: true } && !def.IsCorpse).ToList();
         foreach (var def in animalDefs)
         {
-            var test = invertMountingRules;
             var setting = def.race.baseBodySize > ResourceBank.DefaultSizeThreshold;
             if (def.HasModExtension<NotMountable>())
                 setting = false;

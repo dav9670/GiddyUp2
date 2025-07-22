@@ -82,7 +82,7 @@ internal static class Patch_DetermineNextJob
 
                 pawn.GoMount(hostileMount);
             }
-            else if (Settings.rideAndRollEnabled && pawn.Faction.def.isPlayer && !pawn.Map.Biome.inVacuum)
+            else if (Settings.rideAndRollEnabled && pawn.Faction.def.isPlayer && pawn.Map?.Biome.inVacuum == false)
             {
                 pawn.TryAutoMount(__instance, ref __result);
             }
